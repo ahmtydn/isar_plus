@@ -1,0 +1,145 @@
+name: Isar Plus Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  FLUTTER_VERSION: "3.35.4"
+  ANDROID_NDK_VERSION: "28.0.13004108"
+
+jobs:
+
+  build_binaries:
+    name: Build Binaries
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            artifact_name: libisar_android_arm64.so
+            script: build_android.sh
+          - os: ubuntu-24.04
+            artifact_name: libisar_android_armv7.so
+            script: build_android.sh armv7
+          - os: ubuntu-24.04
+            artifact_name: libisar_android_x64.so
+            script: build_android.sh x64
+          - os: ubuntu-24.04
+            artifact_name: libisar_android_x86.so
+            script: build_android.sh x86
+          - os: macos-14
+            artifact_name: isar_ios.xcframework.zip
+            script: build_ios.sh
+          - os: ubuntu-24.04
+            artifact_name: libisar_linux_x64.so
+            script: build_linux.sh x64
+          - os: macos-14
+            artifact_name: libisar_macos.dylib
+            script: build_macos.sh
+          - os: windows-2022
+            artifact_name: isar_windows_arm64.dll
+            script: build_windows.sh
+          - os: windows-2022
+            artifact_name: isar_windows_x64.dll
+            script: build_windows.sh x64
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      - name: Install Android SDK & NDK (Ubuntu)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          yes | $HOME/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "ndk;${{ env.ANDROID_NDK_VERSION }}" "platform-tools" > /dev/null
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$HOME/android-sdk/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$HOME/android-sdk/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+      - name: Display Rust version
+        run: rustc --version && cargo --version
+      - name: Set env
+        run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Build binary
+        run: bash tool/${{ matrix.script }}
+      - name: Upload binary to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.artifact_name }} 
+          path: ${{ matrix.artifact_name }}
+          retention-days: 1
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.artifact_name }}
+          tag: ${{ github.ref }}
+
+  publish:
+    name: Publish
+    needs: build_binaries 
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }} 
+      - name: Download binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./binaries
+          pattern: binaries-*
+          merge-multiple: true
+      - name: Set Isar Version
+        run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Download Binaries (fallback)
+        run: sh tool/download_binaries.sh || true
+      - name: Adjust Version
+        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
+      - name: pub.dev credentials
+        run: |
+          mkdir -p $HOME/.config/dart
+          echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
+      - name: Publish isar plus
+        run: |
+          dart pub get
+          dart pub publish --force
+        working-directory: packages/isar
+      - name: Publish isar_plus_flutter_libs
+        run: |
+          flutter pub get
+          flutter pub publish --force
+        working-directory: packages/isar_flutter_libs
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Isar Plus ${{ github.ref_name }}
+          body: |
+            ## Isar Plus ${{ github.ref_name }}
+            
+            ### 📦 Published Packages
+            - [`isar_plus`](https://pub.dev/packages/isar_plus) ${{ github.ref_name }}
+            - [`isar_plus_flutter_libs`](https://pub.dev/packages/isar_plus_flutter_libs) ${{ github.ref_name }}
+            
+            ### 🔗 Links
+            - [Original Isar](https://github.com/isar/isar)
+            - [Documentation](https://isar.dev)
+            - [Changelog](https://github.com/ahmtydn/isar/releases)
+          files: |
+            ./binaries/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

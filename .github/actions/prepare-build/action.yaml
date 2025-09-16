@@ -1,0 +1,15 @@
+name: "Prepare Build"
+description: "Prepares the build for Isar Core"
+runs:
+  using: "composite"
+  steps:
+    - name: Install LLVM and Clang
+      if: runner.os == 'Windows'
+      uses: KyleMayes/install-llvm-action@v1
+      with:
+        version: "11.0"
+        directory: ${{ runner.temp }}/llvm
+    - name: Set LIBCLANG_PATH
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
