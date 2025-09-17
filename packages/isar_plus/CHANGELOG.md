@@ -1,53 +1,59 @@
-## 4.0.0-dev.14
+## 1.0.0
 
-⚠️ ISAR V4 IS NOT READY FOR PRODUCTION USE ⚠️
+🎉 **Isar Plus v4 Stable Release** 🎉
 
-This version does not support database migration yet and cannot open Isar v3 databases. The stable version will be released in a few weeks and will support migration from v3.
+This is the initial stable release of Isar Plus, a fork of the Isar database with enhanced features and improvements. This release is based on Isar v4 architecture with additional enhancements.
 
-### Breaking
+### Features
 
-Changed transactions API:
+- **Web support**: Full web compatibility for Flutter applications
+- **Encrypted databases**: Built-in encryption support for sensitive data
+- **String ids**: Support for string-based primary keys
+- **Enhanced performance**: Significantly improved performance for all database operations
+- **SQLite storage engine**: Optional SQLite backend support
+- **Dynamic properties**: Support for `dynamic`, `List<dynamic>` and `Map<String, dynamic>` properties
+- **Bulk operations**: Efficient bulk updates using `collection.update()` and `query.updateAll()`
+- **UTC DateTime support**: New `@utc` annotation for UTC DateTime handling
+- **Code generator compatibility**: Support for freezed and other code generators
 
-| old              | new            |
+### API Changes from Isar v3
+
+**New Transaction API:**
+
+| Old (v3)         | New (v4)       |
 | ---------------- | -------------- |
 | `writeTxn()`     | `writeAsync()` |
 | `writeTxnSync()` | `write()`      |
 | `txn()`          | `readAsync()`  |
 | `txnSync()`      | `read()`       |
 
-- All operations are now synchronous by default and there are `Async` methods for asynchronous operations.
-- Ids now need to be called `id` or annotated with `@id`
-- Ids can no longer be `nullable`. There is a new `collection.autoIncrement()` function to automatically generate ids.
-- Enums no longer need to be annotated with `@enumerated` instead there is a new `@enumValue` annotation to specify the value property of an enum
-- Where clauses have been removed in favor of automatic index handling
-- Isar links have been removed in favor of embedded objects
-- Indexes have been simplified
-- The Android minimum SDK version is now 23
+**Other Breaking Changes:**
+- All operations are now synchronous by default with optional `Async` methods
+- IDs must be named `id` or annotated with `@id`
+- IDs cannot be nullable; use `collection.autoIncrement()` for auto-generated IDs
+- Enums use new `@enumValue` annotation instead of `@enumerated`
+- Simplified indexes with automatic handling
+- Embedded objects replace Isar links
+- Minimum Android SDK version is now 23
 
-### Enhancements
-
-- Web support is back!!! In-memory only for now (persistence will come soon)
-- Encrypted databases
-- String ids
-- Fetching multiple properties simultaneously
-- Partial and Bulk updates using `collection.update()` and `query.updateAll()`
-- SQLite storage engine support
-- Support for `dynamic`, `List<dynamic>` and `Map<String, dynamic>` properties
-- Required parameters for embedded objects
+### Enhanced Features
 - Case insensitive sorting
-- Much faster database initialization
-- Improved performance for all operations
-- Decoding objects no longer blocks the UI isolate
-- New `@utc` annotation to receive `DateTime` objects in UTC
-- Support for freezed and other code generators
+- Faster database initialization
+- Non-blocking object decoding
+- Required parameters for embedded objects
+- Fetching multiple properties simultaneously
 
-## 3.1.0+1
+## 3.1.0+1_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Fixes
 
 - Fixed error building MacOS library
 
-## 3.1.0
+## 3.1.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Breaking
 
@@ -66,7 +72,9 @@ Sorry for this breaking change. Unfortunately, it was necessary to fix stability
 - Many internal improvements
 - Performance improvements
 
-## 3.0.6
+## 3.0.6_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Fixes
 
@@ -74,7 +82,9 @@ Sorry for this breaking change. Unfortunately, it was necessary to fix stability
 - Add check to verify that async transactions are still active
 - Fix upstream issue with opening databases
 
-## 3.0.5
+## 3.0.5_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -95,15 +105,21 @@ Sorry for this breaking change. Unfortunately, it was necessary to fix stability
 - Fixed crash on Windows
 - Fixed "IndexNotFound" error
 
-## 3.0.4
+## 3.0.4_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 REDACTED.
 
-## 3.0.3
+## 3.0.3_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 REDACTED.
 
-## 3.0.2
+## 3.0.2_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -120,7 +136,9 @@ REDACTED.
 - Added missing `exportJsonSync()` and `exportJsonRawSync()`
 - Fixed issue where secondary instance could not be selected in the Inspector
 
-## 3.0.1
+## 3.0.1_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -132,7 +150,9 @@ REDACTED.
 - Fixed too low min-iOS version. The minimum supported is 11.0
 - Fixed error during macOS App Store build
 
-## 3.0.0
+## 3.0.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 This release has been a lot of work! Thanks to everyone who contributed and joined the countless discussions. You are really awesome!
 
@@ -209,7 +229,9 @@ There are too many fixes to list them all.
 - Fixed hash index issue where multiple list values resulted in the same hash
 - Fixed edge case where creating a new index failed
 
-## 2.5.0
+## 2.5.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -230,7 +252,9 @@ There are too many fixes to list them all.
 - Fixed error thrown by `BroadcastChannel` in Firefox
 - Fixed Isar Inspector connection issue
 
-## 2.4.0
+## 2.4.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -254,7 +278,9 @@ There are too many fixes to list them all.
 - Fixed link issues
 - Fixed missing `BroadcastChannel` API for older Safari versions
 
-## 2.2.1
+## 2.2.1_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -271,7 +297,9 @@ There are too many fixes to list them all.
 - Fixed issue with date queries
 - Fixed `FilterGroup.not` constructor (thanks for the PR @jtzell)
 
-## 2.2.0
+## 2.2.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 Isar now has full web support 🎉. No changes to your code required, just run it.
 
@@ -298,7 +326,9 @@ _Web passes all unit tests but is still considered beta for now._
 - Fixed incorrect list values for new properties (`[]` instead of `null`)
 - Improved handling of link edge-cases
 
-## 2.1.4
+## 2.1.4_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 - Removed `path` dependency
 - Fixed incorrect return value of `deleteByIndex()`
@@ -307,7 +337,9 @@ _Web passes all unit tests but is still considered beta for now._
 - Fixed `$` escaping in generated code (thanks @jtzell)
 - Fixed broken link in pub.dev example page
 
-## 2.1.0
+## 2.1.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 `isar_connect` is now integrated into `isar`
 
@@ -328,7 +360,9 @@ _Web passes all unit tests but is still considered beta for now._
 - Fixed issue with `@Ignore` annotation not always working
 - Fixed issue with `getByIndex()` not returning correct object id (thanks @jtzell)
 
-## 2.0.0
+## 2.0.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Breaking
 
@@ -373,7 +407,9 @@ _Web passes all unit tests but is still considered beta for now._
 - Fixed issue where composite indexes did not allow non-hashed Strings as last value
 - Fixed issue where `@Ignore()` fields were not ignored
 
-## 1.0.5
+## 1.0.5_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Enhancements
 
@@ -386,11 +422,15 @@ _Web passes all unit tests but is still considered beta for now._
 - Fixed stripped binaries for iOS release builds
 - Fixed IsarInspector issues (thanks to [RubenBez](https://github.com/RubenBez) and [rizzi37](https://github.com/rizzi37))
 
-## 1.0.0+1
+## 1.0.0+1_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 Added missing binaries
 
-## 1.0.0
+## 1.0.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 Switched from liblmdb to libmdbx for better performance, more stability and many internal improvements.
 
@@ -423,7 +463,9 @@ The internal database format has been changed to improve performance. Old databa
 - Improve generated code
 - Many new unit tests
 
-## 0.4.0
+## 0.4.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 ### Breaking
 
@@ -452,23 +494,33 @@ The internal database format has been changed to improve performance. Old databa
 - Set up integration tests and improve unit tests
 - Use CORE/0.4.0
 
-## 0.2.0
+## 0.2.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 - Link support
 - Many improvements and fixes
 
-## 0.1.0
+## 0.1.0_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 - Support for links and backlinks
 
-## 0.0.4
+## 0.0.4_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 - Bugfixes and many improvements
 
-## 0.0.2
+## 0.0.2_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 Fix dependency issue
 
-## 0.0.1
+## 0.0.1_
+
+⚠️ **DEPRECATED** - This version is deprecated. Please use isar_plus 1.0.0+ instead.
 
 Initial release
