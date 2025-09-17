@@ -5,6 +5,8 @@
   <h1 align="center">Isar Plus Database</h1>
 </p>
 
+<!-- Version 1.0.3 - Test release for PR-based release notes -->
+
 <p align="center">
   <a href="https://pub.dev/packages/isar_plus">
     <img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart">
