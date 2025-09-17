@@ -45,7 +45,7 @@ class User {
 El problema es que el modelo existente para los usuarios tendrá un campo vacío `birthYear` porque no existía en la versión 1. Necesitamos migrar los datos para establecer el campo `birthYear`.
 
 ```dart
-import 'package:isar/isar.dart';
+import 'package:isar_plus/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

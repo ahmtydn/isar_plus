@@ -45,7 +45,7 @@ class User {
 مسئلہ یہ ہے کہ موجودہ صارف کے ماڈلز میں خالی `پیدائشی سال` فیلڈ ہوگی کیونکہ یہ ورژن 1 میں موجود نہیں تھا۔ ہمیں `پیدائشی سال` فیلڈ سیٹ کرنے کے لئے ڈیٹا کو منتقل کرنے کی ضرورت ہے۔
 
 ```dart
-import 'package:isar/isar.dart';
+import 'package:isar_plus/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

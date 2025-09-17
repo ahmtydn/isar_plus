@@ -1,0 +1,11 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "lib/src/native/bindings.dart"
+
+  errors:
+    cascade_invocations: ignore
+    avoid_positional_boolean_parameters: ignore
+    parameter_assignments: ignore
+    prefer_asserts_with_message: ignore

@@ -14,8 +14,8 @@ title: クイックスタート
 Isarを使用する前に、いくつかのパッケージを `pubspec.yaml` に追加する必要があります。pubを使用する事で、面倒な作業を簡単に済ませることが出来ます。
 
 ```bash
-flutter pub add isar isar_flutter_libs
-flutter pub add -d isar_generator build_runner
+dart pub add isar:0.0.0-placeholder isar_flutter_libs:0.0.0-placeholder
+dart pub add dev:isar_generator:0.0.0-placeholder
 ```
 
 ## 2. クラスの注釈(アノテーション)

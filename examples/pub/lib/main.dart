@@ -16,28 +16,21 @@ class PubApp extends ConsumerWidget {
 
   final _router = GoRouter(
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomePage(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const HomePage()),
       GoRoute(
         path: '/packages/:package',
-        builder: (context, state) => DetailPage(
-          name: state.pathParameters['package']!,
-        ),
+        builder: (context, state) => DetailPage(name: state.params['package']!),
       ),
       GoRoute(
         path: '/packages/:package/versions/:version',
         builder: (context, state) => DetailPage(
-          name: state.pathParameters['package']!,
-          version: state.pathParameters['version'],
+          name: state.params['package']!,
+          version: state.params['version'],
         ),
       ),
       GoRoute(
         path: '/search/:query',
-        builder: (context, state) => SearchPage(
-          query: state.pathParameters['query']!,
-        ),
+        builder: (context, state) => SearchPage(query: state.params['query']!),
       ),
     ],
   );

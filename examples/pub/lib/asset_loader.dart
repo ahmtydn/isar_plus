@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_plus/isar.dart';
 import 'package:pub_app/models/asset.dart';
 import 'package:pub_app/models/package.dart';
 import 'package:pub_app/repository.dart';
@@ -16,7 +16,11 @@ class PackageAndVersion {
 }
 
 Future<void> loadAssets(PackageAndVersion p) async {
-  final isar = Isar.get(schemas: [PackageSchema, AssetSchema]);
+  final isar = Isar.openSync(
+    [PackageSchema, AssetSchema],
+    directory: Directory.systemTemp.path,
+    inspector: false,
+  );
 
   Asset? readme;
   Asset? changelog;
@@ -55,8 +59,8 @@ Future<void> loadAssets(PackageAndVersion p) async {
   }
 
   if (readme != null || changelog != null) {
-    isar.write((isar) {
-      isar.assets.putAll([
+    isar.writeTxnSync(() {
+      isar.assets.putAllSync([
         if (readme != null) readme,
         if (changelog != null) changelog,
       ]);

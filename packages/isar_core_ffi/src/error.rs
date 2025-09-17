@@ -1,75 +1,67 @@
-use isar_core::core::error::IsarError;
-use std::cell::RefCell;
+use isar_core::error::Result;
+use once_cell::sync::Lazy;
+use std::ffi::CString;
+use std::os::raw::c_char;
+use std::sync::Mutex;
 
-thread_local! {
-    pub static ERROR: RefCell<Option<String>> = RefCell::new(None);
+type ErrCounter = (Vec<(i64, String)>, i64);
+static ERRORS: Lazy<Mutex<ErrCounter>> = Lazy::new(|| Mutex::new((vec![], 1)));
+
+pub trait DartErrCode {
+    fn into_dart_result_code(self) -> i64;
+}
+
+impl DartErrCode for Result<()> {
+    fn into_dart_result_code(self) -> i64 {
+        if let Err(err) = self {
+            let mut lock = ERRORS.lock().unwrap();
+            let (errors, counter) = &mut (*lock);
+            if errors.len() > 10 {
+                errors.remove(0);
+            }
+            let err_code = *counter;
+            errors.push((err_code, err.to_string()));
+            *counter = counter.wrapping_add(1);
+            if *counter == 0 {
+                *counter = 1
+            }
+            err_code
+        } else {
+            0
+        }
+    }
 }
 
 #[macro_export]
 macro_rules! isar_try {
     { $($token:tt)* } => {{
+        use crate::error::DartErrCode;
         #[allow(unused_mut)] {
-            let mut l = || -> isar_core::core::error::Result<()> {
-                {$($token)*}
-                #[allow(unreachable_code)]
+            let mut l = || -> isar_core::error::Result<()> {
+                $($token)*
                 Ok(())
             };
-            if let Err(err) = l() {
-                if let Some(code) = crate::error::error_code(&err) {
-                    crate::error::ERROR.replace(None);
-                    code
-                } else {
-                    crate::error::ERROR.replace(Some(err.to_string()));
-                    255
-                }
-            } else {
-                0
-            }
+            l().into_dart_result_code()
         }
     }}
-}
-
-pub const fn error_code(err: &IsarError) -> Option<u8> {
-    let code = match err {
-        IsarError::PathError {} => ERROR_PATH,
-        IsarError::WriteTxnRequired {} => ERROR_WRITE_TXN_REQUIRED,
-        IsarError::VersionError {} => ERROR_VERSION,
-        IsarError::ObjectLimitReached {} => ERROR_OBJECT_LIMIT_REACHED,
-        IsarError::InstanceMismatch {} => ERROR_INSTANCE_MISMATCH,
-        IsarError::EncryptionError {} => ERROR_ENCRYPTION,
-        IsarError::DbFull {} => ERROR_DB_FULL,
-        _ => return None,
-    };
-    Some(code)
-}
-
-pub const ERROR_PATH: u8 = 1;
-pub const ERROR_WRITE_TXN_REQUIRED: u8 = 2;
-pub const ERROR_VERSION: u8 = 3;
-pub const ERROR_OBJECT_LIMIT_REACHED: u8 = 4;
-pub const ERROR_INSTANCE_MISMATCH: u8 = 5;
-pub const ERROR_ENCRYPTION: u8 = 6;
-pub const ERROR_DB_FULL: u8 = 7;
-
-#[no_mangle]
-pub unsafe extern "C" fn isar_get_error(value: *mut *const u8) -> u32 {
-    ERROR.with_borrow(|e| {
-        if let Some(msg) = e.as_ref() {
-            *value = msg.as_ptr();
-            msg.len() as u32
-        } else {
-            0
-        }
-    })
 }
 
 #[macro_export]
-macro_rules! isar_pause_isolate {
-    { $($token:tt)* } => {{
-        if cfg!(target_arch = "wasm32") {
-            {$($token)*}
-        } else {
-            crate::dart::dart_pause_isolate(|| {$($token)*})
+macro_rules! isar_try_txn {
+    { $txn:expr, $closure:expr } => {
+        isar_try! {
+            $txn.exec(Box::new($closure))?;
         }
-    }}
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn isar_get_error(err_code: i64) -> *mut c_char {
+    let lock = ERRORS.lock().unwrap();
+    let error = lock.0.iter().find(|(code, _)| *code == err_code);
+    if let Some((_, err_msg)) = error {
+        CString::new(err_msg.as_str()).unwrap().into_raw()
+    } else {
+        std::ptr::null_mut()
+    }
 }

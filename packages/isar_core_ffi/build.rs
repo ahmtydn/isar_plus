@@ -1,4 +1,4 @@
-use std::{env, fs::File, io::Write, path::Path};
+use std::{env, fs, fs::File, io::Write, path::Path};
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -15,15 +15,30 @@ fn main() {
         version
     });
 
-    write!(&mut f, "pub const ISAR_VERSION: &str = \"{version}\0\";").unwrap();
-    println!("cargo:rerun-if-env-changed=ISAR_VERSION");
+    // Try to read the libmdbx tag from the sibling crate `mdbx_sys/build.rs`
+    // Fallback to "unknown" if not found.
+    let workspace_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let mdbx_build_rs = Path::new(&workspace_dir).join("../mdbx_sys/build.rs");
+    let mdbx_tag = fs::read_to_string(&mdbx_build_rs)
+        .ok()
+        .and_then(|content| {
+            let key = "const LIBMDBX_TAG: &str = \"";
+            content
+                .split('\n')
+                .find(|line| line.trim_start().starts_with(key))
+                .and_then(|line| {
+                    let start = line.find('"')? + 1;
+                    let end = line[start..].find('"')? + start;
+                    Some(line[start..end].to_string())
+                })
+        })
+        .unwrap_or_else(|| "unknown".to_string());
 
-    let target_os = env::var("CARGO_CFG_TARGET_OS").expect("CARGO_CFG_TARGET_OS not set");
-    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").expect("CARGO_CFG_TARGET_ARCH not set");
-    if target_arch == "x86_64" && target_os == "android" {
-        let android_ndk_home = env::var("ANDROID_NDK_HOME").expect("ANDROID_NDK_HOME not set");
-        println!("cargo:rustc-link-search={android_ndk_home}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.7/lib/linux/");
-        println!("cargo:rustc-link-search={android_ndk_home}/toolchains/llvm/prebuilt/darwin-x86_64/lib64/clang/14.0.7/lib/linux/");
-        println!("cargo:rustc-link-lib=static=clang_rt.builtins-x86_64-android");
-    }
+    write!(&mut f, "const ISAR_VERSION: &str = \"{version}\0\";").unwrap();
+    write!(
+        &mut f,
+        "const MDBX_VERSION: &str = \"{mdbx_tag}\0\";"
+    )
+    .unwrap();
+    println!("cargo:rerun-if-env-changed=ISAR_VERSION");
 }

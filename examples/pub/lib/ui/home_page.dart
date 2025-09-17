@@ -64,7 +64,7 @@ final randomFavoriteNamesPod = StreamProvider((ref) async* {
             !setEquals(packageNames.toSet(), previousNames))) {
       previousNames = packageNames.toSet();
       packageNames.shuffle();
-      yield packageNames.take(10).toList();
+      yield packageNames.sublist(0, 10);
     }
   }
 });

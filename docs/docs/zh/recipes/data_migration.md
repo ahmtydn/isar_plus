@@ -45,7 +45,7 @@ class User {
 可问题是现有的用户数据中不会有 `birthYear` 这个字段的信息，因为它在版本 1 中不存在。我们需要借用数据迁移来为 `birthYear` 字段赋值。
 
 ```dart
-import 'package:isar/isar.dart';
+import 'package:isar_plus/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

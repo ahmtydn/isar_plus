@@ -1,0 +1,1 @@
+library isar_community_flutter_libs;

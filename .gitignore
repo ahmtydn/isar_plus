@@ -5,12 +5,15 @@
 .DS_Store
 .vscode/
 .idea
-*.iml
 
 # Dart related
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+.packages
+.pub-cache/
+.pub/
 build/
 
 # Rust related
@@ -19,17 +22,18 @@ target/
 *.so
 *.dylib
 *.dll
-*.wasm
 *.zip
 *.xcframework/
 isar-dart.h
 
 # Android related
-gradle-wrapper.jar
+**/android/**/gradle-wrapper.jar
 .gradle/
-gradlew
-gradlew.bat
-local.properties
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -67,6 +71,4 @@ local.properties
 **/.plugin_symlinks/
 
 # Coverage
-*.info
-*.profraw
-*.json
+coverage/

@@ -1,6 +1,6 @@
 {
   "files": [
-    "packages/isar/README.md"
+    "packages/isar_plus/README.md"
   ],
   "imageSize": 100,
   "commit": false,
@@ -17,7 +17,7 @@
     },
     {
       "login": "leisim",
-      "name": "Simon Choi",
+      "name": "Simon Leier",
       "avatar_url": "https://avatars.githubusercontent.com/u/13610195?v=4",
       "profile": "https://www.linkedin.com/in/simon-leier/",
       "contributions": [
@@ -200,15 +200,6 @@
       "contributions": [
         "doc"
       ]
-    },
-    {
-      "login": "oscarpalomar",
-      "name": "Oscar Palomar",
-      "avatar_url": "https://avatars.githubusercontent.com/u/13899772?v=4",
-      "profile": "https://github.com/oscarpalomar",
-      "contributions": [
-        "bug"
-      ]
     }
   ],
   "contributorTemplate": "<a href=\"https://github.com/<%= contributor.login %>\"><img src=\"<%= contributor.avatar_url %>\" width=\"<%= options.imageSize %>px;\" alt=\"\"/><br /><sub><b><%= contributor.name %></b></sub></a>",
@@ -219,6 +210,5 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "angular",
-  "commitType": "docs"
+  "commitConvention": "angular"
 }

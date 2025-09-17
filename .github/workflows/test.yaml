@@ -1,41 +1,59 @@
 name: Dart CI
 
+env:
+  FLUTTER_OVERRIDE: "3.35.1"
+
 on:
   push:
     branches:
-      - main
+      - v3*
   pull_request:
     branches:
-      - main
+      - v3*
 
 jobs:
-  format:
-    name: Check formatting
-    runs-on: ubuntu-latest
+  version:
+    name: Version Display
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ secrets.FLUTTER_VERSION }}
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
+      - run: flutter --version
+
+  format:
+    name: Check formatting
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Check formatting
-        run: dart format -o none . --set-exit-if-changed
+        run: dart format --set-exit-if-changed .
 
   lint:
     name: Check lints
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ secrets.FLUTTER_VERSION }}
-      - run: dart pub get
-        working-directory: packages/isar
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - run: flutter pub get
-        working-directory: packages/isar_flutter_libs
+        working-directory: packages/isar_plus
       - run: flutter pub get
-        working-directory: packages/isar_inspector
+        working-directory: packages/isar_community_flutter_libs
+      - run: flutter pub get
+        working-directory: packages/isar_community_generator
+      - run: flutter pub get
+        working-directory: packages/isar_community_inspector
+      - run: flutter pub get
+        working-directory: examples/pub
       - run: |
           flutter pub get
           flutter pub run build_runner build
@@ -43,31 +61,24 @@ jobs:
         working-directory: packages/isar_test
       - name: Lint
         run: flutter analyze
-        working-directory: packages
-
-  test_core:
-    name: Core Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Run Rust Unit tests
-        run: cargo test
 
   test:
     name: Dart Test
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-14, macos-13, ubuntu-24.04, windows-2022]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - run: echo "$OSTYPE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
         run: sh tool/build.sh
       - name: Prepare Tests
@@ -76,30 +87,45 @@ jobs:
         run: flutter test -j 1
         working-directory: packages/isar_test
 
-  test_web:
-    name: Dart Web Test
-    runs-on: ubuntu-latest
+  valgrind:
+    name: Valgrind
+    runs-on: ubuntu-24.04
+    if: ${{ false }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
+      - name: Install valgrind and llvm
+        run: sudo apt update && sudo apt install -y valgrind libclang-dev
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: sh tool/build.sh
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
-      - name: Run Dart Unit tests
-        run: dart test -p chrome
+      - name: Run Valgrind
+        run: |
+          dart compile exe integration_test/all_tests.dart
+          valgrind \
+            --leak-check=full \
+            --error-exitcode=1 \
+            --show-mismatched-frees=no \
+            --show-possibly-lost=no \
+            --errors-for-leak-kinds=definite \
+            integration_test/all_tests.exe
         working-directory: packages/isar_test
 
   coverage:
     name: Code Coverage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -109,229 +135,244 @@ jobs:
       - name: Add packages
         run: |
           flutter pub add json_annotation
+          flutter pub add intl
           flutter pub add isar_test --path ../isar_test
-        working-directory: packages/isar
+        working-directory: packages/isar_plus
+      - name: Collect isar Coverage
+        run: |
+          flutter test --coverage --coverage-path lcov_isar.info
+        working-directory: packages/isar_plus
       - name: Collect isar_test Coverage
         run: |
           flutter test --coverage ../isar_test/test --coverage-path lcov_isar_test.info
-        working-directory: packages/isar
-      - name: Collect isar_core Coverage
-        run: |
-          cargo install cargo-tarpaulin
-          cargo tarpaulin -o Lcov --engine llvm
+        working-directory: packages/isar_plus
+      - name: Upload isar Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: packages/isar_plus/lcov_isar.info
       - name: Upload isar_test Coverage
         uses: codecov/codecov-action@v3
         with:
-          files: packages/isar/lcov_isar_test.info
-          flags: isar
-      - name: Upload isar_core Coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: lcov.info
-          flags: core
+          files: packages/isar_plus/lcov_isar_test.info
 
   test_generator:
     name: Generator Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Run Generator Unit tests
         run: |
           dart pub get
           dart test
-        working-directory: packages/isar
+        working-directory: packages/isar_community_generator
 
   integration_test_ios:
     name: Integration Test iOS
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Start simulator
-        uses: futureware-tech/simulator-action@v2
+        uses: futureware-tech/simulator-action@v4
         with:
-          model: iPhone 14
+          model: iPhone 15
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: |
           bash tool/build_ios.sh
-          unzip isar_ios.xcframework.zip -d packages/isar_flutter_libs/ios
+          unzip isar_ios.xcframework.zip -d packages/isar_community_flutter_libs/ios
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Integration tests
-        run: flutter test integration_test.dart --dart-define STRESS=true
+        run: flutter test integration_test/integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_test
 
   integration_test_android:
     name: Integration Test Android
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
-          java-version: "11"
-          distribution: "zulu"
+          java-version: '17'
+          distribution: 'zulu'
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
         run: |
           bash tool/build_android.sh x64
-          mkdir -p packages/isar_flutter_libs/android/src/main/jniLibs/x86_64
-          mv libisar_android_x64.so packages/isar_flutter_libs/android/src/main/jniLibs/x86_64/libisar.so
+          mkdir -p packages/isar_community_flutter_libs/android/src/main/jniLibs/x86_64
+          mv libisar_android_x64.so packages/isar_community_flutter_libs/android/src/main/jniLibs/x86_64/libisar.so
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Run Flutter Integration tests
-        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
+        uses: Wandalen/wretry.action@v1.0.36
         with:
-          api-level: 29
-          arch: x86_64
-          profile: pixel
-          working-directory: packages/isar_test
-          script: flutter test integration_test.dart --dart-define STRESS=true
+          action: reactivecircus/android-emulator-runner@v2
+          with: |
+            api-level: 29
+            arch: x86_64
+            profile: pixel
+            working-directory: packages/isar_test
+            script: flutter test integration_test/integration_test.dart --dart-define STRESS=true
 
   integration_test_macos:
     name: Integration Test macOS
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          # flutter-version: "3.3.10" # https://github.com/flutter/flutter/issues/118469
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
         run: |
           bash tool/build_macos.sh
           install_name_tool -id @rpath/libisar.dylib libisar_macos.dylib
-          mv libisar_macos.dylib packages/isar_flutter_libs/macos/libisar.dylib
+          mv libisar_macos.dylib packages/isar_community_flutter_libs/macos/libisar.dylib
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
-          flutter config --enable-macos-desktop 
-          flutter test -d macos integration_test.dart --dart-define STRESS=true
+          flutter config --enable-macos-desktop
+          flutter test -d macos integration_test/integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_test
 
   integration_test_linux:
     name: Integration Test Linux
-    if: ${{ false }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Install Linux requirements
-        run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-de
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
       - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v1
+        uses: pyvista/setup-headless-display-action@v4
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
         run: |
           bash tool/build_linux.sh x64
-          mv libisar_linux_x64.so packages/isar_flutter_libs/linux/libisar.so
+          mv libisar_linux_x64.so packages/isar_community_flutter_libs/linux/libisar.so
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
-          flutter config --enable-linux-desktop 
-          flutter test -d linux integration_test.dart --dart-define STRESS=true
+          flutter config --enable-linux-desktop
+          flutter test -d linux integration_test/integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_test
 
   integration_test_windows:
     name: Integration Test Windows
-    runs-on: windows-2019
-    if: ${{ false }}
+    runs-on: windows-2022
+    # if: ${{ false }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
+      - name: Display Rust version
+        run: rustc --version && cargo --version
       - name: Build Isar Core
         run: |
           bash tool/build_windows.sh x64
-          mv isar_windows_x64.dll packages/isar_flutter_libs/windows/libisar.dll
+          mv isar_windows_x64.dll packages/isar_community_flutter_libs/windows/libisar.dll
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
-          flutter config --enable-windows-desktop 
-          flutter test -d windows integration_test.dart --dart-define STRESS=true
+          flutter config --enable-windows-desktop
+          flutter test -d windows integration_test/integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_test
 
-  integration_test_chrome:
-    name: Integration Test Chrome
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Install chromedricer
-        uses: nanasess/setup-chromedriver@v2
-      - name: Prepare chromedricer
-        run: chromedriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          dart tool/generate_all_tests.dart
-          flutter pub run build_runner build
-          flutter drive --driver=integration_driver.dart  --target=integration_test.dart -d web-server --browser-name chrome
-        working-directory: packages/isar_test
+  # drive_chrome:
+  #   runs-on: ubuntu-24.04
+  #   if: ${{ false }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
+  #     - name: Install chromedricer
+  #       uses: nanasess/setup-chromedriver@v1
+  #     - name: Prepare chromedricer
+  #       run: chromedriver --port=4444 &
+  #     - name: Run Dart tests in browser
+  #       run: |
+  #         flutter pub get
+  #         dart tool/generate_long_double_test.dart
+  #         dart tool/generate_all_tests.dart
+  #         flutter pub run build_runner build
+  #         flutter drive --driver=isar_driver.dart --target=isar_driver_target.dart -d web-server --browser-name chrome
+  #       working-directory: packages/isar_test
 
-  integration_test_safari:
-    name: Integration Test Safari
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: |
-          brew install llvm
-          bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Prepare safaridricer
-        run: |
-          sudo safaridriver --enable
-          safaridriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name safari
-        working-directory: packages/isar_test
+  # drive_safari:
+  #   runs-on: macos-14
+  #   if: ${{ false }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
+  #     - name: Prepare safaridricer
+  #       run: |
+  #         sudo safaridriver --enable
+  #         safaridriver --port=4444 &
+  #     - name: Run Dart tests in browser
+  #       run: |
+  #         flutter pub get
+  #         dart tool/generate_long_double_test.dart
+  #         flutter pub run build_runner build
+  #         dart tool/generate_all_tests.dart
+  #         flutter drive --driver=isar_driver.dart --target=isar_driver_target.dart -d web-server --browser-name safari
+  #       working-directory: packages/isar_test
 
-  integration_test_firefox:
-    name: Integration Test Firefox
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Install geckodriver
-        uses: browser-actions/setup-geckodriver@latest
-      - name: Prepare geckodriver
-        run: geckodriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name firefox
-        working-directory: packages/isar_test
+  # drive_firefox:
+  #   runs-on: ubuntu-24.04
+  #   if: ${{ false }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
+  #     - name: Install geckodriver
+  #       uses: browser-actions/setup-geckodriver@latest
+  #     - name: Prepare geckodriver
+  #       run: geckodriver --port=4444 &
+  #     - name: Run Dart tests in browser
+  #       run: |
+  #         flutter pub get
+  #         dart tool/generate_long_double_test.dart
+  #         flutter pub run build_runner build
+  #         dart tool/generate_all_tests.dart
+  #         flutter drive --driver=isar_driver.dart --target=isar_driver_target.dart -d web-server --browser-name firefox
+  #       working-directory: packages/isar_test

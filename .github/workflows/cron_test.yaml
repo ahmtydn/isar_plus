@@ -2,7 +2,8 @@ name: Dart CI Cron
 
 on:
   schedule:
-    - cron: "0 18 * * *"
+    - cron: "0 8 * * *"
+  workflow_dispatch:
 
 jobs:
   testlab:
