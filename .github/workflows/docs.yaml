@@ -3,7 +3,7 @@ name: Isar Plus Docs
 on:
   push:
     branches:
-      - main
+      - test
 
 permissions:
   contents: read
