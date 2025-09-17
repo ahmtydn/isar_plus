@@ -1,4 +1,16 @@
+## 1.0.4 (2025-09-17)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.4 -->
+
+## What's Changed
+### Other Changes
+* fix: standardize plugin naming across all platforms for isar_plus_flutter_libs by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/2
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.3...1.0.4
+
 ## 1.0.2 (2025-09-17)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.2 -->
 
