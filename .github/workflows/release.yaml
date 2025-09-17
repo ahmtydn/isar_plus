@@ -1,86 +1,51 @@
 name: Isar release
 
-env:
-  FLUTTER_OVERRIDE: "3.35.1"
-
 on:
   push:
     tags:
       - "*"
 
 jobs:
-  verify_version:
-    name: Verify version matches release
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, macos-14, windows-2022]
-        sdk: [3.0.0]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
-      - name: Verify release version
-        run: |
-          flutter pub get
-          dart tool/verify_release_version.dart ${{ github.ref_name }}
-        working-directory: packages/isar_plus
-
   build_binaries:
     name: Build Binaries
-    needs: verify_version
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             artifact_name: libisar_android_arm64.so
             script: build_android.sh
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             artifact_name: libisar_android_armv7.so
             script: build_android.sh armv7
-          - os: ubuntu-24.04
+          - os: ubuntu-latest
             artifact_name: libisar_android_x64.so
             script: build_android.sh x64
-          - os: ubuntu-24.04
-            artifact_name: libisar_android_x86.so
-            script: build_android.sh x86
-          - os: macos-14
+          - os: macos-latest
             artifact_name: isar_ios.xcframework.zip
             script: build_ios.sh
-          - os: ubuntu-24.04
+          - os: ubuntu-20.04
             artifact_name: libisar_linux_x64.so
             script: build_linux.sh x64
-          - os: macos-14
+          - os: macos-latest
             artifact_name: libisar_macos.dylib
             script: build_macos.sh
-          - os: windows-2022
-            artifact_name: isar_windows_arm64.dll
-            script: build_windows.sh
-          - os: windows-2022
+          - os: windows-latest
             artifact_name: isar_windows_x64.dll
             script: build_windows.sh x64
+          - os: ubuntu-latest
+            artifact_name: isar.wasm
+            script: build_wasm.sh
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      - name: Display Rust version
-        run: rustc --version && cargo --version
-      - name: Set env
+      - name: Set Isar Version
         run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Build binary
         run: bash tool/${{ matrix.script }}
-      - name: Upload binary to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_name }}
-          retention-days: 1
-      - name: Upload binary to release
+      - name: Upload binary
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -93,114 +58,42 @@ jobs:
     uses: ./.github/workflows/testlab.yaml
     secrets: inherit
 
-  upload_to_repo:
-    needs: build_binaries
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: binaries/
-      - name: List contents of downloaded artifacts
-        run: |
-          echo "Listing contents of all downloaded artifacts..."
-          ls -Rlh binaries/
-          echo "Listing complete."
-      - name: Setup Git and clone target repository
-        run: |
-          git config --global user.email "vicente.russo@gmail.com"
-          git config --global user.name "GitHub Actions"
-          git clone https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ vars.REPO_BINARIES }}.git repo
-          cd repo
-          git checkout main || git checkout -b main
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-      - name: Copy binaries to repository and push
-        run: |
-          cd repo
-          ISAR_VERSION=$(echo "${{ github.ref_name }}" | sed 's/refs\/tags\///')
-          echo "Deploying binaries to version: $ISAR_VERSION"
-          mkdir -p "$ISAR_VERSION"
-          cp ../binaries/**/* "$ISAR_VERSION"
-          git add .
-          git commit -m "Deploy binaries for version $ISAR_VERSION" || echo "No changes to commit"
-          git push https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ vars.REPO_BINARIES }}.git main
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
   publish:
     name: Publish
-    needs: build_binaries
-    runs-on: ubuntu-24.04
+    needs: testlab
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
-      - name: pub get
-        run: dart pub get
-        working-directory: packages/isar_plus
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: "Publish"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+      - name: Set Isar Version
+        run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Download Binaries
         run: sh tool/download_binaries.sh
+      - name: Adjust Version
+        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
       - name: pub.dev credentials
         run: |
           mkdir -p $HOME/.config/dart
           echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
-      - name: Publish isar
-        run: dart pub publish --force
+      - name: Publish isar plus
+        run: |
+          dart pub get
+          dart pub publish --force
         working-directory: packages/isar_plus
       - name: Publish isar_plus_flutter_libs
-        run: dart pub publish --force
+        run: |
+          flutter pub get
+          flutter pub publish --force
         working-directory: packages/isar_plus_flutter_libs
-
-  cleanup_on_failure:
-    name: Cleanup Release on Failure
-    runs-on: ubuntu-24.04
-    needs: [build_binaries, testlab, upload_to_repo]
-    if: always() && contains(needs.*.result, 'failure')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Delete release on failure
-        run: |
-          echo "One or more jobs failed. Deleting release ${{ github.ref_name }}"
-          gh release delete ${{ github.ref_name }} --yes || echo "Release not found or already deleted"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Revert Inspector deployment
-        run: |
-          echo "Reverting Inspector deployment for ${{ github.ref_name }}"
-          git clone https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ vars.REPO_INSPECTOR }}.git inspector_repo
-          cd inspector_repo
-          git checkout gh-pages || echo "gh-pages branch not found"
-          if [ -d "${{ github.ref_name }}" ]; then
-            rm -rf "${{ github.ref_name }}"
-            git add .
-            git config user.email "vicente.russo@gmail.com"
-            git config user.name "GitHub Actions"
-            git commit -m "Revert inspector deployment for failed release ${{ github.ref_name }}" || echo "No changes to commit"
-            git push origin gh-pages
-            echo "Inspector deployment reverted"
-          else
-            echo "Inspector folder ${{ github.ref_name }} not found, nothing to revert"
-          fi
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-      - name: Revert binaries deployment
-        run: |
-          echo "Reverting binaries deployment for ${{ github.ref_name }}"
-          git clone https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ vars.REPO_BINARIES }}.git binaries_repo
-          cd binaries_repo
-          git checkout main || git checkout -b main
-          if [ -d "${{ github.ref_name }}" ]; then
-            rm -rf "${{ github.ref_name }}"
-            git add .
-            git config user.email "vicente.russo@gmail.com"
-            git config user.name "GitHub Actions"
-            git commit -m "Revert binaries for failed release ${{ github.ref_name }}" || echo "No changes to commit"
-            git push origin main
-            echo "Binaries deployment reverted"
-          else
-            echo "Binaries folder ${{ github.ref_name }} not found, nothing to revert"
-          fi
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
