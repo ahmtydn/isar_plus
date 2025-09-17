@@ -257,6 +257,14 @@ Big thanks go to these wonderful people:
 ### License
 
 ```
+## 📝 Changelog
+
+Isar Plus uses automated changelog generation powered by GitHub's release notes feature. Release notes are automatically categorized based on pull request labels and synchronized with local CHANGELOG files.
+
+For more information about our release process, see [Automatic Changelog Documentation](.github/AUTOMATIC_CHANGELOG.md).
+
+## License
+
 Copyright 2023 Simon Choi
 
 Licensed under the Apache License, Version 2.0 (the "License");
