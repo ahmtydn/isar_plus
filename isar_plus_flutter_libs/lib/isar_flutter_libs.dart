@@ -1,1 +1,0 @@
-library isar_plus_flutter_libs;
