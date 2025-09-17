@@ -1,0 +1,43 @@
+# GitHub issue/PR labels template for automatic release notes categorization
+# Apply these labels to your PRs to categorize them in release notes
+
+# Breaking Changes
+breaking-change: "#d73a4a"
+breaking: "#d73a4a"
+
+# Features
+enhancement: "#0075ca"
+feature: "#0075ca"
+new-feature: "#0075ca"
+
+# Bug Fixes
+bug: "#d73a4a"
+bugfix: "#d73a4a"
+fix: "#d73a4a"
+
+# Performance
+performance: "#1d76db"
+optimization: "#1d76db"
+perf: "#1d76db"
+
+# Documentation
+documentation: "#0075ca"
+docs: "#0075ca"
+
+# Dependencies
+dependencies: "#0366d6"
+deps: "#0366d6"
+
+# Internal/Maintenance
+internal: "#fef2c0"
+refactor: "#fef2c0"
+chore: "#fef2c0"
+ci: "#fef2c0"
+build: "#fef2c0"
+
+# Exclude from release notes
+ignore-for-release: "#ffffff"
+duplicate: "#cfd3d7"
+question: "#d876e3"
+invalid: "#e4e669"
+wontfix: "#ffffff"

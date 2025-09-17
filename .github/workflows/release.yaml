@@ -114,7 +114,7 @@ jobs:
             echo "Creating as latest release"
           fi
           
-          # Create release with all binaries
+          # Create release with all binaries and auto-generated notes
           gh release create ${{ github.ref_name }} \
             libisar_android_arm64.so \
             libisar_android_armv7.so \
@@ -125,7 +125,7 @@ jobs:
             isar_windows_x64.dll \
             isar.wasm \
             --title "Isar Plus ${{ github.ref_name }}" \
-            --notes "Release for Isar Plus ${{ github.ref_name }}" \
+            --generate-notes \
             $PRERELEASE_FLAG
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
