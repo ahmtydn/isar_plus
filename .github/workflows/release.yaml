@@ -156,7 +156,7 @@ jobs:
   cleanup_on_failure:
     name: Cleanup Release on Failure
     runs-on: ubuntu-24.04
-    needs: [build_binaries, testlab, build_inspector, upload_to_repo]
+    needs: [build_binaries, testlab, upload_to_repo]
     if: always() && contains(needs.*.result, 'failure')
     permissions:
       contents: write
