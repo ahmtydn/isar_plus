@@ -1,1 +1,1 @@
-packages/isar_community/README.md
+packages/isar_plus/README.md
