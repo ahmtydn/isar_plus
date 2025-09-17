@@ -93,27 +93,6 @@ jobs:
     uses: ./.github/workflows/testlab.yaml
     secrets: inherit
 
-  build_inspector:
-    name: Build Inspector
-    needs: build_binaries
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
-      - name: Build
-        run: flutter build web --base-href /${{ github.ref_name }}/
-        working-directory: packages/isar_plus_inspector
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: packages/isar_plus_inspector/build/web
-          repository-name: ${{ vars.REPO_INSPECTOR }}
-          token: ${{ secrets.DEPLOY_TOKEN }}
-          target-folder: ${{ github.ref_name }}
-          clean: false
-
   upload_to_repo:
     needs: build_binaries
     runs-on: ubuntu-24.04
