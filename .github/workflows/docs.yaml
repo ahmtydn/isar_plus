@@ -1,65 +1,40 @@
-name: Unified Deploy Docs
+name: Isar Plus Docs
 
 on:
   push:
     branches:
-      - prod
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  deploy:
+  build_docs:
+    name: Build and deploy Docs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      contents: write
-      id-token: write
-      pages: write
     steps:
-      - name: Checkout v3 branch
-        uses: actions/checkout@v4
-        with:
-          ref: "v3"
-          path: "v3"
-
-      - name: Build v3 docs
+      - uses: actions/checkout@v3
+      - name: Build
+        working-directory: docs
         run: |
-          cd v3
-          git fetch --unshallow
-          git fetch --tags
-          tool/replace-versions.sh
-          cd docs
-          sed -i'.bak' "s|base:.*|base: '/v3/',|" docs/.vuepress/config.ts
-          sed -i 's|text: "vx.x"|text: "v3.x"|' docs/.vuepress/config.ts  
-          npm ci
+          npm install
           npm run build
-          mv ./docs/.vuepress/dist ../../v3-docs
-
-      - name: Prepare deployment directory
-        run: |
-          mkdir deploy
-          mkdir deploy/v3
-          mv v3-docs/* deploy/v3/
-          # Adds the redirect to /v3
-          cat > deploy/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta http-equiv="refresh" content="0; url=/v3/">
-          </head>
-          <body>
-            <p>Redirecting to <a href="/v3/">documentation</a>...</p>
-          </body>
-          </html>
-          EOF
-
+          touch docs/.vuepress/dist/.nojekyll
       - name: Setup Pages
-        uses: actions/configure-pages@v4
-
+        uses: actions/configure-pages@v2
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
-          path: deploy
-
+          path: docs/docs/.vuepress/dist
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v1

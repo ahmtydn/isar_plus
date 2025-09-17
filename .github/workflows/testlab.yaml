@@ -1,21 +1,14 @@
 on: workflow_call
 
-env:
-  FLUTTER_OVERRIDE: "3.35.1"
-
 jobs:
   firebase_testlab_android:
     name: Firebase Testlab Android
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      - name: Display Rust version
-        run: rustc --version && cargo --version
       - name: Build Isar Core arm64
         run: |
           bash tool/build_android.sh arm64
@@ -29,12 +22,12 @@ jobs:
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Build dummy APK
-        run: flutter build apk integration_test/integration_test.dart
+        run: flutter build apk integration_test.dart
         working-directory: packages/isar_test
       - name: Build APKs
         run: |
-          ./gradlew app:assembleAndroidTest -Ptarget=integration_test/integration_test.dart
-          ./gradlew app:assembleDebug -Ptarget=integration_test/integration_test.dart
+          ./gradlew app:assembleAndroidTest
+          ./gradlew app:assembleDebug -Ptarget=integration_test.dart
         working-directory: packages/isar_test/android
       - name: Login to Google Cloud
         uses: "google-github-actions/auth@v1"
@@ -43,12 +36,11 @@ jobs:
       - name: Run tests
         run: |
           gcloud firebase test android run \
-            --project isar-community \
+            --project honeyy \
             --type instrumentation \
             --timeout 5m \
-            --device model=blueline,version=28 \
-            --device model=t2q,version=34 \
-            --device model=tokay,version=35 \
+            --device model=hammerhead,version=23  \
+            --device model=cheetah,version=33 \
             --app build/app/outputs/apk/debug/app-debug.apk \
             --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
         working-directory: packages/isar_test

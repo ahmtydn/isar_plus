@@ -79,7 +79,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
             )
           else if (loading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            )
           else
             const Expanded(child: Center(child: Text('No Results'))),
         ],
@@ -91,11 +93,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     try {
       loading = true;
       final manager = await ref.read(packageManagerPod.future);
-      final newPackages = await manager.search(
-        query,
-        packages.length ~/ 10,
-        online: online,
-      );
+      final newPackages =
+          await manager.search(query, packages.length ~/ 10, online: online);
       if (mounted) {
         setState(() {
           packages.addAll(newPackages);
@@ -115,9 +114,8 @@ class SearchResult extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final package = ref
-        .watch(freshPackagePod(PackageNameVersion(name)))
-        .valueOrNull;
+    final package =
+        ref.watch(freshPackagePod(PackageNameVersion(name))).valueOrNull;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -141,14 +139,17 @@ class SearchResult extends ConsumerWidget {
                 ],
                 if (package != null) ...[
                   const SizedBox(height: 12),
-                  Scores(package: package, alwaysShowLatest: true),
+                  Scores(
+                    package: package,
+                    alwaysShowLatest: true,
+                  ),
                 ],
                 if (package?.platforms?.isEmpty == false ||
                     package?.flutter == true ||
                     package?.dart == true) ...[
                   const SizedBox(height: 12),
                   Platforms(package: package!, compact: true),
-                ],
+                ]
               ],
             ),
           ),

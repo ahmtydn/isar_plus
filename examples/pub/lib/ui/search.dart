@@ -20,7 +20,10 @@ class _SearchState extends State<Search> {
     return Stack(
       children: [
         Positioned.fill(
-          child: SvgPicture.asset('assets/search_bg.svg', fit: BoxFit.cover),
+          child: SvgPicture.asset(
+            'assets/search_bg.svg',
+            fit: BoxFit.cover,
+          ),
         ),
         Positioned.fill(
           child: SafeArea(
@@ -86,7 +89,7 @@ class _SearchState extends State<Search> {
               ),
             ),
           ),
-        ),
+        )
       ],
     );
   }

@@ -39,7 +39,7 @@ for (const locale of locales) {
       concepts: locale.concepts,
       recipes: locale.recipes,
       sampleApps: locale.sampleApps,
-      changelog: locale.changelog,
+      chnagelog: locale.changelog,
       contributors: locale.contributors,
     }),
   };
@@ -48,11 +48,10 @@ for (const locale of locales) {
 export default defineUserConfig({
   locales: vueLocales,
   bundler: viteBundler({}),
-  base: "/v3/",
   theme: defaultTheme({
     logo: "/isar.svg",
-    repo: "isar-community/isar",
-    docsRepo: "isar-community/isar",
+    repo: "isar_plus/isar_plus",
+    docsRepo: "isar_plus/isar_plus",
     docsDir: "docs/docs",
     contributors: true,
     locales: themeLocales,
@@ -63,24 +62,11 @@ export default defineUserConfig({
       },
       {
         text: "API",
-        link: "https://pub.dev/documentation/isar_plus/latest/isar/",
+        link: "https://pub.dev/documentation/isar_plus/latest/isar_plus/isar-library.html",
       },
       {
         text: "Telegram",
         link: "https://t.me/isardb",
-      },
-      {
-        text: "v3.x",
-        children: [
-          {
-            text: "v4.x",
-            link: "https://isar-community.dev",
-          },
-          {
-            text: "v3.x",
-            link: "https://isar-community.dev/v3",
-          },
-        ],
       },
     ],
     sidebarDepth: 1,
@@ -137,7 +123,7 @@ export default defineUserConfig({
       "script",
       {
         async: "",
-        src: "https://www.googletagmanager.com/gtag/js?id=G-36LNDL9RHB",
+        src: "https://www.googletagmanager.com/gtag/js?id=G-NX9QJRWFGX",
       },
     ],
     [
@@ -146,7 +132,7 @@ export default defineUserConfig({
       `window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', 'G-36LNDL9RHB');`,
+                gtag('config', 'G-NX9QJRWFGX');`,
     ],
     [
       "script",
@@ -155,7 +141,7 @@ export default defineUserConfig({
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "lkyzg3xacc");`,
+          })(window, document, "clarity", "script", "ciawnmxjdh");`,
     ],
   ],
 });
@@ -166,7 +152,7 @@ function getSidebar({
   concepts,
   recipes,
   sampleApps,
-  changelog,
+  chnagelog,
   contributors,
 }) {
   return [
@@ -199,15 +185,15 @@ function getSidebar({
     },
     {
       text: sampleApps,
-      link: "https://github.com/isar-community/isar-community/tree/v3/examples",
+      link: "https://github.com/ahmtydn/isar_plus/tree/main/examples",
     },
     {
-      text: changelog,
-      link: "https://github.com/isar-community/isar-community/blob/v3/packages/isar_plus/CHANGELOG.md",
+      text: chnagelog,
+      link: "https://github.com/ahmtydn/isar_plus/blob/main/packages/isar_plus/CHANGELOG.md",
     },
     {
       text: contributors,
-      link: "https://github.com/isar-community/isar-community/graphs/contributors",
+      link: "https://github.com/ahmtydn/isar_plus#contributors-",
     },
   ];
 }

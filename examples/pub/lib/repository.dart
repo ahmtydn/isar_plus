@@ -13,9 +13,8 @@ class Repository {
   final Dio dio;
 
   Future<List<Package>> getPackageVersions(String name) async {
-    final response = await dio.get<Map<String, dynamic>>(
-      '$_api/packages/$name',
-    );
+    final response =
+        await dio.get<Map<String, dynamic>>('$_api/packages/$name');
     final package = ApiPackage.fromJson(response.data!);
     return Package.fromApiPackage(package);
   }
@@ -41,7 +40,10 @@ class Repository {
   Future<List<String>> search(String query, int page) async {
     final response = await dio.get<Map<String, dynamic>>(
       '$_api/search',
-      queryParameters: {'q': query, 'page': page},
+      queryParameters: {
+        'q': query,
+        'page': page,
+      },
     );
     return (response.data!['packages'] as List)
         .map((e) => e['package'] as String)

@@ -87,7 +87,7 @@ await isar.users.put(User()..name = 'Albert');
 await isar.users.put(User()..name = 'Monika');
 // keine Ausgabe
 
-await isar.users.put(User()..name = 'Antonia');
+awaited isar.users.put(User()..name = 'Antonia');
 // Ausgabe: Users with A are: [User(name: Albert), User(name: Antonia)]
 ```
 

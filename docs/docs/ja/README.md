@@ -20,11 +20,11 @@ features:
   - title: 💃 静的型付け
     details: Isarのクエリは静的型付けされ、コンパイル時にチェックされます。実行時エラーを心配する必要はありません。
   - title: 📱 マルチプラットフォーム対応
-    details: iOS, Android, Desktop, そしてWEBにも対応！
+    details: iOS, Android, Desktop！
   - title: ⏱️ 非同期処理
     details: 並列クエリ操作とMulti-Isolateをすぐに利用可能。
   - title: 🦄 オープンソース
     details: すべてがオープンソースで、永久に無料！
 
-footer: Apache Licensed | Copyright © 2022 Simon Leier
+footer: Apache Licensed | Copyright © 2023 Simon Choi
 ---

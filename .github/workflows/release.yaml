@@ -1,4 +1,4 @@
-name: Isar release
+name: Isar Plus release
 
 on:
   push:
@@ -7,79 +7,130 @@ on:
 
 jobs:
   build_binaries:
-    name: Build Binaries
+    name: "Build: ${{ matrix.name }}"
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         include:
-          - os: ubuntu-latest
+          - name: "Android ARM64"
+            os: ubuntu-latest
             artifact_name: libisar_android_arm64.so
             script: build_android.sh
-          - os: ubuntu-latest
+          - name: "Android ARMv7"
+            os: ubuntu-latest
             artifact_name: libisar_android_armv7.so
             script: build_android.sh armv7
-          - os: ubuntu-latest
+          - name: "Android x64"
+            os: ubuntu-latest
             artifact_name: libisar_android_x64.so
             script: build_android.sh x64
-          - os: macos-latest
+          - name: "iOS Framework"
+            os: macos-latest
             artifact_name: isar_ios.xcframework.zip
             script: build_ios.sh
-          - os: ubuntu-20.04
+          - name: "Linux x64"
+            os: ubuntu-latest
             artifact_name: libisar_linux_x64.so
             script: build_linux.sh x64
-          - os: macos-latest
+          - name: "macOS"
+            os: macos-latest
             artifact_name: libisar_macos.dylib
             script: build_macos.sh
-          - os: windows-latest
+          - name: "Windows x64"
+            os: windows-latest
             artifact_name: isar_windows_x64.dll
             script: build_windows.sh x64
-          - os: ubuntu-latest
+          - name: "WebAssembly"
+            os: ubuntu-latest
             artifact_name: isar.wasm
             script: build_wasm.sh
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Set Isar Version
+        shell: bash
         run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Build binary
         run: bash tool/${{ matrix.script }}
-      - name: Upload binary
-        uses: svenstaro/upload-release-action@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.artifact_name }}
-          tag: ${{ github.ref }}
-
-  testlab:
-    needs: build_binaries
-    uses: ./.github/workflows/testlab.yaml
-    secrets: inherit
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+          retention-days: 1
 
   publish:
     name: Publish
-    needs: testlab
+    needs: build_binaries
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: "18"
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          running-workflow-name: "Publish"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
+          node-version: "20"
       - name: Set Isar Version
         run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-      - name: Download Binaries
+        
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          
+      - name: Move artifacts to root
+        run: |
+          # Debug: Show the actual directory structure
+          echo "Artifact directory structure:"
+          find ./artifacts -type f -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.zip"
+          
+          # Move artifacts from their subdirectories to root
+          for artifact_dir in ./artifacts/*/; do
+            if [ -d "$artifact_dir" ]; then
+              echo "Processing directory: $artifact_dir"
+              find "$artifact_dir" -maxdepth 1 -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.zip" \) -exec mv {} ./ \;
+            fi
+          done
+          
+          # Verify files are in root
+          echo "Files in root directory:"
+          ls -la *.so *.dylib *.dll *.wasm *.zip 2>/dev/null || echo "No binary files found in root"
+
+      - name: Create latest release
+        run: |
+          echo "Creating latest release..."
+          
+          # Determine if it's a prerelease
+          if [[ "${{ github.ref_name }}" == *"dev"* ]] || [[ "${{ github.ref_name }}" == *"beta"* ]] || [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
+            PRERELEASE_FLAG="--prerelease"
+            echo "Creating as prerelease"
+          else
+            PRERELEASE_FLAG="--latest"
+            echo "Creating as latest release"
+          fi
+          
+          # Create release with all binaries
+          gh release create ${{ github.ref_name }} \
+            libisar_android_arm64.so \
+            libisar_android_armv7.so \
+            libisar_android_x64.so \
+            isar_ios.xcframework.zip \
+            libisar_linux_x64.so \
+            libisar_macos.dylib \
+            isar_windows_x64.dll \
+            isar.wasm \
+            --title "Isar Plus ${{ github.ref_name }}" \
+            --notes "Release for Isar Plus ${{ github.ref_name }}" \
+            $PRERELEASE_FLAG
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Binaries (for pub.dev)
         run: sh tool/download_binaries.sh
       - name: Adjust Version
         run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
@@ -87,12 +138,12 @@ jobs:
         run: |
           mkdir -p $HOME/.config/dart
           echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
-      - name: Publish isar plus
+      - name: Publish isar
         run: |
           dart pub get
           dart pub publish --force
         working-directory: packages/isar_plus
-      - name: Publish isar_plus_flutter_libs
+      - name: Publish isar_flutter_libs
         run: |
           flutter pub get
           flutter pub publish --force

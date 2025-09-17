@@ -33,7 +33,10 @@ class PackageHeader extends ConsumerWidget {
               style: theme.textTheme.titleSmall,
             ),
             if (package.publisher != null) ...[
-              Text(' • ', style: theme.textTheme.titleSmall),
+              Text(
+                ' • ',
+                style: theme.textTheme.titleSmall,
+              ),
               Publisher(package.publisher!),
             ],
           ],
@@ -47,10 +50,10 @@ class PackageHeader extends ConsumerWidget {
           Text(
             package.description!.trim(),
             style: theme.textTheme.bodyMedium!.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+              color: theme.colorScheme.onSurface.withOpacity(0.9),
             ),
           ),
-        ],
+        ]
       ],
     );
   }
@@ -68,7 +71,7 @@ class Platforms extends StatelessWidget {
     final platforms = package.platforms?.map((e) => e.name).toList()?..sort();
     final sdks = [
       if (package.dart == true) 'DART',
-      if (package.flutter == true) 'FLUTTER',
+      if (package.flutter == true) 'FLUTTER'
     ];
     return Wrap(
       spacing: 5,
@@ -122,15 +125,20 @@ class Scores extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final latestVersion = ref.watch(latestVersionPod(package.name)).valueOrNull;
-    final preReleaseVersion = ref
-        .watch(preReleaseVersionPod(package.name))
-        .valueOrNull;
+    final preReleaseVersion =
+        ref.watch(preReleaseVersionPod(package.name)).valueOrNull;
 
     final widgets = <Widget>[
       if (package.likes != null)
-        ScoreItem(stat: package.likes.toString(), title: 'LIKES'),
+        ScoreItem(
+          stat: package.likes.toString(),
+          title: 'LIKES',
+        ),
       if (package.points != null)
-        ScoreItem(stat: package.points.toString(), title: 'PUB POINTS'),
+        ScoreItem(
+          stat: package.points.toString(),
+          title: 'PUB POINTS',
+        ),
       if (package.popularity != null)
         ScoreItem(
           stat: '${(package.popularity! * 100).round()}%',
@@ -150,9 +158,8 @@ class Scores extends ConsumerWidget {
           stat: preReleaseVersion,
           title: 'PRERELEASE',
           onTap: () {
-            context.push(
-              '/packages/${package.name}/versions/$preReleaseVersion',
-            );
+            context
+                .push('/packages/${package.name}/versions/$preReleaseVersion');
           },
         ),
     ];
@@ -170,7 +177,7 @@ class Scores extends ConsumerWidget {
                 for (var i = 0; i < widgets.length; i++) ...[
                   if (i != 0) const VerticalDivider(thickness: 1, width: 0),
                   widgets[i],
-                ],
+                ]
               ],
             ),
           ),
@@ -212,7 +219,7 @@ class ScoreItem extends StatelessWidget {
               title,
               style: theme.textTheme.labelSmall!.copyWith(
                 fontSize: 9,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],
