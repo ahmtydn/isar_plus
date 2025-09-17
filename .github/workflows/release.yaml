@@ -71,6 +71,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: subosito/flutter-action@v2
       - uses: actions/setup-node@v4
         with:
@@ -129,6 +132,34 @@ jobs:
             $PRERELEASE_FLAG
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG files
+        run: |
+          # Wait a moment for the release to be fully created
+          sleep 5
+          
+          # Make script executable and run it
+          chmod +x tool/update_changelog.sh
+          ./tool/update_changelog.sh "${{ github.ref_name }}" "${{ github.repository_owner }}" "isar_plus"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit CHANGELOG updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Check if there are any changes to commit
+          if git diff --quiet packages/*/CHANGELOG.md; then
+            echo "No CHANGELOG changes to commit"
+          else
+            git add packages/*/CHANGELOG.md
+            git commit -m "docs: update CHANGELOG files for release ${{ github.ref_name }}"
+            git push origin HEAD:main
+            echo "✅ CHANGELOG files updated and committed"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download Binaries (for pub.dev)
         run: sh tool/download_binaries.sh
