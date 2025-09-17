@@ -3,7 +3,7 @@ name: Docs
 on:
   push:
     branches:
-      - prod
+      - main
 
 permissions:
   contents: read
@@ -38,4 +38,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
-
