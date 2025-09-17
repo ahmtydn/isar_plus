@@ -1,20 +1,20 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:isar_plus_inspector/connect_client.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar/isar.dart';
+import 'package:isar_inspector/connect_client.dart';
 
 class CollectionsList extends StatelessWidget {
   const CollectionsList({
-    super.key,
     required this.collections,
     required this.collectionInfo,
     required this.selectedCollection,
     required this.onSelected,
+    super.key,
   });
 
-  final List<CollectionSchema<dynamic>> collections;
-  final Map<String, ConnectCollectionInfo?> collectionInfo;
+  final List<IsarSchema> collections;
+  final Map<String, ConnectCollectionInfoPayload?> collectionInfo;
   final String? selectedCollection;
   final void Function(String collection) onSelected;
 
@@ -65,12 +65,16 @@ class CollectionsList extends StatelessWidget {
                     children: [
                       Text(
                         info?.count.toString() ?? 'loading',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         _formatSize(info?.size ?? 0),
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

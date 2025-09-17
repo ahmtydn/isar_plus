@@ -10,7 +10,7 @@ class Collection {
   const Collection({
     this.inheritance = true,
     this.accessor,
-    this.ignore = const {},
+    this.ignore = const {'copyWith'},
   });
 
   /// Should properties and accessors of parent classes and mixins be included?
@@ -25,7 +25,8 @@ class Collection {
   ///   Id? id;
   /// }
   ///
-  /// // access collection using: isar.col
+  /// // access collection:
+  /// isar.col.where().findAll();
   /// ```
   final String? accessor;
 

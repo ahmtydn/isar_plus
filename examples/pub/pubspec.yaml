@@ -42,7 +42,7 @@ dev_dependencies:
   build_runner: ^2.0.0
   flutter_test:
     sdk: flutter
-  isar_plus_generator: *isar_version
+  isar_generator: *isar_version
   flutter_lints: ^2.0.1
 
 flutter:
@@ -60,5 +60,5 @@ dependency_overrides:
     path: ../../packages/isar_plus_flutter_libs
 
   # dev
-  isar_plus_generator:
-    path: ../../packages/isar_plus_generator
+  isar_generator:
+    path: ../../packages/isar_generator

@@ -14,9 +14,6 @@ sh tool/download_binaries.sh
 pushd packages/isar_plus
 dart pub publish --force
 popd
-pushd packages/isar_plus_generator
-dart pub publish --force
-popd
 pushd packages/isar_plus_flutter_libs
 dart pub publish --force
 popd

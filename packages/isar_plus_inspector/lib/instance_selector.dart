@@ -3,14 +3,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class InstanceSelector extends StatefulWidget {
   const InstanceSelector({
-    super.key,
     required this.instances,
     required this.selectedInstance,
     required this.onSelected,
+    super.key,
   });
 
   final List<String> instances;
-  final String selectedInstance;
+  final String? selectedInstance;
   final void Function(String instance) onSelected;
 
   @override
@@ -77,20 +77,21 @@ class _InstanceSelectorState extends State<InstanceSelector>
                 ),
               ),
             ),
-            SelectedInstanceButton(
-              instance: widget.selectedInstance,
-              hasMultiple: widget.instances.length > 1,
-              color: _animation.status != AnimationStatus.dismissed
-                  ? Colors.blue
-                  : null,
-              onTap: () {
-                if (_controller.status == AnimationStatus.completed) {
-                  _controller.reverse();
-                } else {
-                  _controller.forward();
-                }
-              },
-            ),
+            if (widget.selectedInstance != null)
+              SelectedInstanceButton(
+                instance: widget.selectedInstance!,
+                hasMultiple: widget.instances.length > 1,
+                color: _animation.status != AnimationStatus.dismissed
+                    ? Colors.blue
+                    : null,
+                onTap: () {
+                  if (_controller.status == AnimationStatus.completed) {
+                    _controller.reverse();
+                  } else {
+                    _controller.forward();
+                  }
+                },
+              ),
           ],
         ),
       ],
@@ -100,9 +101,9 @@ class _InstanceSelectorState extends State<InstanceSelector>
 
 class InstanceButton extends StatelessWidget {
   const InstanceButton({
-    super.key,
     required this.instance,
     required this.onTap,
+    super.key,
   });
 
   final String instance;
@@ -140,11 +141,11 @@ class InstanceButton extends StatelessWidget {
 
 class SelectedInstanceButton extends StatelessWidget {
   const SelectedInstanceButton({
-    super.key,
     required this.instance,
     required this.onTap,
     required this.hasMultiple,
     required this.color,
+    super.key,
   });
 
   final String instance;
@@ -197,8 +198,14 @@ class SelectedInstanceButton extends StatelessWidget {
                   const Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FontAwesomeIcons.chevronUp, size: 12),
-                      Icon(FontAwesomeIcons.chevronDown, size: 12),
+                      Icon(
+                        FontAwesomeIcons.chevronUp,
+                        size: 12,
+                      ),
+                      Icon(
+                        FontAwesomeIcons.chevronDown,
+                        size: 12,
+                      ),
                     ],
                   ),
               ],

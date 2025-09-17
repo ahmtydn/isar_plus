@@ -1,39 +1,56 @@
-> ⚠️ This repository is a fork of the [original project](https://github.com/isar/isar), focusing primarily on bug fixes and small updates for version 3. Our objective is to enhance the stability and reliability of the codebase while implementing minor improvements to refine the user experience. See details below on how to use this community fork.
-
 <p align="center">
-  <a href="https://isar-community.dev">
-    <img src="https://raw.githubusercontent.com/isar-community/isar-community/v3/.github/assets/isar.svg?sanitize=true" height="128">
+  <a href="https://isar.dev">
+    <img src="https://raw.githubusercontent.com/ahmtydn/isar/main/.github/assets/isar.svg?sanitize=true" height="128">
   </a>
-  <h1 align="center">Isar Database</h1>
+  <h1 align="center">Isar Plus Database</h1>
 </p>
 
 <p align="center">
   <a href="https://pub.dev/packages/isar_plus">
     <img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart">
   </a>
-  <a href="https://github.com/isar-community/isar-community/actions/workflows/test.yaml">
-    <img src="https://img.shields.io/github/actions/workflow/status/isar-community/isar-community/test.yaml?branch=v3&label=tests&labelColor=333940&logo=github">
+  <a href="https://github.com/ahmtydn/isar/actions/workflows/test.yaml">
+    <img src="https://img.shields.io/github/actions/workflow/status/ahmtydn/isar/test.yaml?branch=main&label=tests&labelColor=333940&logo=github">
   </a>
-  <a href="https://app.codecov.io/gh/isar-community/isar-community">
-    <img src="https://img.shields.io/codecov/c/github/isar-community/isar-community?logo=codecov&logoColor=fff&labelColor=333940">
+  <a href="https://app.codecov.io/gh/ahmtydn/isar">
+    <img src="https://img.shields.io/codecov/c/github/ahmtydn/isar?logo=codecov&logoColor=fff&labelColor=333940&flag=isar">
   </a>
   <a href="https://t.me/isardb">
-    <img src="https://img.shields.io/static/v1?label=join&message=isardb&labelColor=333940&logo=telegram&logoColor=white&color=229ED9">
+    <img src="https://img.shields.io/static/v1?label=join&message=Isar%20%26%20Hive&labelColor=333940&logo=telegram&logoColor=white&color=229ED9">
+  </a>
+  <a href="https://github.com/ahmtydn">
+    <img src="https://img.shields.io/github/followers/ahmtydn?style=social">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://isar-community.dev">Quickstart</a> •
-  <a href="https://isar-community.dev/schema">Documentation</a> •
-  <a href="https://github.com/isar-community/isar-community/tree/v3/examples/">Sample Apps</a> •
-  <a href="https://github.com/isar-community/isar-community/discussions">Support & Ideas</a> •
+  <a href="https://isar.dev">Quickstart</a> •
+  <a href="https://isar.dev/⚠️schema">Documentation</a> •
+  <a href="https://github.com/ahmtydn/isar/tree/main/examples/">Sample Apps</a> •
+  <a href="https://github.com/ahmtydn/isar/discussions">Support & Ideas</a> •
   <a href="https://pub.dev/packages/isar_plus">Pub.dev</a>
 </p>
 
-> #### Isar [ee-zahr]:
+> #### Isar Plus [ee-zahr plus]:
 >
-> 1. River in Bavaria, Germany.
+> 1. Enhanced version of the original [Isar Database](https://github.com/isar/isar).
 > 2. [Crazy fast](#benchmarks) NoSQL database that is a joy to use.
+> 3. Community-maintained fork with continued v4 development.
+
+## About This Fork
+
+This is **Isar Plus** - a community-maintained fork of the original [Isar Database](https://github.com/isar/isar) by [Simon Choi](https://github.com/simc). 
+
+**Why Isar Plus?**
+- 🔄 **Continued Development**: Active maintenance and updates for Isar v4
+- 🚀 **Enhanced Features**: Additional optimizations and improvements
+- 🌟 **Community Driven**: Open to contributions and feature requests
+- 📦 **Latest Packages**: Available on pub.dev as `isar_plus` and `isar_plus_flutter_libs`
+
+**Original Isar**: [https://github.com/isar/isar](https://github.com/isar/isar) | [https://isar.dev](https://isar.dev)
+
+⚠️ ISAR PLUS V4 IS ACTIVELY DEVELOPED ⚠️  
+This fork continues the v4 development with improvements and bug fixes.
 
 ## Features
 
@@ -62,19 +79,12 @@ Holy smokes you're here! Let's get started on using the coolest Flutter database
 ### 1. Add to pubspec.yaml
 
 ```yaml
-isar_version: &isar_version 3.3.0-dev.2 # define the version to be used
-
 dependencies:
-  isar_plus: 
-    version: *isar_version
-  isar_plus_flutter_libs: # contains Isar Core
-    version: *isar_version
+  isar_plus: 4.0.0
+  isar_plus_flutter_libs: 4.0.0 # contains Isar Core
 
 dev_dependencies:
-  isar_plus_generator: 
-    version: *isar_version
   build_runner: any
-
 ```
 
 ### 2. Annotate a Collection
@@ -84,15 +94,21 @@ part 'email.g.dart';
 
 @collection
 class Email {
-  Id id = Isar.autoIncrement; // you can also use id = null to auto increment
+  Email({
+    this.id,
+    this.title,
+    this.recipients,
+    this.status = Status.pending,
+  });
+
+  final int id;
 
   @Index(type: IndexType.value)
-  String? title;
+  final String? title;
 
-  List<Recipient>? recipients;
+  final List<Recipient>? recipients;
 
-  @enumerated
-  Status status = Status.pending;
+  final Status status;
 }
 
 @embedded
@@ -122,7 +138,7 @@ final isar = await Isar.open(
 ### 4. Query the database
 
 ```dart
-final emails = await isar.emails.filter()
+final emails = isar.emails.where()
   .titleContains('awesome', caseSensitive: false)
   .sortByStatusDesc()
   .limit(10)
@@ -144,14 +160,14 @@ All basic crud operations are available via the `IsarCollection`.
 ```dart
 final newEmail = Email()..title = 'Amazing new database';
 
-await isar.writeTxn(() {
-  await isar.emails.put(newEmail); // insert & update
+await isar.writeAsync(() {
+  isar.emails.put(newEmail); // insert & update
 });
 
-final existingEmail = await isar.emails.get(newEmail.id!); // get
+final existingEmail = isar.emails.get(newEmail.id!); // get
 
-await isar.writeTxn(() {
-  await isar.emails.delete(existingEmail.id!); // delete
+await isar.writeAsync(() {
+  isar.emails.delete(existingEmail.id!); // delete
 });
 ```
 
@@ -176,7 +192,7 @@ final specificEmails = isar.emails
 
 ## Database Watchers
 
-With Isar database, you can watch collections, objects, or queries. A watcher is notified after a transaction commits successfully and the target actually changes.
+With Isar database, you can watch collections, objects, or queries. A watcher is notified after a transaction commits successfully and the target changes.
 Watchers can be lazy and not reload the data or they can be non-lazy and fetch new results in the background.
 
 ```dart
@@ -193,11 +209,11 @@ queryStream.listen((newResult) {
 
 Benchmarks only give a rough idea of the performance of a database but as you can see, Isar NoSQL database is quite fast 😇
 
-| <img src="https://raw.githubusercontent.com/isar-community/isar/v3/.github/assets/benchmarks/insert.png" width="100%" /> | <img src="https://raw.githubusercontent.com/isar-community/isar/v3/.github/assets/benchmarks/query.png" width="100%" /> |
+| <img src="https://raw.githubusercontent.com/isar/isar/main/.github/assets/benchmarks/insert.png" width="100%" /> | <img src="https://raw.githubusercontent.com/isar/isar/main/.github/assets/benchmarks/query.png" width="100%" /> |
 | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| <img src="https://raw.githubusercontent.com/isar-community/isar/v3/.github/assets/benchmarks/delete.png" width="100%" /> | <img src="https://raw.githubusercontent.com/isar-community/isar/v3/.github/assets/benchmarks/size.png" width="100%" />  |
+| <img src="https://raw.githubusercontent.com/isar/isar/main/.github/assets/benchmarks/update.png" width="100%" /> | <img src="https://raw.githubusercontent.com/isar/isar/main/.github/assets/benchmarks/size.png" width="100%" />  |
 
-If you are interested in more benchmarks or want to check how Isar performs on your device you can run the [benchmarks](https://github.com/isar-community/isar_benchmark) yourself.
+If you are interested in more benchmarks or want to check how Isar performs on your device you can run the [benchmarks](https://github.com/isar/isar_benchmark) yourself.
 
 ## Unit tests
 
@@ -236,11 +252,14 @@ Big thanks go to these wonderful people:
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/inkomomutane"><img src="https://avatars.githubusercontent.com/u/57417802?v=4" width="100px;" alt=""/><br /><sub><b>Nelson  Mutane</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/oscarpalomar"><img src="https://avatars.githubusercontent.com/u/13899772?v=4" width="100px;" alt=""/><br /><sub><b>Oscar Palomar</b></sub></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Viper-Bit"><img src="https://avatars.githubusercontent.com/u/24822764?v=4" width="100px;" alt=""/><br /><sub><b>Peyman</b></sub></a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/leisim"><img src="https://avatars.githubusercontent.com/u/13610195?v=4" width="100px;" alt=""/><br /><sub><b>Simon Leier</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/leisim"><img src="https://avatars.githubusercontent.com/u/13610195?v=4" width="100px;" alt=""/><br /><sub><b>Simon Choi</b></sub></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ika020202"><img src="https://avatars.githubusercontent.com/u/42883378?v=4" width="100px;" alt=""/><br /><sub><b>Ura</b></sub></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/blendthink"><img src="https://avatars.githubusercontent.com/u/32213113?v=4" width="100px;" alt=""/><br /><sub><b>blendthink</b></sub></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mnkeis"><img src="https://avatars.githubusercontent.com/u/41247357?v=4" width="100px;" alt=""/><br /><sub><b>mnkeis</b></sub></a></td>
+    </tr>
+    <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nobkd"><img src="https://avatars.githubusercontent.com/u/44443899?v=4" width="100px;" alt=""/><br /><sub><b>nobkd</b></sub></a></td>
     </tr>
   </tbody>
@@ -254,7 +273,7 @@ Big thanks go to these wonderful people:
 ### License
 
 ```
-Copyright 2022 Simon Leier
+Copyright 2023 Simon Choi
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

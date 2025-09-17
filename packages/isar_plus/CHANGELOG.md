@@ -1,64 +1,45 @@
-## 3.3.0-dev.2
+## 4.0.0-dev.14
 
-### Updates  
-- Updated `source_gen` to `^3.0.0`
-- Updated `build` to `^3.0.0`
+⚠️ ISAR V4 IS NOT READY FOR PRODUCTION USE ⚠️
 
-## 3.3.0-dev.1
-
-### Updates  
-- Compatibility with Flutter `3.35.0`
-- Updated `libmdbx` to `0.13.8`. Fixes compatibility with older Android devices (kernel < 4)
-
-### Fixes
-- Address an issue preventing successful Windows builds
-
-## 3.2.0-dev.2
-
-### Fixes
-
-- Fixed iOS targeting
-
-## 3.2.0-dev.1
-
-### Features  
-- Added Android Namespaces support.  
-- Added support for Android 16KB page size issue. ([#120](https://github.com/isar-community/isar/issues/120))
-
-### Updates  
-- Fixed Rust toolchain to version `1.88`
-- Upgraded Gradle dependencies
-- Updated package `source_gen` to `^2.0.0` ([#118](https://github.com/isar-community/isar/issues/118), [#122](https://github.com/isar-community/isar/pull/122))
-- Updated `libmdbx` to `0.13.7`. ([#1](https://github.com/isar-community/isar-community/issues/1), [#123](https://github.com/isar-community/isar/issues/123))
-
-### Breaking
-- Renamed the package to `isar_plus`
-
-## 3.1.8
-
-### Fixes
-
-Fix Android release build on Flutter 3.24.0
-
-## 3.1.7
-
-### Fixes
-
-Add apple privacy manifest
-
-## 3.1.6
+This version does not support database migration yet and cannot open Isar v3 databases. The stable version will be released in a few weeks and will support migration from v3.
 
 ### Breaking
 
-Sorry, but we had to shift package hosting to https://pub.isar-community.dev
+Changed transactions API:
 
-## 3.1.4
+| old              | new            |
+| ---------------- | -------------- |
+| `writeTxn()`     | `writeAsync()` |
+| `writeTxnSync()` | `write()`      |
+| `txn()`          | `readAsync()`  |
+| `txnSync()`      | `read()`       |
 
-- Fix inspector URL
+- All operations are now synchronous by default and there are `Async` methods for asynchronous operations.
+- Ids now need to be called `id` or annotated with `@id`
+- Ids can no longer be `nullable`. There is a new `collection.autoIncrement()` function to automatically generate ids.
+- Enums no longer need to be annotated with `@enumerated` instead there is a new `@enumValue` annotation to specify the value property of an enum
+- Where clauses have been removed in favor of automatic index handling
+- Isar links have been removed in favor of embedded objects
+- Indexes have been simplified
+- The Android minimum SDK version is now 23
 
-## 3.1.3
+### Enhancements
 
-- Maintenance release, mainly adapts build dependencies
+- Web support is back!!! In-memory only for now (persistence will come soon)
+- Encrypted databases
+- String ids
+- Fetching multiple properties simultaneously
+- Partial and Bulk updates using `collection.update()` and `query.updateAll()`
+- SQLite storage engine support
+- Support for `dynamic`, `List<dynamic>` and `Map<String, dynamic>` properties
+- Required parameters for embedded objects
+- Case insensitive sorting
+- Much faster database initialization
+- Improved performance for all operations
+- Decoding objects no longer blocks the UI isolate
+- New `@utc` annotation to receive `DateTime` objects in UTC
+- Support for freezed and other code generators
 
 ## 3.1.0+1
 

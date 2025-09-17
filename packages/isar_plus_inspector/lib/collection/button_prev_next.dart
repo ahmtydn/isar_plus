@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:isar_plus_inspector/collection/collection_area.dart';
+import 'package:isar_inspector/collection/collection_area.dart';
 
 class PrevNextButtons extends StatelessWidget {
   const PrevNextButtons({
-    super.key,
     required this.page,
     required this.count,
     required this.onChanged,
+    super.key,
   });
 
   final int page;
@@ -49,17 +49,20 @@ class PrevNextButtons extends StatelessWidget {
               Text(
                 ' - ',
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onBackground.withOpacity(0.7),
                 ),
               ),
-              Text('$to', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                '$to',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),
         Text(
           ' of ',
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            color: theme.colorScheme.onBackground.withOpacity(0.7),
           ),
         ),
         Tooltip(

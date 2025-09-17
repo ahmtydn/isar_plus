@@ -49,7 +49,7 @@ jobs:
       - run: flutter pub get
         working-directory: packages/isar_plus_flutter_libs
       - run: flutter pub get
-        working-directory: packages/isar_plus_generator
+        working-directory: packages/isar_generator
       - run: flutter pub get
         working-directory: packages/isar_plus_inspector
       - run: flutter pub get
@@ -167,7 +167,7 @@ jobs:
         run: |
           dart pub get
           dart test
-        working-directory: packages/isar_plus_generator
+        working-directory: packages/isar_generator
 
   integration_test_ios:
     name: Integration Test iOS

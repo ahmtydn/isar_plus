@@ -1,22 +1,17 @@
 name: isar_plus_flutter_libs
-description: Isar Core binaries for the Isar Database. Needs to be included for Flutter apps.
-version: 3.3.0-dev.2
-repository: https://github.com/isar-community/isar-community
-homepage: https://github.com/isar-community/isar-community
-issue_tracker: https://github.com/isar-community/isar-community/issues
-documentation: https://isar-community.dev
-funding:
-  - https://github.com/sponsors/vicenterusso/
-
+description: Isar Plus Core binaries for the Isar Plus Database. Needs to be included for Flutter apps. Community-maintained fork.
+version: 0.0.0-placeholder
+repository: https://github.com/ahmtydn/isar
+homepage: https://github.com/ahmtydn/isar
 
 environment:
-  sdk: ">=2.17.0 <4.0.0"
-  flutter: ">=3.0.0"
+  sdk: ">=3.1.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  isar_plus: 3.3.0-dev.2
+  isar_plus: 0.0.0-placeholder
 
 flutter:
   plugin:
@@ -32,7 +27,4 @@ flutter:
         pluginClass: IsarFlutterLibsPlugin
       windows:
         pluginClass: IsarFlutterLibsPlugin
-
-dependency_overrides:
-  isar_plus:
-    path: ../isar_plus
+      web:

@@ -147,9 +147,6 @@ jobs:
       - name: Publish isar
         run: dart pub publish --force
         working-directory: packages/isar_plus
-      - name: Publish isar_generator
-        run: dart pub publish --force
-        working-directory: packages/isar_plus_generator
       - name: Publish isar_plus_flutter_libs
         run: dart pub publish --force
         working-directory: packages/isar_plus_flutter_libs

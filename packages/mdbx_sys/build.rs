@@ -235,4 +235,3 @@ fn main() {
     cc_builder.compile("libmdbx.a");
 }
 
-

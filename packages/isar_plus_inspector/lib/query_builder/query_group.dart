@@ -1,18 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:isar_plus_inspector/query_builder/query_filter.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar/isar.dart';
+import 'package:isar_inspector/query_builder/query_filter.dart';
+
+sealed class FilterOperation {
+  Filter? toIsarFilter();
+}
+
+class FilterGroup extends FilterOperation {
+  FilterGroup(this.and, this.filters);
+
+  final bool and;
+  final List<FilterOperation> filters;
+
+  @override
+  Filter? toIsarFilter() {
+    if (filters.isEmpty) return null;
+    final isarFilters =
+        filters.map((e) => e.toIsarFilter()).whereType<Filter>().toList();
+    return and ? AndGroup(isarFilters) : OrGroup(isarFilters);
+  }
+}
+
+class FilterCondition extends FilterOperation {
+  FilterCondition({
+    required this.property,
+    required this.type,
+    this.value1,
+    this.value2,
+  });
+
+  final int property;
+  final FilterType type;
+  final Object? value1;
+  final Object? value2;
+
+  @override
+  Filter toIsarFilter() {
+    return switch (type) {
+      FilterType.equalTo => EqualCondition(property: property, value: value1),
+      FilterType.greaterThan =>
+        GreaterCondition(property: property, value: value1),
+      FilterType.lessThan => LessCondition(property: property, value: value1),
+      FilterType.between =>
+        BetweenCondition(property: property, lower: value1, upper: value2),
+      FilterType.startsWith =>
+        StartsWithCondition(property: property, value: value1! as String),
+      FilterType.endsWith =>
+        EndsWithCondition(property: property, value: value1! as String),
+      FilterType.contains =>
+        ContainsCondition(property: property, value: value1! as String),
+      FilterType.matches =>
+        MatchesCondition(property: property, wildcard: value1! as String),
+      FilterType.isNull => IsNullCondition(property: property),
+      FilterType.isNotNull => NotGroup(IsNullCondition(property: property)),
+      FilterType.elementIsNull =>
+        EqualCondition(property: property, value: null),
+      FilterType.elementIsNotNull =>
+        GreaterCondition(property: property, value: null)
+    };
+  }
+}
 
 class QueryGroup extends StatelessWidget {
   const QueryGroup({
-    super.key,
-    required this.collection,
+    required this.schema,
     required this.group,
     required this.level,
     required this.onChanged,
+    super.key,
     this.onDelete,
   });
 
-  final CollectionSchema<dynamic> collection;
+  final IsarSchema schema;
   final FilterGroup group;
   final int level;
   final void Function(FilterGroup group) onChanged;
@@ -52,14 +111,14 @@ class QueryGroup extends StatelessWidget {
                           'Click the group type to change it.',
                           style: TextStyle(
                             color: theme.colorScheme.onPrimaryContainer
-                                .withValues(alpha: 0.5),
+                                .withOpacity(0.5),
                           ),
                         ),
                       ),
                     for (final filter in group.filters) ...[
                       if (filter is FilterGroup)
                         QueryGroup(
-                          collection: collection,
+                          schema: schema,
                           group: filter,
                           level: level + 1,
                           onChanged: (updated) =>
@@ -70,7 +129,7 @@ class QueryGroup extends StatelessWidget {
                         Row(
                           children: [
                             QueryFilter(
-                              collection: collection,
+                              schema: schema,
                               condition: filter as FilterCondition,
                               onChanged: (updated) =>
                                   _performUpdate(add: updated, remove: filter),
@@ -85,9 +144,8 @@ class QueryGroup extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                     GroupFilterButton(
-                      idName: collection.idName,
-                      group: group,
                       level: level,
+                      schema: schema,
                       onAdd: (newFilter) => _performUpdate(add: newFilter),
                     ),
                     const SizedBox(height: 10),
@@ -112,7 +170,7 @@ class QueryGroup extends StatelessWidget {
     } else if (add != null) {
       newFilters.add(add);
     }
-    onChanged(FilterGroup(type: group.type, filters: newFilters));
+    onChanged(FilterGroup(group.and, newFilters));
   }
 }
 
@@ -129,7 +187,7 @@ class _Guideline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = group.type.color;
+    final color = group.and ? Colors.orange : Colors.blue;
     return Column(
       children: [
         Expanded(
@@ -153,7 +211,7 @@ class _Guideline extends StatelessWidget {
               width: 30,
               child: Center(
                 child: Text(
-                  group.type.name,
+                  group.and ? 'AND' : 'OR',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -164,12 +222,7 @@ class _Guideline extends StatelessWidget {
             tooltip: 'Change group type',
             onDeleted: onDelete,
             onPressed: () {
-              final newType = group.type == FilterGroupType.and
-                  ? FilterGroupType.or
-                  : group.type == FilterGroupType.or
-                      ? FilterGroupType.xor
-                      : FilterGroupType.and;
-              onChanged(FilterGroup(type: newType, filters: group.filters));
+              onChanged(FilterGroup(!group.and, group.filters));
             },
             side: BorderSide.none,
             shape: RoundedRectangleBorder(
@@ -196,16 +249,14 @@ class _Guideline extends StatelessWidget {
 
 class GroupFilterButton extends StatelessWidget {
   const GroupFilterButton({
-    super.key,
-    required this.idName,
-    required this.group,
     required this.level,
+    required this.schema,
     required this.onAdd,
+    super.key,
   });
 
-  final String idName;
-  final FilterGroup group;
   final int level;
+  final IsarSchema schema;
   final void Function(FilterOperation filter) onAdd;
 
   @override
@@ -216,22 +267,25 @@ class GroupFilterButton extends StatelessWidget {
         ElevatedButton.icon(
           icon: const Icon(Icons.workspaces_rounded),
           label: const Text('Add Group'),
-          style: ButtonStyle(elevation: WidgetStateProperty.all(level + 1)),
+          style: ButtonStyle(
+            elevation: MaterialStateProperty.all(level + 1),
+          ),
           onPressed: () {
-            onAdd(FilterGroup(type: FilterGroupType.and, filters: []));
+            onAdd(FilterGroup(true, []));
           },
         ),
         const SizedBox(width: 20),
         ElevatedButton.icon(
           icon: const Icon(Icons.filter_alt_rounded),
           label: const Text('Add Filter'),
-          style: ButtonStyle(elevation: WidgetStateProperty.all(level + 1)),
+          style: ButtonStyle(
+            elevation: MaterialStateProperty.all(level + 1),
+          ),
           onPressed: () {
             onAdd(
-              FilterCondition.greaterThan(
-                property: idName,
-                value: 0,
-                caseSensitive: false,
+              FilterCondition(
+                property: schema.getPropertyIndex(schema.idName!),
+                type: FilterType.isNotNull,
               ),
             );
           },
@@ -239,18 +293,4 @@ class GroupFilterButton extends StatelessWidget {
       ],
     );
   }
-}
-
-extension on FilterGroupType {
-  String get name => this == FilterGroupType.and
-      ? 'AND'
-      : this == FilterGroupType.or
-          ? 'OR'
-          : 'XOR';
-
-  Color get color => this == FilterGroupType.and
-      ? Colors.blue
-      : this == FilterGroupType.or
-          ? Colors.orange
-          : Colors.green;
 }
