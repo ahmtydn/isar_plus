@@ -128,31 +128,31 @@ jobs:
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-  # publish:
-  #   name: Publish
-  #   needs: build_inspector
-  #   runs-on: ubuntu-24.04
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: subosito/flutter-action@v2
-  #     - name: pub get
-  #       run: dart pub get
-  #       working-directory: packages/isar_plus
-  #     - name: Download Binaries
-  #       run: sh tool/download_binaries.sh
-  #     - name: pub.dev credentials
-  #       run: |
-  #         mkdir -p $HOME/.config/dart
-  #         echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
-  #     - name: Publish isar
-  #       run: dart pub publish --force
-  #       working-directory: packages/isar_plus
-  #     - name: Publish isar_generator
-  #       run: dart pub publish --force
-  #       working-directory: packages/isar_plus_generator
-  #     - name: Publish isar_plus_flutter_libs
-  #       run: dart pub publish --force
-  #       working-directory: packages/isar_plus_flutter_libs
+  publish:
+    name: Publish
+    needs: build_inspector
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - name: pub get
+        run: dart pub get
+        working-directory: packages/isar_plus
+      - name: Download Binaries
+        run: sh tool/download_binaries.sh
+      - name: pub.dev credentials
+        run: |
+          mkdir -p $HOME/.config/dart
+          echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
+      - name: Publish isar
+        run: dart pub publish --force
+        working-directory: packages/isar_plus
+      - name: Publish isar_generator
+        run: dart pub publish --force
+        working-directory: packages/isar_plus_generator
+      - name: Publish isar_plus_flutter_libs
+        run: dart pub publish --force
+        working-directory: packages/isar_plus_flutter_libs
 
   cleanup_on_failure:
     name: Cleanup Release on Failure
