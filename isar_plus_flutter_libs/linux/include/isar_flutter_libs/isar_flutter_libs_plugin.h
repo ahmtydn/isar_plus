@@ -16,9 +16,9 @@ typedef struct {
   GObjectClass parent_class;
 } IsarFlutterLibsPluginClass;
 
-FLUTTER_PLUGIN_EXPORT GType isar_flutter_libs_plugin_get_type();
+FLUTTER_PLUGIN_EXPORT GType isar_plus_flutter_libs_plugin_get_type();
 
-FLUTTER_PLUGIN_EXPORT void isar_flutter_libs_plugin_register_with_registrar(
+FLUTTER_PLUGIN_EXPORT void isar_plus_flutter_libs_plugin_register_with_registrar(
     FlPluginRegistrar* registrar);
 
 G_END_DECLS

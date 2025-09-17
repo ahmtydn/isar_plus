@@ -11,7 +11,7 @@ title: فورا شروع کریں
 تفریح کا آغاز کرنےسے پہلےہمیں "پب سپیک۔یمل" میں چند پیکجز شامل کرنے کی ضرورت ہے۔ہم اپنے لیے بھاری سامان اٹھانے کے لیے پب کا استعمال کر سکتے ہیں۔
 
 ```bash
-flutter pub add isar isar_flutter_libs
+flutter pub add isar isar_plus_flutter_libs
 flutter pub add -d isar_generator build_runner
 ```
 

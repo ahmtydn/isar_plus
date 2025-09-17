@@ -27,7 +27,7 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
     throw IsarNotReadyError(
       'Could not initialize IsarCore library for processor architecture '
       '"${Abi.current()}". If you create a Flutter app, make sure to add '
-      'isar_flutter_libs to your dependencies. For Dart-only apps or unit '
+      'isar_plus_flutter_libs to your dependencies. For Dart-only apps or unit '
       'tests, make sure to place the correct Isar binary in the correct '
       'directory.\n$e',
     );
@@ -37,7 +37,7 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   if (coreVersion != Isar.version && coreVersion != 'debug') {
     throw IsarNotReadyError(
       'Incorrect Isar Core version: Required ${Isar.version} found '
-      '$coreVersion. Make sure to use the latest isar_flutter_libs. If you '
+      '$coreVersion. Make sure to use the latest isar_plus_flutter_libs. If you '
       'have a Dart only project, make sure that old Isar Core binaries are '
       'deleted.',
     );

@@ -13,7 +13,7 @@ Dieser Schnellstart wird wenig um den heißen Brei herumreden und direkt mit dem
 Bevor es losgeht, müssen wir ein paar Pakete zur `pubspec.yaml` hinzufügen. Damit es schneller geht lassen wir pub das für uns erledigen.
 
 ```bash
-flutter pub add isar isar_flutter_libs
+flutter pub add isar isar_plus_flutter_libs
 flutter pub add -d isar_generator build_runner
 ```
 

@@ -143,7 +143,7 @@ jobs:
           dart pub get
           dart pub publish --force
         working-directory: packages/isar_plus
-      - name: Publish isar_flutter_libs
+      - name: Publish isar_plus_flutter_libs
         run: |
           flutter pub get
           flutter pub publish --force

@@ -1,4 +1,4 @@
-package dev.isar.isar_flutter_libs;
+package dev.isar.isar_plus_flutter_libs;
 
 import androidx.annotation.NonNull;
 

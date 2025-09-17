@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name             = 'isar_flutter_libs'
+  s.name             = 'isar_plus_flutter_libs'
   s.version          = '1.0.0'
   s.summary          = 'Flutter binaries for the Isar Database. Needs to be included for Flutter apps.'
   s.homepage         = 'https://isar.dev'

@@ -17,7 +17,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: dev.isar.isar_flutter_libs
+        package: dev.isar.isar_plus_flutter_libs
         pluginClass: IsarFlutterLibsPlugin
       ios:
         pluginClass: IsarFlutterLibsPlugin
