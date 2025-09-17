@@ -4,8 +4,8 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
-import 'package:isar/isar.dart';
-import 'package:isar/src/native/bindings.dart';
+import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/src/native/bindings.dart';
 
 export 'dart:isolate';
 
@@ -18,9 +18,10 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   try {
     library ??= Platform.isIOS ? null : library ?? Abi.current().localName;
 
-    final dylib = Platform.isIOS
-        ? DynamicLibrary.process()
-        : DynamicLibrary.open(library!);
+    final dylib =
+        Platform.isIOS
+            ? DynamicLibrary.process()
+            : DynamicLibrary.open(library!);
     bindings = IsarCoreBindings(dylib);
   } catch (e) {
     throw IsarNotReadyError(
@@ -99,9 +100,6 @@ int platformFastHash(String string) {
 
 /// @nodoc
 @tryInline
-Future<T> runIsolate<T>(
-  String debugName,
-  FutureOr<T> Function() computation,
-) {
+Future<T> runIsolate<T>(String debugName, FutureOr<T> Function() computation) {
   return Isolate.run(computation, debugName: debugName);
 }

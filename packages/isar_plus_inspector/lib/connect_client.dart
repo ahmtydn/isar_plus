@@ -3,12 +3,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:isar/isar.dart';
-import 'package:isar/src/isar_connect_api.dart';
+import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/src/isar_connect_api.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-export 'package:isar/src/isar_connect_api.dart';
+export 'package:isar_plus/src/isar_connect_api.dart';
 
 class ConnectClient {
   ConnectClient(this.vmService, this.isolateId);

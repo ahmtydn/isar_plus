@@ -4,16 +4,14 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:js_util';
 
-import 'package:isar/isar.dart';
-import 'package:isar/src/web/interop.dart';
+import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/src/web/interop.dart';
 
 export 'bindings.dart';
 export 'ffi.dart';
 export 'interop.dart';
 
-FutureOr<IsarCoreBindings> initializePlatformBindings([
-  String? library,
-]) async {
+FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) async {
   final url = library ?? 'https://unpkg.com/isar@${Isar.version}/isar.wasm';
   final w = window as JSWindow;
   final promise = w.WebAssembly.instantiateStreaming(

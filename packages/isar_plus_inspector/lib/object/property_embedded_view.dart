@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:isar_inspector/object/isar_object.dart';
 import 'package:isar_inspector/object/object_view.dart';
 import 'package:isar_inspector/object/property_builder.dart';
 import 'package:isar_inspector/object/property_value.dart';
+import 'package:isar_plus/isar.dart';
 
 class EmbeddedPropertyView extends StatelessWidget {
   const EmbeddedPropertyView({

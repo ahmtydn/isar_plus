@@ -1,4 +1,4 @@
-/*import 'package:isar/src/generator/helper.dart';
+/*import 'package:isar_plus/src/generator/helper.dart';
 
 String generateLength(
   String objectName,

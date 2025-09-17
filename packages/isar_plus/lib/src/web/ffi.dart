@@ -2,8 +2,8 @@
 
 import 'dart:typed_data';
 
-import 'package:isar/isar.dart';
-import 'package:isar/src/web/web.dart';
+import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/src/web/web.dart';
 
 typedef Pointer<T> = int;
 
@@ -81,7 +81,7 @@ class Opaque {}
 
 class NativeFunction<T> {}
 
-const _sizes = {
+const Map<Type, int> _sizes = {
   int: 4, // pointer
   Void: 0,
   Bool: 1,

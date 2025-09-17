@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_plus/isar.dart';
 
 extension CollectionInfoX on IsarSchema {
   List<IsarPropertySchema> get idAndProperties {

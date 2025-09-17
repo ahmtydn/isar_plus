@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:isar_inspector/connect_client.dart';
+import 'package:isar_plus/isar.dart';
 
 class CollectionsList extends StatelessWidget {
   const CollectionsList({
