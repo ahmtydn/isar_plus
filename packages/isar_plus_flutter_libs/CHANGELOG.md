@@ -1,4 +1,13 @@
+## 1.0.1 (2025-09-17)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.1 -->
+
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.0...1.0.1
+
 ## 1.0.0
+
 
 🎉 **Isar Plus Flutter Libs v1.0.0 Stable Release** 🎉
 
