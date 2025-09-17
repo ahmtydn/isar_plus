@@ -78,7 +78,7 @@ FutureOr<void> initializeCoreBinary({
       throw IsarError(
         'Could not initialize IsarCore library for processor architecture '
         '"${Abi.current()}". If you create a Flutter app, make sure to add '
-        'isar_community_flutter_libs to your dependencies.\n$e',
+        'isar_plus_flutter_libs to your dependencies.\n$e',
       );
     }
   }
@@ -99,7 +99,7 @@ void _initializePath(String? libraryPath) {
     throw IsarError(
       'Incorrect Isar Core version: Required ${Isar.version} found '
       '$coreVersion. Make sure to use the latest '
-      'isar_community_flutter_libs. If you '
+      'isar_plus_flutter_libs. If you '
       'have a Dart only project, make sure that old Isar Core binaries are '
       'deleted.',
     );

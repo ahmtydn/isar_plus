@@ -104,11 +104,11 @@ jobs:
           flutter-version: ${{ env.FLUTTER_OVERRIDE || vars.FLUTTER_VERSION }}
       - name: Build
         run: flutter build web --base-href /${{ github.ref_name }}/
-        working-directory: packages/isar_community_inspector
+        working-directory: packages/isar_plus_inspector
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: packages/isar_community_inspector/build/web
+          folder: packages/isar_plus_inspector/build/web
           repository-name: ${{ vars.REPO_INSPECTOR }}
           token: ${{ secrets.DEPLOY_TOKEN }}
           target-folder: ${{ github.ref_name }}
@@ -170,10 +170,10 @@ jobs:
   #       working-directory: packages/isar_plus
   #     - name: Publish isar_generator
   #       run: dart pub publish --force
-  #       working-directory: packages/isar_community_generator
-  #     - name: Publish isar_community_flutter_libs
+  #       working-directory: packages/isar_plus_generator
+  #     - name: Publish isar_plus_flutter_libs
   #       run: dart pub publish --force
-  #       working-directory: packages/isar_community_flutter_libs
+  #       working-directory: packages/isar_plus_flutter_libs
 
   cleanup_on_failure:
     name: Cleanup Release on Failure

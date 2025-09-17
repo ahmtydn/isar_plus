@@ -1,7 +1,7 @@
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/isar_type.dart';
-import 'package:isar_community_generator/src/object_info.dart';
 import 'package:isar_plus/isar.dart';
+import 'package:isar_plus_generator/src/isar_type.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 String generateQueryObjects(ObjectInfo oi) {
   var code =
@@ -15,8 +15,7 @@ String generateQueryObjects(ObjectInfo oi) {
     if (property.isarType.isList) {
       name += 'Element';
     }
-    code +=
-        '''
+    code += '''
       QueryBuilder<${oi.dartName}, ${oi.dartName}, QAfterFilterCondition> $name(FilterQuery<${property.typeClassName}> q) {
         return QueryBuilder.apply(this, (query) {
           return query.object(q, r'${property.isarName}');

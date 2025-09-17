@@ -1,4 +1,4 @@
-name: isar_community_generator
+name: isar_plus_generator
 description: Code generator for the Isar Database. Finds classes annotated with @Collection.
 version: 3.3.0-dev.2
 repository: https://github.com/isar-community/isar-community

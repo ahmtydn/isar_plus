@@ -1,6 +1,6 @@
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/code_gen/query_filter_length.dart';
-import 'package:isar_community_generator/src/object_info.dart';
+import 'package:isar_plus_generator/src/code_gen/query_filter_length.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 String generateQueryLinks(ObjectInfo oi) {
   var code =

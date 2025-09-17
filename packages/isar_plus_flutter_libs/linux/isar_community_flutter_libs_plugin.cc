@@ -1,4 +1,4 @@
-#include "include/isar_community_flutter_libs/isar_flutter_libs_plugin.h"
+#include "include/isar_plus_flutter_libs/isar_flutter_libs_plugin.h"
 
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
@@ -60,7 +60,7 @@ void isar_flutter_libs_plugin_register_with_registrar(FlPluginRegistrar* registr
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   g_autoptr(FlMethodChannel) channel =
       fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
-                            "isar_community_flutter_libs",
+                            "isar_plus_flutter_libs",
                             FL_METHOD_CODEC(codec));
   fl_method_channel_set_method_call_handler(channel, method_call_cb,
                                             g_object_ref(plugin),

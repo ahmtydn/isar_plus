@@ -1,6 +1,6 @@
 builders:
-  isar_community_generator:
-    import: "package:isar_community_generator/isar_generator.dart"
+  isar_plus_generator:
+    import: "package:isar_plus_generator/isar_generator.dart"
     builder_factories: ["getIsarGenerator"]
     build_extensions: { ".dart": ["isar_generator.g.part"] }
     auto_apply: dependents

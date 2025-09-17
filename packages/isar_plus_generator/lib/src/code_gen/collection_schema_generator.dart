@@ -1,6 +1,6 @@
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/object_info.dart';
 import 'package:isar_plus/isar.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 String generateSchema(ObjectInfo object) {
   var code = 'const ${object.dartName.capitalize()}Schema = ';
@@ -16,8 +16,7 @@ String generateSchema(ObjectInfo object) {
       )
       .join(',');
 
-  code +=
-      '''
+  code += '''
     name: r'${object.isarName}',
     id: ${object.id},
     properties: {$properties},
@@ -38,8 +37,7 @@ String generateSchema(ObjectInfo object) {
         .map((e) => "r'${e.key}': ${e.value.capitalize()}Schema")
         .join(',');
 
-    code +=
-        '''
+    code += '''
       idName: r'${object.idProperty.isarName}',
       indexes: {$indexes},
       links: {$links},
@@ -77,16 +75,14 @@ String _generatePropertySchema(ObjectInfo object, int index) {
 }
 
 String _generateIndexSchema(ObjectIndex index) {
-  final properties = index.properties
-      .map((e) {
-        return '''
+  final properties = index.properties.map((e) {
+    return '''
       IndexPropertySchema(
         name: r'${e.property.isarName}',
         type: IndexType.${e.type.name},
         caseSensitive: ${e.caseSensitive},
       )''';
-      })
-      .join(',');
+  }).join(',');
 
   return '''
     IndexSchema(

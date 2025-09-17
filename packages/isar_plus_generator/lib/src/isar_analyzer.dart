@@ -2,10 +2,10 @@ import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/helper.dart';
-import 'package:isar_community_generator/src/isar_type.dart';
-import 'package:isar_community_generator/src/object_info.dart';
 import 'package:isar_plus/isar.dart';
+import 'package:isar_plus_generator/src/helper.dart';
+import 'package:isar_plus_generator/src/isar_type.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 class IsarAnalyzer {
   ObjectInfo analyzeCollection(Element2 element) {

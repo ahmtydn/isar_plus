@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:isar_community_generator/isar_generator.dart';
+import 'package:isar_plus_generator/isar_generator.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
@@ -19,7 +19,7 @@ void main() {
         var error = '';
         try {
           final readerWriter = TestReaderWriter(
-            rootPackage: 'isar_community_generator',
+            rootPackage: 'isar_plus_generator',
           );
           await readerWriter.testing.loadIsolateSources();
 

@@ -3,7 +3,7 @@ import FlutterMacOS
 
 public class IsarFlutterLibsPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "isar_community_flutter_libs", binaryMessenger: registrar.messenger)
+    let channel = FlutterMethodChannel(name: "isar_plus_flutter_libs", binaryMessenger: registrar.messenger)
     let instance = IsarFlutterLibsPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }

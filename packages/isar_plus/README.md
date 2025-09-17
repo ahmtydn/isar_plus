@@ -67,11 +67,11 @@ isar_version: &isar_version 3.3.0-dev.2 # define the version to be used
 dependencies:
   isar_plus: 
     version: *isar_version
-  isar_community_flutter_libs: # contains Isar Core
+  isar_plus_flutter_libs: # contains Isar Core
     version: *isar_version
 
 dev_dependencies:
-  isar_community_generator: 
+  isar_plus_generator: 
     version: *isar_version
   build_runner: any
 

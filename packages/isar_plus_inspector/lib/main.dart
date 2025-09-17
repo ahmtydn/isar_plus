@@ -4,7 +4,7 @@ import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:isar_community_inspector/connection_screen.dart';
+import 'package:isar_plus_inspector/connection_screen.dart';
 
 void main() async {
   if (['chrome', 'firefox'].any(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:isar_community_inspector/collections_list.dart';
-import 'package:isar_community_inspector/connect_client.dart';
-import 'package:isar_community_inspector/instance_selector.dart';
-import 'package:isar_community_inspector/main.dart';
+import 'package:isar_plus_inspector/collections_list.dart';
+import 'package:isar_plus_inspector/connect_client.dart';
+import 'package:isar_plus_inspector/instance_selector.dart';
+import 'package:isar_plus_inspector/main.dart';
 import 'package:isar_plus/isar.dart';
 
 class Sidebar extends StatelessWidget {

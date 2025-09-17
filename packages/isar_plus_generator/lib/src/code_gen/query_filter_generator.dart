@@ -1,8 +1,8 @@
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/code_gen/query_filter_length.dart';
-import 'package:isar_community_generator/src/isar_type.dart';
-import 'package:isar_community_generator/src/object_info.dart';
 import 'package:isar_plus/isar.dart';
+import 'package:isar_plus_generator/src/code_gen/query_filter_length.dart';
+import 'package:isar_plus_generator/src/isar_type.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 class FilterGenerator {
   FilterGenerator(this.object) : objName = object.dartName;

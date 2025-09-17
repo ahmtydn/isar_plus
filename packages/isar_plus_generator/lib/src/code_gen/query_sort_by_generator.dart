@@ -1,7 +1,7 @@
 import 'package:dartx/dartx.dart';
-import 'package:isar_community_generator/src/isar_type.dart';
-import 'package:isar_community_generator/src/object_info.dart';
 import 'package:isar_plus/isar.dart';
+import 'package:isar_plus_generator/src/isar_type.dart';
+import 'package:isar_plus_generator/src/object_info.dart';
 
 String generateSortBy(ObjectInfo oi) {
   var code = '''
@@ -12,8 +12,7 @@ String generateSortBy(ObjectInfo oi) {
       continue;
     }
 
-    code +=
-        '''
+    code += '''
     QueryBuilder<${oi.dartName}, ${oi.dartName}, QAfterSortBy>sortBy${property.dartName.capitalize()}() {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(r'${property.isarName}', Sort.asc);
@@ -37,8 +36,7 @@ String generateSortBy(ObjectInfo oi) {
       continue;
     }
 
-    code +=
-        '''
+    code += '''
     QueryBuilder<${oi.dartName}, ${oi.dartName}, QAfterSortBy>thenBy${property.dartName.capitalize()}() {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(r'${property.isarName}', Sort.asc);

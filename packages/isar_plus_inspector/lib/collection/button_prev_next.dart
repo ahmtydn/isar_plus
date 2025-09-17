@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isar_community_inspector/collection/collection_area.dart';
+import 'package:isar_plus_inspector/collection/collection_area.dart';
 
 class PrevNextButtons extends StatelessWidget {
   const PrevNextButtons({
