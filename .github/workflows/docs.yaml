@@ -3,9 +3,7 @@ name: Unified Deploy Docs
 on:
   push:
     branches:
-      - main
-      - v3
-
+      - prod
 jobs:
   deploy:
     runs-on: ubuntu-latest
