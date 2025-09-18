@@ -1,4 +1,16 @@
+## 1.0.7 (2025-09-18)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.7 -->
+
+## What's Changed
+### Other Changes
+* feat: Support analyzer v7.x alongside v8.x for broader compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/6
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.6...1.0.7
+
 ## 1.0.6 (2025-09-18)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.6 -->
 
