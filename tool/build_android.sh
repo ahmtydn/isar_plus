@@ -55,18 +55,20 @@ export CARGO_TARGET_AARCH64_LINUX_ANDROID_AR=$COMPILER_DIR/llvm-ar
 export CARGO_TARGET_AARCH64_LINUX_ANDROID_RUSTFLAGS="-L $RUNTIME_LIB_PATH"
 ln -s "$AR_aarch64_linux_android" "$COMPILER_DIR/aarch64-linux-android-ranlib"
 
+cd packages/isar_core_ffi
+
 if [ "$1" = "x64" ]; then
   rustup target add x86_64-linux-android
   cargo build --target x86_64-linux-android --features sqlcipher-vendored --release
-  mv "target/x86_64-linux-android/release/libisar.so" "libisar_android_x64.so"
+  mv "../../target/x86_64-linux-android/release/libisar.so" "../../libisar_android_x64.so"
 elif [ "$1" = "armv7" ]; then
   rustup target add armv7-linux-androideabi
   cargo build --target armv7-linux-androideabi --features sqlcipher-vendored --release
-  mv "target/armv7-linux-androideabi/release/libisar.so" "libisar_android_armv7.so"
+  mv "../../target/armv7-linux-androideabi/release/libisar.so" "../../libisar_android_armv7.so"
 else
   rustup target add aarch64-linux-android
   cargo build --target aarch64-linux-android --features sqlcipher-vendored --release
-  mv "target/aarch64-linux-android/release/libisar.so" "libisar_android_arm64.so"
+  mv "../../target/aarch64-linux-android/release/libisar.so" "../../libisar_android_arm64.so"
 fi
 
 

@@ -26,9 +26,15 @@ android {
         namespace 'dev.isar.isar_plus_flutter_libs'
     }
     
-    compileSdkVersion 30
+    compileSdkVersion 34
 
     defaultConfig {
         minSdkVersion 23
+    }
+    
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }
     }
 }
