@@ -1,4 +1,16 @@
+## 1.0.6 (2025-09-18)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.6 -->
+
+## What's Changed
+### Other Changes
+* fix: restore isar_flutter_libs.podspec file with correct specifications by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/4
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.5...1.0.6
+
 ## 1.0.5 (2025-09-18)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.5 -->
 
