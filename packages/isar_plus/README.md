@@ -52,6 +52,22 @@ dev_dependencies:
   build_runner: any
 ```
 
+## Android 16KB Page Size Support
+
+Starting with Android 15, devices may use 16KB memory page sizes for improved performance. Google Play requires apps targeting Android 15+ to support 16KB page sizes starting November 1st, 2025.
+
+Isar Plus includes full support for 16KB page sizes out of the box. The native libraries are built with the necessary alignment flags to ensure compatibility with these devices.
+
+### Build Requirements
+
+When building from source, ensure you have:
+
+- **Android NDK r27 or higher** (recommended for best 16KB support)
+- **Android Gradle Plugin 8.5.1 or higher** (already included)
+- **Rust toolchain** with Android targets installed
+
+The build system automatically includes the necessary linker flags (`-Wl,-z,max-page-size=16384`) for all Android architectures.
+
 For detailed documentation and examples, visit the [main repository](https://github.com/ahmtydn/isar).
 
 Join the [Telegram group](https://t.me/isardb) for discussion and sneak peeks of new versions of the DB.
