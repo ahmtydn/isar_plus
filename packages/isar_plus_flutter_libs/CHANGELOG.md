@@ -1,4 +1,16 @@
+## 1.0.5 (2025-09-18)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.5 -->
+
+## What's Changed
+### Other Changes
+* feat: Add Android 16KB page size support for Google Play compliance by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/3
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.4...1.0.5
+
 ## 1.0.4 (2025-09-17)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.4 -->
 
