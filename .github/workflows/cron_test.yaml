@@ -1,8 +1,10 @@
 name: Dart CI Cron
 
 on:
-  schedule:
-    - cron: "0 18 * * *"
+  workflow_dispatch:
+  # Uncomment the following lines to enable scheduled runs.
+  # schedule:
+  #   - cron: "0 18 * * *"
 
 jobs:
   testlab:
