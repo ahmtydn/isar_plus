@@ -1,4 +1,64 @@
+## 1.0.8 (2025-09-18)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.8 -->
+
+## What's Changed
+### Other Changes
+* fix: restore isar_flutter_libs.podspec file with correct specifications by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/7
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.7...1.0.8
+
+## 1.0.7 (2025-09-18)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.7 -->
+
+## What's Changed
+### Other Changes
+* feat: Support analyzer v7.x alongside v8.x for broader compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/6
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.6...1.0.7
+
+## 1.0.6 (2025-09-18)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.6 -->
+
+## What's Changed
+### Other Changes
+* fix: restore isar_flutter_libs.podspec file with correct specifications by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/4
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.5...1.0.6
+
+## 1.0.5 (2025-09-18)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.5 -->
+
+## What's Changed
+### Other Changes
+* feat: Add Android 16KB page size support for Google Play compliance by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/3
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.4...1.0.5
+
+## 1.0.4 (2025-09-17)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.4 -->
+
+## What's Changed
+### Other Changes
+* fix: standardize plugin naming across all platforms for isar_plus_flutter_libs by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/2
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.3...1.0.4
+
 ## 1.0.2 (2025-09-17)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.2 -->
 
