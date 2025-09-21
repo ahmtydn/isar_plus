@@ -1,4 +1,19 @@
-## 1.0.2 (2025-09-17)
+## 1.0.3
+
+### Updated
+- **libmdbx**: Updated from v0.12.7 to v0.13.8
+  - Improved performance and stability
+
+### Fixed
+- Fixed compilation issues with stable Rust features that were previously unstable
+- Updated deprecated MDBX option usage from enum to constants
+- Fixed build configuration for Apple platforms (MDBX_APPLE_SPEED_INSTEADOF_DURABILITY)
+
+### Technical Changes
+- Removed usage of unstable Rust features: `float_next_up_down`, `return_position_impl_trait_in_trait`, `lazy_cell`, `local_key_cell_methods`, `vec_into_raw_parts`
+- Updated MDBX FFI bindings to work with new API structure
+
+## 1.0.2
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.2 -->
 
@@ -6,7 +21,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.1...1.0.2
 
-## 1.0.1 (2025-09-17)
+## 1.0.1
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.1 -->
@@ -18,9 +33,9 @@
 ## 1.0.0
 
 
-🎉 **Isar Plus v4 Stable Release** 🎉
+🎉 **Isar Plus v4 Release** 🎉
 
-This is the initial stable release of Isar Plus, a fork of the Isar database with enhanced features and improvements. This release is based on Isar v4 architecture with additional enhancements.
+This is the initial release of Isar Plus, a fork of the Isar database with enhanced features and improvements. This release is based on Isar v4 architecture with additional enhancements.
 
 ### Features
 
