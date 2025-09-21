@@ -1,4 +1,19 @@
+## 1.0.9 (2025-09-21)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.9 -->
+
+## What's Changed
+### Other Changes
+* fix: update LIBMDBX_TAG to v0.13.8 for compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/9
+* refactor: remove unused feature flags and simplify function signatures by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/11
+* feat: Update libmdbx from v0.12.7 to v0.13.8  by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/12
+* refactor: update build process to manually create amalgamated source … by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/13
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.8...1.0.9
+
 ## 1.0.3
+
 
 ### Updated
 - **libmdbx**: Updated from v0.12.7 to v0.13.8
