@@ -1,64 +1,19 @@
-## 1.0.8 (2025-09-18)
+## 1.0.3
 
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.8 -->
+### Updated
+- **libmdbx**: Updated from v0.12.7 to v0.13.8
+  - Improved performance and stability
 
-## What's Changed
-### Other Changes
-* fix: restore isar_flutter_libs.podspec file with correct specifications by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/7
+### Fixed
+- Fixed compilation issues with stable Rust features that were previously unstable
+- Updated deprecated MDBX option usage from enum to constants
+- Fixed build configuration for Apple platforms (MDBX_APPLE_SPEED_INSTEADOF_DURABILITY)
 
+### Technical Changes
+- Removed usage of unstable Rust features: `float_next_up_down`, `return_position_impl_trait_in_trait`, `lazy_cell`, `local_key_cell_methods`, `vec_into_raw_parts`
+- Updated MDBX FFI bindings to work with new API structure
 
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.7...1.0.8
-
-## 1.0.7 (2025-09-18)
-
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.7 -->
-
-## What's Changed
-### Other Changes
-* feat: Support analyzer v7.x alongside v8.x for broader compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/6
-
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.6...1.0.7
-
-## 1.0.6 (2025-09-18)
-
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.6 -->
-
-## What's Changed
-### Other Changes
-* fix: restore isar_flutter_libs.podspec file with correct specifications by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/4
-
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.5...1.0.6
-
-## 1.0.5 (2025-09-18)
-
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.5 -->
-
-## What's Changed
-### Other Changes
-* feat: Add Android 16KB page size support for Google Play compliance by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/3
-
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.4...1.0.5
-
-## 1.0.4 (2025-09-17)
-
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.4 -->
-
-## What's Changed
-### Other Changes
-* fix: standardize plugin naming across all platforms for isar_plus_flutter_libs by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/2
-
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.3...1.0.4
-
-## 1.0.2 (2025-09-17)
-
+## 1.0.2
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.2 -->
 
@@ -66,7 +21,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.1...1.0.2
 
-## 1.0.1 (2025-09-17)
+## 1.0.1
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.1 -->
@@ -78,9 +33,9 @@
 ## 1.0.0
 
 
-🎉 **Isar Plus v4 Stable Release** 🎉
+🎉 **Isar Plus v4 Release** 🎉
 
-This is the initial stable release of Isar Plus, a fork of the Isar database with enhanced features and improvements. This release is based on Isar v4 architecture with additional enhancements.
+This is the initial release of Isar Plus, a fork of the Isar database with enhanced features and improvements. This release is based on Isar v4 architecture with additional enhancements.
 
 ### Features
 

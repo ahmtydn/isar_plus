@@ -263,7 +263,9 @@ pub unsafe extern "C" fn isar_read_to_json(
     };
 
     if serialized {
-        let (ptr, len, cap) = new_buffer.into_raw_parts();
+        let len = new_buffer.len();
+        let cap = new_buffer.capacity();
+        let ptr = new_buffer.leak().as_mut_ptr();
         *buffer_size = cap as u32;
         *buffer = ptr;
         len as u32
