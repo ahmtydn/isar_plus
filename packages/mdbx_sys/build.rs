@@ -68,17 +68,31 @@ fn main() {
         .output()
         .unwrap();
 
-    Command::new("make")
-        .arg("dist")
-        .current_dir("libmdbx")
-        .output()
-        .unwrap();
+    // Create amalgamated source manually instead of using make dist
+    let mdbx_root = PathBuf::from(&env::var("CARGO_MANIFEST_DIR").unwrap()).join("libmdbx");
+    let mdbx_src = mdbx_root.join("src");
+    let mdbx_dist = mdbx_root.join("dist");
+    
+    // Ensure dist directory exists
+    let _ = fs::create_dir_all(&mdbx_dist);
+    
+    // Copy header file
+    fs::copy(mdbx_root.join("mdbx.h"), mdbx_dist.join("mdbx.h")).unwrap();
+    
+    // Create version.c if it doesn't exist
+    if !mdbx_src.join("version.c").exists() {
+        Command::new("make")
+            .arg("src/version.c")
+            .current_dir(&mdbx_root)
+            .output()
+            .expect("Failed to generate version.c");
+    }
+    
 
     let mut mdbx = PathBuf::from(&env::var("CARGO_MANIFEST_DIR").unwrap());
     mdbx.push("libmdbx");
-    mdbx.push("dist");
 
-    let core_path = mdbx.join("mdbx.c");
+    let core_path = mdbx_src.join("alloy.c");
     let mut core = fs::read_to_string(core_path.as_path()).unwrap();
     core = core.replace("!CharToOemBuffA(buf, buf, size)", "false");
     if is_android {
@@ -99,7 +113,7 @@ fn main() {
 
     // Configure bindgen with iOS-specific settings
     let mut bindgen_builder = bindgen::Builder::default()
-        .header(mdbx.join("mdbx.h").to_string_lossy())
+        .header(mdbx_root.join("mdbx.h").to_string_lossy())
         .allowlist_var("^(MDBX|mdbx)_.*")
         .allowlist_type("^(MDBX|mdbx)_.*")
         .allowlist_function("^(MDBX|mdbx)_.*")
@@ -177,7 +191,6 @@ fn main() {
             .define("MDBX_LOCK_SUFFIX", "\".lock\"")
             .define("MDBX_TXN_CHECKOWNER", "0")
             .define("MDBX_WITHOUT_MSVC_CRT", "1")
-            // Setting HAVE_LIBM=1 is necessary to override issues with `pow` detection on Windows
             .define("UNICODE", "1")
             .define("HAVE_LIBM", "1")
             .define("NDEBUG", "1")
@@ -203,7 +216,8 @@ fn main() {
             .define("MDBX_APPLE_SPEED_INSTEADOF_DURABILITY", "1")
             .define("MDBX_HAVE_BUILTIN_CPU_SUPPORTS", "0")
             .define("NDEBUG", "1")
-            .file(mdbx.join("mdbx.c"))
+            .include(mdbx_root.join("src")) 
+            .file(mdbx_src.join("alloy.c"))  
             .compile("libmdbx.a");
     }
 }
