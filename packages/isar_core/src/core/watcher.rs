@@ -10,6 +10,7 @@ pub type WatcherCallback = Box<dyn Fn() + Send + Sync + 'static>;
 pub type DetailedWatcherCallback = Box<dyn Fn(ChangeDetail) + Send + Sync + 'static>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ChangeType {
     Insert,
     Update,
