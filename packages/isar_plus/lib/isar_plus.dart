@@ -39,6 +39,7 @@ part 'src/isar_schema.dart';
 part 'src/query_builder.dart';
 part 'src/query_components.dart';
 part 'src/query_extensions.dart';
+part 'src/watcher_details.dart';
 
 /// @nodoc
 @protected

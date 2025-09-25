@@ -1,7 +1,7 @@
-use isar_core::core::{error::IsarError, instance::IsarInstance, watcher::WatchHandle};
+use isar_core::core::{error::IsarError, instance::IsarInstance, watcher::{WatchHandle, ChangeDetail}};
 
-use crate::dart::{dart_post_int, DartPort};
-use crate::{CIsarInstance, CIsarQuery};
+use crate::dart::{dart_post_int, dart_post_string, DartPort};
+use crate::{CIsarInstance, CIsarQuery, isar_try};
 
 #[no_mangle]
 pub unsafe extern "C" fn isar_watch_collection(
@@ -67,6 +67,30 @@ pub unsafe extern "C" fn isar_watch_query(
                 isar.watch_query(query, callback)?
             }
             _ => return Err(IsarError::IllegalArgument {}),
+        };
+        *handle = Box::into_raw(Box::new(new_handle));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn isar_watch_collection_detailed(
+    isar: &'static CIsarInstance,
+    collection_index: u16,
+    port: DartPort,
+    handle: *mut *mut WatchHandle,
+) -> u8 {
+    let callback = Box::new(move |change_detail: ChangeDetail| {
+        // Serialize change detail to JSON and send to Dart
+        if let Ok(json_string) = serde_json::to_string(&change_detail) {
+            dart_post_string(port, json_string);
+        }
+    });
+    isar_try! {
+        let new_handle = match isar {
+            #[cfg(feature = "native")]
+            CIsarInstance::Native(isar) => isar.watch_detailed(collection_index, callback)?,
+            #[cfg(feature = "sqlite")]
+            CIsarInstance::SQLite(isar) => isar.watch_detailed(collection_index, callback)?,
         };
         *handle = Box::into_raw(Box::new(new_handle));
     }

@@ -100,6 +100,13 @@ abstract class IsarCollection<ID, OBJ> {
   /// If [fireImmediately] is `true`, an event will be fired immediately.
   Stream<void> watchObjectLazy(ID id, {bool fireImmediately = false});
 
+  /// Watch the collection for detailed changes showing
+  /// which objects and fields changed.
+  ///
+  /// This provides MongoDB-like change stream functionality with
+  /// field-level change tracking.
+  Stream<ChangeDetail> watchDetailed({bool fireImmediately = false});
+
   /// Build a query dynamically for example to build a custom query language.
   ///
   /// It is highly discouraged to use this method. Only in very special cases

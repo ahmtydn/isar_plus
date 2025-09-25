@@ -172,8 +172,12 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   @override
   int count() {
     return isar.getTxn((isarPtr, txnPtr) {
-      IsarCore.b
-          .isar_count(isarPtr, txnPtr, collectionIndex, IsarCore.countPtr);
+      IsarCore.b.isar_count(
+        isarPtr,
+        txnPtr,
+        collectionIndex,
+        IsarCore.countPtr,
+      );
       return IsarCore.countPtr.u32Value;
     });
   }
@@ -181,8 +185,12 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   @override
   int getSize({bool includeIndexes = false}) {
     return isar.getTxn((isarPtr, txnPtr) {
-      return IsarCore.b
-          .isar_get_size(isarPtr, txnPtr, collectionIndex, includeIndexes);
+      return IsarCore.b.isar_get_size(
+        isarPtr,
+        txnPtr,
+        collectionIndex,
+        includeIndexes,
+      );
     });
   }
 
@@ -248,9 +256,54 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   }
 
   @override
+  Stream<ChangeDetail> watchDetailed({bool fireImmediately = false}) {
+    if (IsarCore.kIsWeb) {
+      throw UnsupportedError('Detailed watchers are not supported on the web');
+    }
+
+    final port = ReceivePort();
+    final handlePtrPtr = IsarCore.ptrPtr.cast<Pointer<CWatchHandle>>();
+
+    IsarCore.b
+        .isar_watch_collection_detailed(
+          isar.getPtr(),
+          collectionIndex,
+          port.sendPort.nativePort,
+          handlePtrPtr,
+        )
+        .checkNoError();
+
+    final handlePtr = handlePtrPtr.ptrValue;
+    final controller = StreamController<ChangeDetail>(
+      onCancel: () {
+        isar.getPtr(); // Make sure Isar is not closed
+        IsarCore.b.isar_stop_watching(handlePtr);
+        port.close();
+      },
+    );
+
+    // Listen to the port for JSON strings
+    port.listen((data) {
+      if (data is String) {
+        try {
+          final changeDetailMap = json.decode(data) as Map<String, dynamic>;
+          final changeDetail = ChangeDetail.fromJson(changeDetailMap);
+          controller.add(changeDetail);
+        } on Exception catch (_) {
+          // Skip malformed JSON
+        }
+      }
+    });
+
+    return controller.stream;
+  }
+
+  @override
   Stream<OBJ?> watchObject(ID id, {bool fireImmediately = false}) {
-    return watchObjectLazy(id, fireImmediately: fireImmediately)
-        .asyncMap((event) => getAsync(id));
+    return watchObjectLazy(
+      id,
+      fireImmediately: fireImmediately,
+    ).asyncMap((event) => getAsync(id));
   }
 
   @override
@@ -351,20 +404,26 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
         final property1 = properties![0];
         final property2 = properties[1];
         final deserializeProp = converter.deserializeProperty!;
-        deserialize = (reader) => (
-              deserializeProp(reader, property1),
-              deserializeProp(reader, property2)
-            ) as R;
+        deserialize =
+            (reader) =>
+                (
+                      deserializeProp(reader, property1),
+                      deserializeProp(reader, property2),
+                    )
+                    as R;
       case 3:
         final property1 = properties![0];
         final property2 = properties[1];
         final property3 = properties[2];
         final deserializeProp = converter.deserializeProperty!;
-        deserialize = (reader) => (
-              deserializeProp(reader, property1),
-              deserializeProp(reader, property2),
-              deserializeProp(reader, property3),
-            ) as R;
+        deserialize =
+            (reader) =>
+                (
+                      deserializeProp(reader, property1),
+                      deserializeProp(reader, property2),
+                      deserializeProp(reader, property3),
+                    )
+                    as R;
     }
 
     final queryPtr = IsarCore.b.isar_query_build(builderPtr);

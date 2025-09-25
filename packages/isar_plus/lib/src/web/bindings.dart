@@ -820,6 +820,21 @@ extension IsarBindingsX on JSIsar {
     ffi.Pointer<ffi.Pointer<CWatchHandle>> handle,
   );
 
+  @ffi.Native<
+    ffi.Uint8 Function(
+      ffi.Pointer<CIsarInstance>,
+      ffi.Uint16,
+      DartPort,
+      ffi.Pointer<ffi.Pointer<CWatchHandle>>,
+    )
+  >(symbol: 'isar_watch_collection_detailed')
+  external int isar_watch_collection_detailed(
+    ffi.Pointer<CIsarInstance> isar,
+    int collection_index,
+    int port,
+    ffi.Pointer<ffi.Pointer<CWatchHandle>> handle,
+  );
+
   @ffi.Native<ffi.Void Function(ffi.Pointer<CWatchHandle>)>(
     symbol: 'isar_stop_watching',
   )
