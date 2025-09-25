@@ -1,4 +1,16 @@
+## 1.0.11 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.11 -->
+
+## What's Changed
+### Other Changes
+* feat: Complete SQLite detailed change detection and fix all warnings by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/15
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.10...1.0.11
+
 ## 1.0.9 (2025-09-21)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.9 -->
 
