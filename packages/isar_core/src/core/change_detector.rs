@@ -1,12 +1,16 @@
 use crate::core::data_type::DataType;
 use crate::core::reader::IsarReader;
 use crate::core::watcher::{ChangeDetail, ChangeType, FieldChange};
-use std::collections::HashMap;
+use serde_json::Value as JsonValue;
+use std::collections::{HashMap, HashSet};
 
+/// Detects and tracks changes between object states for database change streams.
 pub struct ChangeDetector;
 
 impl ChangeDetector {
-    /// Compare two objects and generate field changes
+    /// Detects changes between two objects using IsarReader implementations.
+    /// 
+    /// Returns `Some(ChangeDetail)` if changes are detected, `None` otherwise.
     pub fn detect_changes<R1: IsarReader, R2: IsarReader>(
         collection_name: &str,
         object_id: i64,
@@ -14,176 +18,194 @@ impl ChangeDetector {
         new_object: Option<&R2>,
     ) -> Option<ChangeDetail> {
         match (old_object, new_object) {
-            (None, Some(new_obj)) => {
-                // Insert operation
-                let mut field_changes = Vec::new();
-                let mut full_document_fields = HashMap::new();
-                
-                for (index, (field_name, data_type)) in new_obj.properties().enumerate() {
-                    let new_value = Self::read_field_value(new_obj, index + 1, data_type);
-                    if let Some(value) = &new_value {
-                        let processed_value = if field_name == "value" && data_type == DataType::String {
-                            // Try to parse the JSON string and extract the inner value
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
-                                if let Some(inner_value) = parsed.get("value") {
-                                    inner_value.to_string()
-                                } else {
-                                    value.clone()
-                                }
-                            } else {
-                                value.clone()
-                            }
-                        } else {
-                            value.clone()
-                        };
-                        
-                        field_changes.push(FieldChange {
-                            field_name: field_name.to_string(),
-                            old_value: None,
-                            new_value: Some(processed_value.clone()),
-                        });
-                        full_document_fields.insert(field_name.to_string(), processed_value);
-                    }
-                }
-                
-                let full_document = if !full_document_fields.is_empty() {
-                    serde_json::to_string(&full_document_fields).ok()
-                } else {
-                    None
-                };
-
-                Some(ChangeDetail {
-                    change_type: ChangeType::Insert,
-                    collection_name: collection_name.to_string(),
-                    object_id,
-                    field_changes,
-                    full_document,
-                })
-            }
-            (Some(old_obj), None) => {
-                // Delete operation
-                let mut field_changes = Vec::new();
-                
-                for (index, (field_name, data_type)) in old_obj.properties().enumerate() {
-                    let old_value = Self::read_field_value(old_obj, index + 1, data_type);
-                    if let Some(value) = old_value {
-                        let processed_value = if field_name == "value" && data_type == DataType::String {
-                            // Try to parse the JSON string and extract the inner value
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) {
-                                if let Some(inner_value) = parsed.get("value") {
-                                    inner_value.to_string()
-                                } else {
-                                    value.clone()
-                                }
-                            } else {
-                                value.clone()
-                            }
-                        } else {
-                            value.clone()
-                        };
-                        
-                        field_changes.push(FieldChange {
-                            field_name: field_name.to_string(),
-                            old_value: Some(processed_value),
-                            new_value: None,
-                        });
-                    }
-                }
-
-                Some(ChangeDetail {
-                    change_type: ChangeType::Delete,
-                    collection_name: collection_name.to_string(),
-                    object_id,
-                    field_changes,
-                    full_document: None,
-                })
-            }
-            (Some(old_obj), Some(new_obj)) => {
-                // Update operation
-                let mut field_changes = Vec::new();
-                let mut full_document_fields = HashMap::new();
-                let mut has_changes = false;
-                
-                // Use new_obj properties as the reference since it represents the current state
-                for (index, (field_name, data_type)) in new_obj.properties().enumerate() {
-                    let old_value = Self::read_field_value(old_obj, index + 1, data_type);
-                    let new_value = Self::read_field_value(new_obj, index + 1, data_type);
-                    
-                    // Process values for "value" field to extract inner JSON content
-                    let processed_old_value = if field_name == "value" && data_type == DataType::String {
-                        if let Some(ref value) = old_value {
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
-                                if let Some(inner_value) = parsed.get("value") {
-                                    Some(inner_value.to_string())
-                                } else {
-                                    old_value.clone()
-                                }
-                            } else {
-                                old_value.clone()
-                            }
-                        } else {
-                            old_value.clone()
-                        }
-                    } else {
-                        old_value.clone()
-                    };
-                    
-                    let processed_new_value = if field_name == "value" && data_type == DataType::String {
-                        if let Some(ref value) = new_value {
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
-                                if let Some(inner_value) = parsed.get("value") {
-                                    Some(inner_value.to_string())
-                                } else {
-                                    new_value.clone()
-                                }
-                            } else {
-                                new_value.clone()
-                            }
-                        } else {
-                            new_value.clone()
-                        }
-                    } else {
-                        new_value.clone()
-                    };
-                    
-                    if processed_old_value != processed_new_value {
-                        field_changes.push(FieldChange {
-                            field_name: field_name.to_string(),
-                            old_value: processed_old_value,
-                            new_value: processed_new_value.clone(),
-                        });
-                        has_changes = true;
-                    }
-                    
-                    // Include current field value in full document
-                    if let Some(value) = &processed_new_value {
-                        full_document_fields.insert(field_name.to_string(), value.clone());
-                    }
-                }
-                
-                if has_changes {
-                    let full_document = if !full_document_fields.is_empty() {
-                        serde_json::to_string(&full_document_fields).ok()
-                    } else {
-                        None
-                    };
-
-                    Some(ChangeDetail {
-                        change_type: ChangeType::Update,
-                        collection_name: collection_name.to_string(),
-                        object_id,
-                        field_changes,
-                        full_document,
-                    })
-                } else {
-                    None
-                }
-            }
+            (None, Some(new_obj)) => Self::create_insert_change(collection_name, object_id, new_obj),
+            (Some(old_obj), None) => Self::create_delete_change(collection_name, object_id, old_obj),
+            (Some(old_obj), Some(new_obj)) => Self::create_update_change(collection_name, object_id, old_obj, new_obj),
             (None, None) => None,
         }
     }
 
-    /// Read a field value from an IsarReader and convert it to a string representation
+    /// Detects changes between two JSON objects.
+    /// 
+    /// Returns `Some(ChangeDetail)` if changes are detected, `None` otherwise.
+    pub fn detect_changes_from_json(
+        collection_name: &str,
+        object_id: i64,
+        old_json: Option<&JsonValue>,
+        new_json: Option<&JsonValue>,
+    ) -> Option<ChangeDetail> {
+        match (old_json, new_json) {
+            (None, Some(new_obj)) => Self::create_json_insert_change(collection_name, object_id, new_obj),
+            (Some(old_obj), None) => Self::create_json_delete_change(collection_name, object_id, old_obj),
+            (Some(old_obj), Some(new_obj)) => Self::create_json_update_change(collection_name, object_id, old_obj, new_obj),
+            (None, None) => None,
+        }
+    }
+
+    // Private helper methods for IsarReader-based changes
+    
+    fn create_insert_change<R: IsarReader>(
+        collection_name: &str,
+        object_id: i64,
+        new_object: &R,
+    ) -> Option<ChangeDetail> {
+        let (field_changes, full_document_fields) = Self::extract_all_fields::<R, R>(new_object, None);
+        
+        let full_document = Self::serialize_document_fields(&full_document_fields);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Insert,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document,
+        })
+    }
+
+    fn create_delete_change<R: IsarReader>(
+        collection_name: &str,
+        object_id: i64,
+        old_object: &R,
+    ) -> Option<ChangeDetail> {
+        let field_changes = Self::extract_field_changes_for_delete(old_object);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Delete,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document: None,
+        })
+    }
+
+    fn create_update_change<R1: IsarReader, R2: IsarReader>(
+        collection_name: &str,
+        object_id: i64,
+        old_object: &R1,
+        new_object: &R2,
+    ) -> Option<ChangeDetail> {
+        let (field_changes, full_document_fields) = Self::extract_all_fields(new_object, Some(old_object));
+        
+        if field_changes.is_empty() {
+            return None;
+        }
+
+        let full_document = Self::serialize_document_fields(&full_document_fields);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Update,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document,
+        })
+    }
+
+    fn extract_all_fields<R1: IsarReader, R2: IsarReader>(
+        new_object: &R1,
+        old_object: Option<&R2>,
+    ) -> (Vec<FieldChange>, HashMap<String, String>) {
+        let mut field_changes = Vec::new();
+        let mut full_document_fields = HashMap::new();
+
+        for (index, (field_name, data_type)) in new_object.properties().enumerate() {
+            let field_index = index + 1;
+            let new_value = Self::read_field_value(new_object, field_index, data_type);
+            
+            let old_value = old_object
+                .and_then(|old_obj| Self::read_field_value(old_obj, field_index, data_type));
+
+            let processed_new_value = Self::process_field_value(field_name, new_value);
+            let processed_old_value = Self::process_field_value(field_name, old_value);
+
+            // For updates, only include changes; for inserts, include all non-null fields
+            let should_include_change = match old_object {
+                Some(_) => processed_old_value != processed_new_value,
+                None => processed_new_value.is_some(),
+            };
+
+            if should_include_change {
+                field_changes.push(FieldChange {
+                    field_name: field_name.to_string(),
+                    old_value: processed_old_value.clone(),
+                    new_value: processed_new_value.clone(),
+                });
+            }
+
+            // Always include current field value in full document if present
+            if let Some(value) = &processed_new_value {
+                full_document_fields.insert(field_name.to_string(), value.clone());
+            }
+        }
+
+        (field_changes, full_document_fields)
+    }
+
+    fn extract_field_changes_for_delete<R: IsarReader>(old_object: &R) -> Vec<FieldChange> {
+        let mut field_changes = Vec::new();
+
+        for (index, (field_name, data_type)) in old_object.properties().enumerate() {
+            let old_value = Self::read_field_value(old_object, index + 1, data_type);
+            let processed_old_value = Self::process_field_value(field_name, old_value);
+
+            if let Some(value) = processed_old_value {
+                field_changes.push(FieldChange {
+                    field_name: field_name.to_string(),
+                    old_value: Some(value),
+                    new_value: None,
+                });
+            }
+        }
+
+        field_changes
+    }
+
+    /// Processes field values with special handling for the "value" field containing JSON.
+    fn process_field_value(field_name: &str, value: Option<String>) -> Option<String> {
+        let Some(val) = value else { return None };
+        
+        if field_name == "value" {
+            Self::extract_inner_json_value(&val)
+        } else {
+            Some(val)
+        }
+    }
+
+    /// Extracts the inner "value" from a JSON string, falling back to the original if parsing fails.
+    fn extract_inner_json_value(json_str: &str) -> Option<String> {
+        match serde_json::from_str::<JsonValue>(json_str) {
+            Ok(parsed) => {
+                if let Some(inner_value) = parsed.get("value") {
+                    // Convert JsonValue to string without adding extra quotes for objects/arrays
+                    match inner_value {
+                        JsonValue::String(s) => Some(s.clone()),
+                        _ => Some(serde_json::to_string(inner_value).unwrap_or_else(|_| inner_value.to_string()))
+                    }
+                } else {
+                    Some(json_str.to_string())
+                }
+            }
+            Err(_) => Some(json_str.to_string()),
+        }
+    }
+
+    fn serialize_document_fields(fields: &HashMap<String, String>) -> Option<String> {
+        if fields.is_empty() {
+            None
+        } else {
+            // Create a proper JSON object without double-escaping
+            let mut json_obj = serde_json::Map::new();
+            for (key, value) in fields {
+                // Try to parse the value as JSON first, if it fails, treat it as a string
+                let json_value = serde_json::from_str::<JsonValue>(value)
+                    .unwrap_or_else(|_| JsonValue::String(value.clone()));
+                json_obj.insert(key.clone(), json_value);
+            }
+            serde_json::to_string(&JsonValue::Object(json_obj)).ok()
+        }
+    }
+
+    /// Reads a field value from an IsarReader and converts it to a string representation.
     fn read_field_value<R: IsarReader>(reader: &R, index: usize, data_type: DataType) -> Option<String> {
         let index = index as u32;
         
@@ -196,164 +218,216 @@ impl ChangeDetector {
             DataType::Byte => Some(reader.read_byte(index).to_string()),
             DataType::Int => {
                 let val = reader.read_int(index);
-                if val != i32::MIN {
-                    Some(val.to_string())
-                } else {
-                    None
-                }
+                (val != i32::MIN).then(|| val.to_string())
             }
             DataType::Float => {
                 let val = reader.read_float(index);
-                if val.is_finite() {
-                    Some(val.to_string())
-                } else {
-                    None
-                }
+                val.is_finite().then(|| val.to_string())
             }
             DataType::Long => {
                 let val = reader.read_long(index);
-                if val != i64::MIN {
-                    Some(val.to_string())
-                } else {
-                    None
-                }
+                (val != i64::MIN).then(|| val.to_string())
             }
             DataType::Double => {
                 let val = reader.read_double(index);
-                if val.is_finite() {
-                    Some(val.to_string())
-                } else {
-                    None
-                }
+                val.is_finite().then(|| val.to_string())
             }
             DataType::String | DataType::Json => {
                 reader.read_string(index).map(|s| s.to_string())
             }
-            DataType::Object => {
-                if let Some(obj_reader) = reader.read_object(index) {
-                    // Serialize the embedded object to JSON
-                    let mut buffer = Vec::new();
-                    let mut serializer = serde_json::Serializer::new(&mut buffer);
-                    if let Ok(()) = obj_reader.serialize(&mut serializer) {
-                        String::from_utf8(buffer).ok()
-                    } else {
-                        Some("[object]".to_string())
-                    }
-                } else {
-                    None
-                }
-            }
-            // Handle list types
+            DataType::Object => Self::read_object_field(reader, index),
             DataType::BoolList | DataType::ByteList | DataType::IntList | 
             DataType::FloatList | DataType::LongList | DataType::DoubleList | 
-            DataType::StringList | DataType::ObjectList => {
-                if let Some((_list_reader, length)) = reader.read_list(index) {
-                    // For now, just indicate it's a list with length
-                    Some(format!("[list:{}]", length))
-                } else {
-                    None
-                }
-            }
+            DataType::StringList | DataType::ObjectList => Self::read_list_field(reader, index),
         }
     }
-    
-    /// Compare two JSON objects and generate field changes
-    pub fn detect_changes_from_json(
+
+    fn read_object_field<R: IsarReader>(reader: &R, index: u32) -> Option<String> {
+        reader.read_object(index).and_then(|obj_reader| {
+            let mut buffer = Vec::new();
+            let mut serializer = serde_json::Serializer::new(&mut buffer);
+            
+            match obj_reader.serialize(&mut serializer) {
+                Ok(()) => String::from_utf8(buffer).ok(),
+                Err(_) => Some("[object]".to_string()),
+            }
+        })
+    }
+
+    fn read_list_field<R: IsarReader>(reader: &R, index: u32) -> Option<String> {
+        reader.read_list(index)
+            .map(|(_, length)| format!("[list:{}]", length))
+    }
+
+    // Private helper methods for JSON-based changes
+
+    fn create_json_insert_change(
         collection_name: &str,
         object_id: i64,
-        old_json: Option<&serde_json::Value>,
-        new_json: Option<&serde_json::Value>,
+        new_object: &JsonValue,
     ) -> Option<ChangeDetail> {
-        match (old_json, new_json) {
-            (None, Some(new_obj)) => {
-                // Insert operation
-                let mut field_changes = Vec::new();
-                if let serde_json::Value::Object(new_map) = new_obj {
-                    for (field_name, new_value) in new_map {
-                        field_changes.push(FieldChange {
-                            field_name: field_name.clone(),
-                            old_value: None,
-                            new_value: Some(new_value.to_string()),
-                        });
-                    }
-                }
+        let field_changes = Self::extract_json_fields_for_insert(new_object);
 
-                Some(ChangeDetail {
-                    change_type: ChangeType::Insert,
-                    collection_name: collection_name.to_string(),
-                    object_id,
-                    field_changes,
-                    full_document: Some(new_obj.to_string()),
-                })
+        // Create a clean full_document with unpacked JSON values  
+        let full_document = Self::create_clean_full_document(new_object);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Insert,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document,
+        })
+    }
+
+    fn create_json_delete_change(
+        collection_name: &str,
+        object_id: i64,
+        old_object: &JsonValue,
+    ) -> Option<ChangeDetail> {
+        let field_changes = Self::extract_json_fields_for_delete(old_object);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Delete,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document: None,
+        })
+    }
+
+    fn create_json_update_change(
+        collection_name: &str,
+        object_id: i64,
+        old_object: &JsonValue,
+        new_object: &JsonValue,
+    ) -> Option<ChangeDetail> {
+        let field_changes = Self::extract_json_field_changes(old_object, new_object);
+        
+        if field_changes.is_empty() {
+            return None;
+        }
+
+        // Create a clean full_document with unpacked JSON values
+        let full_document = Self::create_clean_full_document(new_object);
+
+        Some(ChangeDetail {
+            change_type: ChangeType::Update,
+            collection_name: collection_name.to_string(),
+            object_id,
+            field_changes,
+            full_document,
+        })
+    }
+
+    fn extract_json_fields_for_insert(new_object: &JsonValue) -> Vec<FieldChange> {
+        let JsonValue::Object(new_map) = new_object else {
+            return Vec::new();
+        };
+
+        new_map.iter().map(|(field_name, new_value)| {
+            let processed_value = Self::process_json_field_value(field_name, new_value);
+            FieldChange {
+                field_name: field_name.clone(),
+                old_value: None,
+                new_value: Some(processed_value),
             }
-            (Some(old_obj), None) => {
-                // Delete operation
-                let mut field_changes = Vec::new();
-                if let serde_json::Value::Object(old_map) = old_obj {
-                    for (field_name, old_value) in old_map {
-                        field_changes.push(FieldChange {
-                            field_name: field_name.clone(),
-                            old_value: Some(old_value.to_string()),
-                            new_value: None,
-                        });
-                    }
-                }
+        }).collect()
+    }
 
-                Some(ChangeDetail {
-                    change_type: ChangeType::Delete,
-                    collection_name: collection_name.to_string(),
-                    object_id,
-                    field_changes,
-                    full_document: Some(old_obj.to_string()),
-                })
+    fn extract_json_fields_for_delete(old_object: &JsonValue) -> Vec<FieldChange> {
+        let JsonValue::Object(old_map) = old_object else {
+            return Vec::new();
+        };
+
+        old_map.iter().map(|(field_name, old_value)| {
+            let processed_value = Self::process_json_field_value(field_name, old_value);
+            FieldChange {
+                field_name: field_name.clone(),
+                old_value: Some(processed_value),
+                new_value: None,
             }
-            (Some(old_obj), Some(new_obj)) => {
-                // Update operation
-                let mut field_changes = Vec::new();
-                let mut has_changes = false;
+        }).collect()
+    }
 
-                // Compare fields from both objects
-                let mut all_fields = std::collections::HashSet::new();
-                
-                if let serde_json::Value::Object(old_map) = old_obj {
-                    for field_name in old_map.keys() {
-                        all_fields.insert(field_name.clone());
-                    }
-                }
-                
-                if let serde_json::Value::Object(new_map) = new_obj {
-                    for field_name in new_map.keys() {
-                        all_fields.insert(field_name.clone());
-                    }
-                }
+    fn extract_json_field_changes(old_object: &JsonValue, new_object: &JsonValue) -> Vec<FieldChange> {
+        let all_fields = Self::collect_all_json_field_names(old_object, new_object);
+        let mut field_changes = Vec::new();
 
-                for field_name in all_fields {
-                    let old_value = old_obj.get(&field_name);
-                    let new_value = new_obj.get(&field_name);
+        for field_name in all_fields {
+            let old_value = old_object.get(&field_name);
+            let new_value = new_object.get(&field_name);
+            
+            let processed_old_value = old_value.map(|v| Self::process_json_field_value(&field_name, v));
+            let processed_new_value = new_value.map(|v| Self::process_json_field_value(&field_name, v));
+            
+            if processed_old_value != processed_new_value {
+                field_changes.push(FieldChange {
+                    field_name: field_name.clone(),
+                    old_value: processed_old_value,
+                    new_value: processed_new_value,
+                });
+            }
+        }
+
+        field_changes
+    }
+
+    fn collect_all_json_field_names(old_object: &JsonValue, new_object: &JsonValue) -> HashSet<String> {
+        let mut all_fields = HashSet::new();
+        
+        if let JsonValue::Object(old_map) = old_object {
+            all_fields.extend(old_map.keys().cloned());
+        }
+        
+        if let JsonValue::Object(new_map) = new_object {
+            all_fields.extend(new_map.keys().cloned());
+        }
+
+        all_fields
+    }
+
+    /// Creates a clean full document JSON string with unpacked nested JSON values
+    fn create_clean_full_document(object: &JsonValue) -> Option<String> {
+        match object {
+            JsonValue::Object(map) => {
+                let mut clean_map = serde_json::Map::new();
+                
+                for (key, value) in map {
+                    let clean_value = if key == "value" {
+                        // Try to unpack JSON strings in the "value" field
+                        match value {
+                            JsonValue::String(s) => {
+                                serde_json::from_str::<JsonValue>(s)
+                                    .unwrap_or_else(|_| value.clone())
+                            }
+                            _ => value.clone()
+                        }
+                    } else {
+                        value.clone()
+                    };
                     
-                    if old_value != new_value {
-                        has_changes = true;
-                        field_changes.push(FieldChange {
-                            field_name: field_name.clone(),
-                            old_value: old_value.map(|v| v.to_string()),
-                            new_value: new_value.map(|v| v.to_string()),
-                        });
-                    }
+                    clean_map.insert(key.clone(), clean_value);
                 }
-
-                if has_changes {
-                    Some(ChangeDetail {
-                        change_type: ChangeType::Update,
-                        collection_name: collection_name.to_string(),
-                        object_id,
-                        field_changes,
-                        full_document: Some(new_obj.to_string()),
-                    })
-                } else {
-                    None
-                }
+                
+                serde_json::to_string(&JsonValue::Object(clean_map)).ok()
             }
-            _ => None,
+            _ => serde_json::to_string(object).ok()
+        }
+    }
+
+    /// Processes JSON field values with special handling for the "value" field.
+    fn process_json_field_value(field_name: &str, value: &JsonValue) -> String {
+        if field_name == "value" {
+            if let JsonValue::String(value_str) = value {
+                return Self::extract_inner_json_value(value_str)
+                    .unwrap_or_else(|| value.to_string());
+            }
+        }
+
+        match value {
+            JsonValue::String(s) => s.clone(),
+            _ => value.to_string(),
         }
     }
 }
