@@ -1,4 +1,16 @@
+## 1.0.19 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.19 -->
+
+## What's Changed
+### Other Changes
+* feat: add key field to watcher system for data identification by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/24
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.18...1.0.19
+
 ## 1.0.18 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.18 -->
 
