@@ -1,349 +1,405 @@
+// ignore_for_file: one_member_abstracts
+
 part of isar_plus;
 
-/// Abstract base class for objects that can be serialized to/from JSON.
+/// Contract for objects that can be serialized to/from JSON.
 ///
-/// This provides a contract for objects that need to be converted to JSON
-/// and parsed back from JSON strings, typically used for database document
-/// serialization in change tracking.
-abstract class DocumentSerializable {
-  /// Converts this object to a JSON map.
-  Map<String, dynamic> toJson();
-
-  /// Creates an instance from a JSON string.
-  ///
-  /// This should be implemented by concrete classes to provide
-  /// proper deserialization from JSON strings.
-  ///
-  /// Example implementation:
-  /// ```dart
-  /// static User fromJsonString(String json) {
-  ///   return User.fromJson(jsonDecode(json));
-  /// }
-  /// ```
-  static T fromJsonString<T extends DocumentSerializable>(String json) {
-    throw UnimplementedError(
-      'Concrete classes must implement static fromJsonString method',
-    );
-  }
-}
-
-/// Type definition for document parser functions.
+/// Implementations must provide both instance serialization and static
+/// deserialization capabilities. The static factory pattern is preferred
+/// over constructors for better error handling and type safety.
 ///
-/// Used to parse JSON strings into strongly typed objects.
-typedef DocumentParser<T extends DocumentSerializable> =
-    T Function(String json);
-
-/// Registry for document parsers by type.
-///
-/// This allows the change tracking system to automatically parse
-/// full documents back to their original types.
-class DocumentParserRegistry {
-  static final Map<Type, Function> _parsers = {};
-
-  /// Registers a parser for a specific type.
-  static void register<T extends DocumentSerializable>(
-    DocumentParser<T> parser,
-  ) {
-    _parsers[T] = parser;
-  }
-
-  /// Gets a parser for a specific type.
-  static DocumentParser<T>? getParser<T extends DocumentSerializable>() {
-    return _parsers[T] as DocumentParser<T>?;
-  }
-
-  /// Clears all registered parsers.
-  static void clear() {
-    _parsers.clear();
-  }
-}
-
-/// Represents the type of change that occurred in a database operation.
-///
-/// This enum is used to categorize different types of database changes
-/// for change tracking and auditing purposes.
-enum ChangeType {
-  /// A new record was inserted into the database
-  insert,
-
-  /// An existing record was modified
-  update,
-
-  /// A record was removed from the database
-  delete,
-
-  /// An unknown change type (should not occur in practice)
-  unknown,
-}
-
-/// Represents a field change with before and after values.
-///
-/// This class captures the details of a single field modification,
-/// storing both the old value (before change) and new value (after change).
-///
-/// Example:
+/// Example implementation:
 /// ```dart
-/// final change = FieldChange(
-///   fieldName: 'name',
-///   oldValue: 'John',
-///   newValue: 'Jane',
-/// );
+/// class User implements DocumentSerializable {
+///   const User({required this.id, required this.name});
+///
+///   final int id;
+///   final String name;
+///
+///   @override
+///   Map<String, dynamic> toJson() => {'id': id, 'name': name};
+///
+///   static User fromJson(Map<String, dynamic> json) {
+///     return User(
+///       id: json['id'] as int,
+///       name: json['name'] as String,
+///     );
+///   }
+/// }
 /// ```
-class FieldChange {
-  /// Creates a new [FieldChange] instance.
+abstract interface class DocumentSerializable {
+  /// Serializes this object to a JSON-compatible map.
   ///
-  /// [fieldName] is required and represents the name of the changed field.
-  /// [oldValue] is the previous value of the field (null for inserts).
-  /// [newValue] is the current value of the field (null for deletes).
-  const FieldChange({required this.fieldName, this.oldValue, this.newValue});
+  /// Should return a map containing only JSON-serializable values
+  /// (String, int, double, bool, List, Map, null).
+  Map<String, dynamic> toJson();
+}
 
-  /// Creates a [FieldChange] instance from a JSON map.
-  ///
-  /// Expected JSON format:
-  /// ```json
-  /// {
-  ///   "field_name": "fieldName",
-  ///   "old_value": "previousValue",
-  ///   "new_value": "currentValue"
-  /// }
-  /// ```
-  ///
-  /// Throws [TypeError] if the JSON structure is invalid.
-  factory FieldChange.fromJson(Map<String, dynamic> json) {
-    return FieldChange(
-      fieldName: json['field_name'] as String,
-      oldValue: json['old_value'] as String?,
-      newValue: json['new_value'] as String?,
+/// Enumeration of database change operations.
+///
+/// Each value represents a distinct type of modification that can occur
+/// to data within a persistent storage system.
+enum ChangeType {
+  /// A new record was created and added to storage.
+  insert('insert'),
+
+  /// An existing record was modified in place.
+  update('update'),
+
+  /// A record was permanently removed from storage.
+  delete('delete');
+
+  const ChangeType(this.value);
+
+  /// The string representation used in serialization.
+  final String value;
+
+  /// Parses a string value to a ChangeType, with error handling.
+  static ChangeType fromString(String value) {
+    for (final type in ChangeType.values) {
+      if (type.value.toLowerCase() == value.toLowerCase()) {
+        return type;
+      }
+    }
+    throw ArgumentError.value(
+      value,
+      'value',
+      'Invalid change type. Valid '
+          'values: ${ChangeType.values.map((t) => t.value).join(', ')}',
     );
   }
 
-  /// The name of the field that was changed.
+  @override
+  String toString() => value;
+}
+
+/// Immutable representation of a field-level change.
+///
+/// Captures the modification of a single field, preserving both the
+/// previous state and the new state. Values are kept as dynamic to
+/// accommodate the varying data types found in document databases.
+///
+/// The class implements value equality and provides comprehensive
+/// debugging information.
+@immutable
+class FieldChange {
+  /// Creates a field change record.
+  ///
+  /// [fieldName] must be non-empty and represent a valid field identifier.
+  /// [oldValue] represents the state before modification (null for inserts).
+  /// [newValue] represents the state after modification (null for deletes).
+  const FieldChange({required this.fieldName, this.oldValue, this.newValue})
+    : assert(fieldName != '', 'Field name cannot be empty');
+
+  /// Deserializes a FieldChange from JSON with validation.
+  factory FieldChange.fromJson(Map<String, dynamic> json) {
+    final fieldName = json['field_name'];
+    if (fieldName is! String || fieldName.isEmpty) {
+      throw const FormatException('field_name must be a non-empty string');
+    }
+
+    return FieldChange(
+      fieldName: fieldName,
+      oldValue: json['old_value'],
+      newValue: json['new_value'],
+    );
+  }
+
+  /// The identifier of the field that was modified.
   final String fieldName;
 
-  /// The previous value of the field before the change.
+  /// The value before the change occurred.
   ///
-  /// This will be null for insert operations since there was no previous value.
-  final String? oldValue;
+  /// Will be null for insert operations where no previous value existed.
+  final Object? oldValue;
 
-  /// The new value of the field after the change.
+  /// The value after the change was applied.
   ///
-  /// This will be null for delete operations since the field no longer exists.
-  final String? newValue;
+  /// Will be null for delete operations where the value no longer exists.
+  final Object? newValue;
 
-  /// Converts this [FieldChange] instance to a JSON map.
-  ///
-  /// Returns a map suitable for JSON serialization with keys:
-  /// - `field_name`: The field name
-  /// - `old_value`: The previous value (may be null)
-  /// - `new_value`: The current value (may be null)
-  Map<String, dynamic> toJson() {
-    return {
-      'field_name': fieldName,
-      'old_value': oldValue,
-      'new_value': newValue,
-    };
-  }
+  /// Determines if this represents a field creation (insert scenario).
+  bool get isCreation => oldValue == null && newValue != null;
 
-  /// Returns a string representation of this field change.
-  ///
-  /// Format: `FieldChange(field: fieldName, old: oldValue, new: newValue)`
+  /// Determines if this represents a field deletion (delete scenario).
+  bool get isDeletion => oldValue != null && newValue == null;
+
+  /// Determines if this represents a field modification (update scenario).
+  bool get isModification => oldValue != null && newValue != null;
+
+  /// Determines if the old and new values are effectively the same.
+  bool get hasActualChange => !_valuesEqual(oldValue, newValue);
+
+  /// Serializes this field change to JSON.
+  Map<String, dynamic> toJson() => {
+    'field_name': fieldName,
+    'old_value': oldValue,
+    'new_value': newValue,
+  };
+
+  /// Provides a comprehensive string representation for debugging.
   @override
   String toString() {
-    return 'FieldChange(field: $fieldName, old: $oldValue, new: $newValue)';
+    final buffer = StringBuffer('FieldChange(')..write('field: $fieldName');
+
+    if (isCreation) {
+      buffer.write(', created: $newValue');
+    } else if (isDeletion) {
+      buffer.write(', deleted: $oldValue');
+    } else {
+      buffer.write(', $oldValue → $newValue');
+    }
+
+    buffer.write(')');
+    return buffer.toString();
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is FieldChange &&
-        other.fieldName == fieldName &&
-        other.oldValue == oldValue &&
-        other.newValue == newValue;
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FieldChange &&
+          fieldName == other.fieldName &&
+          _valuesEqual(oldValue, other.oldValue) &&
+          _valuesEqual(newValue, other.newValue);
 
   @override
-  int get hashCode =>
-      fieldName.hashCode ^ oldValue.hashCode ^ newValue.hashCode;
+  int get hashCode => Object.hash(fieldName, oldValue, newValue);
+
+  /// Compares two values for deep equality, handling collections properly.
+  static bool _valuesEqual(Object? a, Object? b) {
+    if (identical(a, b)) return true;
+    if (a == null || b == null) return a == b;
+
+    // Handle collections that might have same content but different references
+    if (a is List && b is List) {
+      if (a.length != b.length) return false;
+      for (var i = 0; i < a.length; i++) {
+        if (!_valuesEqual(a[i], b[i])) return false;
+      }
+      return true;
+    }
+
+    if (a is Map && b is Map) {
+      if (a.length != b.length) return false;
+      for (final key in a.keys) {
+        if (!b.containsKey(key) || !_valuesEqual(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return a == b;
+  }
 }
 
-/// Detailed change information for a single database object.
+/// Comprehensive record of a change event for a specific database entity.
 ///
-/// This class contains comprehensive information about a change that occurred
-/// to a specific object in the database, including what changed and how.
+/// This immutable class encapsulates all information about a modification
+/// to a single object, including metadata, field-level changes, and
+/// optionally the complete document state after the change.
 ///
-/// The generic type [T] should extend [DocumentSerializable] to ensure
-/// proper serialization capabilities.
-///
-/// Example usage:
-/// ```dart
-/// final changeDetail = ChangeDetail<User>(
-///   collectionName: 'users',
-///   objectId: 123,
-///   changeType: ChangeType.update,
-///   fieldChanges: [
-///     FieldChange(fieldName: 'email', oldValue: 'old@test.com', newValue: 'new@test.com')
-///   ],
-/// );
-/// ```
+/// The generic parameter [T] is constrained to types that can be serialized,
+/// ensuring type safety for the full document representation.
+@immutable
 class ChangeDetail<T extends DocumentSerializable> {
-  /// Creates a new [ChangeDetail] instance.
+  /// Creates a change detail record.
   ///
-  /// [collectionName] is the name of the collection/table where the change occurred.
-  /// [objectId] is the unique identifier of the changed object.
-  /// [changeType] specifies what type of change occurred (insert, update, delete).
-  /// [fullDocument] is an optional complete representation of the object after change.
-  /// [fieldChanges] is a list of individual field changes within the object.
+  /// [collectionName] identifies the data collection (table, index, etc.).
+  /// [objectId] is the unique identifier within that collection.
+  /// [changeType] specifies the nature of the modification.
+  /// [fieldChanges] contains the individual field modifications.
+  /// [fullDocument] optionally holds the complete post-change state.
+  /// [timestamp] records when the change occurred (defaults to current time).
   const ChangeDetail({
     required this.collectionName,
     required this.objectId,
     required this.changeType,
     required this.fieldChanges,
     this.fullDocument,
-  });
+    this.timestamp,
+  }) : assert(collectionName != '', 'Collection name cannot be empty');
 
-  /// Creates a [ChangeDetail] instance from a JSON map.
-  ///
-  /// Expected JSON format:
-  /// ```json
-  /// {
-  ///   "collection_name": "tableName",
-  ///   "object_id": 123,
-  ///   "change_type": "update",
-  ///   "full_document": "optional_document_json",
-  ///   "field_changes": [...]
-  /// }
-  /// ```
-  ///
-  /// The [parser] function is used to deserialize the full_document field
-  /// back to the original type [T].
-  ///
-  /// If the change_type is invalid, defaults to [ChangeType.unknown].
-  /// If field_changes is missing, defaults to an empty list.
-  ///
-  /// Throws [TypeError] if required fields are missing or have wrong types.
-  factory ChangeDetail.fromJson(Map<String, dynamic> json) {
-    final changeTypeStr = json['change_type'] as String;
-    final changeType = ChangeType.values.firstWhere(
-      (e) => e.name.toLowerCase() == changeTypeStr.toLowerCase(),
-      orElse: () => ChangeType.unknown, // Default to unknown for invalid types
-    );
+  /// Deserializes a ChangeDetail from JSON with robust error handling.
+  factory ChangeDetail.fromJson(
+    Map<String, dynamic> json, {
+    T Function(Map<String, dynamic>)? documentParser,
+  }) {
+    try {
+      final collectionName = json['collection_name'];
+      if (collectionName is! String || collectionName.isEmpty) {
+        throw const FormatException(
+          'collection_name must be a non-empty string',
+        );
+      }
 
-    final fieldChangesJson = json['field_changes'] as List<dynamic>? ?? [];
-    final fieldChanges =
-        fieldChangesJson
-            .map((json) => FieldChange.fromJson(json as Map<String, dynamic>))
-            .toList();
+      final objectId = json['object_id'];
+      if (objectId is! int) {
+        throw const FormatException('object_id must be an integer');
+      }
 
-    final fullDocumentStr = json['full_document'] as String?;
+      final changeTypeStr = json['change_type'];
+      if (changeTypeStr is! String) {
+        throw const FormatException('change_type must be a string');
+      }
 
-    final documentParser = DocumentParserRegistry.getParser<T>();
+      final changeType = ChangeType.fromString(changeTypeStr);
 
-    final parsedFullDocument =
-        fullDocumentStr != null && documentParser != null
-            ? documentParser(fullDocumentStr)
-            : null;
+      final fieldChangesJson = json['field_changes'] as List<dynamic>? ?? [];
+      final fieldChanges = fieldChangesJson
+          .cast<Map<String, dynamic>>()
+          .map(FieldChange.fromJson)
+          .toList(growable: false);
 
-    return ChangeDetail<T>(
-      collectionName: json['collection_name'] as String,
-      objectId: json['object_id'] as int,
-      changeType: changeType,
-      fullDocument: parsedFullDocument,
-      fieldChanges: fieldChanges,
-    );
+      T? fullDocument;
+      final fullDocumentJson = json['full_document'];
+      if (fullDocumentJson != null && documentParser != null) {
+        if (fullDocumentJson is Map<String, dynamic>) {
+          fullDocument = documentParser(fullDocumentJson);
+        } else if (fullDocumentJson is String) {
+          final parsed = jsonDecode(fullDocumentJson) as Map<String, dynamic>;
+          fullDocument = documentParser(parsed);
+        } else {
+          throw const FormatException(
+            'full_document must be a Map<String, dynamic> or JSON string',
+          );
+        }
+      }
+
+      final timestamp = DateTime.tryParse(json['timestamp'] as String? ?? '');
+
+      return ChangeDetail<T>(
+        collectionName: collectionName,
+        objectId: objectId,
+        changeType: changeType,
+        fieldChanges: fieldChanges,
+        fullDocument: fullDocument,
+        timestamp: timestamp ?? DateTime.now(),
+      );
+    } catch (e) {
+      throw Exception('Failed to deserialize ChangeDetail<$T> from JSON $e');
+    }
   }
 
-  /// The name of the collection or table where the change occurred.
+  /// The name of the collection where this change occurred.
   final String collectionName;
 
-  /// The unique identifier of the object that was changed.
+  /// The unique identifier of the changed object within its collection.
   final int objectId;
 
-  /// The type of change that occurred (insert, update, or delete).
+  /// The type of database operation that was performed.
   final ChangeType changeType;
 
-  /// Optional complete document representation after the change.
+  /// When this change was recorded.
+  final DateTime? timestamp;
+
+  /// The complete document state after the change was applied.
   ///
-  /// This contains the parsed object representation of the entire
-  /// object after the change was applied.
+  /// This is optional and may be null if full document tracking is disabled
+  /// or if the document was deleted.
   final T? fullDocument;
 
-  /// List of individual field changes within this object.
+  /// Individual field-level changes within this object.
   ///
-  /// Each [FieldChange] represents a modification to a specific field,
-  /// showing the before and after values.
+  /// This list is immutable and contains detailed before/after information
+  /// for each modified field.
   final List<FieldChange> fieldChanges;
 
-  /// Converts this [ChangeDetail] instance to a JSON map.
-  ///
-  /// Returns a map suitable for JSON serialization containing all
-  /// the change information including nested field changes.
-  Map<String, dynamic> toJson() {
-    return {
-      'collection_name': collectionName,
-      'object_id': objectId,
-      'change_type': changeType.name,
-      'full_document': fullDocument?.toJson(),
-      'field_changes': fieldChanges.map((fc) => fc.toJson()).toList(),
-    };
-  }
+  /// Indicates whether this change has any actual field modifications.
+  bool get hasFieldChanges => fieldChanges.isNotEmpty;
 
-  /// Returns a string representation of this change detail.
-  ///
-  /// Format: `ChangeDetail<T>(collection: name, id: objectId,
-  /// type: changeType, changes: count)`
-  ///
-  /// The changes count shows how many individual field changes are included.
-  @override
-  String toString() {
-    return 'ChangeDetail<$T>('
-        'collection: $collectionName, id: $objectId, '
-        'type: $changeType, changes: ${fieldChanges.length}, '
-        'fullDocument: ${fullDocument?.toJson()})';
-  }
+  /// Returns only the field changes that represent actual value modifications.
+  List<FieldChange> get significantChanges =>
+      fieldChanges.where((change) => change.hasActualChange).toList();
 
-  /// Creates a copy of this [ChangeDetail] with some fields replaced.
+  /// Gets the field names that were modified in this change.
+  Set<String> get modifiedFields =>
+      fieldChanges.map((change) => change.fieldName).toSet();
+
+  /// Checks if a specific field was modified in this change.
+  bool wasFieldModified(String fieldName) =>
+      fieldChanges.any((change) => change.fieldName == fieldName);
+
+  /// Gets the field change for a specific field, if it exists.
+  FieldChange? getFieldChange(String fieldName) =>
+      fieldChanges.cast<FieldChange?>().firstWhere(
+        (change) => change?.fieldName == fieldName,
+        orElse: () => null,
+      );
+
+  /// Serializes this change detail to JSON.
+  Map<String, dynamic> toJson() => {
+    'collection_name': collectionName,
+    'object_id': objectId,
+    'change_type': changeType.value,
+    'timestamp': timestamp?.toIso8601String(),
+    'full_document': fullDocument?.toJson(),
+    'field_changes': fieldChanges.map((fc) => fc.toJson()).toList(),
+  };
+
+  /// Creates a copy with modified fields.
   ChangeDetail<T> copyWith({
     String? collectionName,
     int? objectId,
     ChangeType? changeType,
+    DateTime? timestamp,
     T? fullDocument,
     List<FieldChange>? fieldChanges,
-  }) {
-    return ChangeDetail<T>(
-      collectionName: collectionName ?? this.collectionName,
-      objectId: objectId ?? this.objectId,
-      changeType: changeType ?? this.changeType,
-      fullDocument: fullDocument ?? this.fullDocument,
-      fieldChanges: fieldChanges ?? this.fieldChanges,
-    );
+  }) => ChangeDetail<T>(
+    collectionName: collectionName ?? this.collectionName,
+    objectId: objectId ?? this.objectId,
+    changeType: changeType ?? this.changeType,
+    timestamp: timestamp ?? this.timestamp,
+    fullDocument: fullDocument ?? this.fullDocument,
+    fieldChanges: fieldChanges ?? this.fieldChanges,
+  );
+
+  /// Provides detailed string representation for debugging and logging.
+  @override
+  String toString() {
+    final buffer =
+        StringBuffer()
+          ..write('ChangeDetail<$T>(')
+          ..write('collection: $collectionName, ')
+          ..write('id: $objectId, ')
+          ..write('type: $changeType, ')
+          ..write('timestamp: ${timestamp?.toIso8601String()}, ')
+          ..write('fieldChanges: ${fieldChanges.length}')
+          ..write(')');
+
+    return buffer.toString();
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is ChangeDetail<T> &&
-        other.collectionName == collectionName &&
-        other.objectId == objectId &&
-        other.changeType == changeType &&
-        other.fullDocument == fullDocument &&
-        _listEquals(other.fieldChanges, fieldChanges);
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChangeDetail<T> &&
+          collectionName == other.collectionName &&
+          objectId == other.objectId &&
+          changeType == other.changeType &&
+          timestamp == other.timestamp &&
+          fullDocument == other.fullDocument &&
+          _listEquals(fieldChanges, other.fieldChanges);
 
   @override
-  int get hashCode {
-    return collectionName.hashCode ^
-        objectId.hashCode ^
-        changeType.hashCode ^
-        fullDocument.hashCode ^
-        fieldChanges.hashCode;
-  }
+  int get hashCode => Object.hash(
+    collectionName,
+    objectId,
+    changeType,
+    timestamp,
+    fullDocument,
+    Object.hashAll(fieldChanges),
+  );
 
-  /// Helper method to compare lists for equality.
-  bool _listEquals<E>(List<E> a, List<E> b) {
+  /// Efficiently compares two lists for equality.
+  static bool _listEquals<E>(List<E> a, List<E> b) {
+    if (identical(a, b)) return true;
     if (a.length != b.length) return false;
+
     for (var i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
     }
+
     return true;
   }
 }

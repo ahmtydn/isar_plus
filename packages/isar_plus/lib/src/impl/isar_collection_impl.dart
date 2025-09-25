@@ -256,7 +256,9 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   }
 
   @override
-  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>() {
+  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>({
+    T Function(Map<String, dynamic> json)? documentParser,
+  }) {
     if (IsarCore.kIsWeb) {
       throw UnsupportedError('Detailed watchers are not supported on the web');
     }
@@ -286,7 +288,10 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
     port.listen((data) {
       if (data is String) {
         final changeDetailMap = json.decode(data) as Map<String, dynamic>;
-        final changeDetail = ChangeDetail<T>.fromJson(changeDetailMap);
+        final changeDetail = ChangeDetail<T>.fromJson(
+          changeDetailMap,
+          documentParser: documentParser,
+        );
         controller.add(changeDetail);
       }
     });
