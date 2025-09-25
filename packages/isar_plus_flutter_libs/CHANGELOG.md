@@ -1,4 +1,16 @@
+## 1.0.20 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.20 -->
+
+## What's Changed
+### Other Changes
+* refactor: Make fullDocument non-nullable with direct serialization by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/25
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.19...1.0.20
+
 ## 1.0.19 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.19 -->
 
