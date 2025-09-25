@@ -1,4 +1,17 @@
+## 1.0.16 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.16 -->
+
+## What's Changed
+### Other Changes
+* feat: improve error handling in ChangeDetail JSON deserialization and enhance Windows build script output by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/20
+* feat: remove unnecessary defines for MDBX_LOCK_SUFFIX and UNICODE in build script by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/21
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.15...1.0.16
+
 ## 1.0.15 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.15 -->
 
