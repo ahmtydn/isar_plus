@@ -20,9 +20,10 @@ mod sorted_query_iterator;
 mod unsorted_distinct_query_iterator;
 mod unsorted_query_iterator;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum QueryIndex {
     Primary(i64, i64),
+    #[allow(dead_code)]
     Secondary(IndexKey, IndexKey),
 }
 
@@ -61,7 +62,7 @@ impl NativeQuery {
         all_collections: &'a [NativeCollection],
         offset: Option<u32>,
         limit: Option<u32>,
-    ) -> NativeQueryCursor<'_> {
+    ) -> NativeQueryCursor<'a> {
         let collection = &all_collections[self.collection_index as usize];
         let iterator = QueryIterator::new(
             txn,
