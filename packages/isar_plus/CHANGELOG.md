@@ -1,18 +1,32 @@
-## 1.0.4
+## 1.0.11
 
-### Fixed
-- **Watchers**: Fixed duplicate event notifications in detailed watchers
-  - Delete and update operations now trigger only 1 event instead of 4
-  - Resolved issue where `register_detailed_changes_for_watchers` was registering duplicate watchers
-  - Optimized watcher registration in `put()` and `delete()` methods to prevent redundant notifications
-- **Performance**: Improved watcher notification efficiency by preventing duplicate registrations
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.11 -->
 
-### Technical Changes
-- Modified `register_detailed_changes_for_watchers` to check for existing watchers before adding
-- Streamlined watcher registration logic in native collection operations
-- Reduced unnecessary `register_change` calls in put/delete operations
+## What's Changed
+### Other Changes
+* feat: Complete SQLite detailed change detection and fix all warnings by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/15
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.10...1.0.11
+
+## 1.0.9
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.9 -->
+
+## What's Changed
+### Other Changes
+* fix: update LIBMDBX_TAG to v0.13.8 for compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/9
+* refactor: remove unused feature flags and simplify function signatures by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/11
+* feat: Update libmdbx from v0.12.7 to v0.13.8  by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/12
+* refactor: update build process to manually create amalgamated source … by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/13
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.8...1.0.9
+
 
 ## 1.0.3
+
 
 ### Updated
 - **libmdbx**: Updated from v0.12.7 to v0.13.8
