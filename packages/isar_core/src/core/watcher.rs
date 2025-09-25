@@ -31,7 +31,7 @@ pub struct ChangeDetail {
     pub object_id: i64,
     pub key: String, 
     pub field_changes: Vec<FieldChange>,
-    pub full_document: Option<String>,
+    pub full_document: String,
 }
 
 struct Watcher {

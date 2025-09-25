@@ -2,7 +2,7 @@ use crate::core::data_type::DataType;
 use crate::core::reader::IsarReader;
 use crate::core::watcher::{ChangeDetail, ChangeType, FieldChange};
 use serde_json::Value as JsonValue;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// Detects and tracks changes between object states for database change streams.
 pub struct ChangeDetector;
@@ -56,10 +56,11 @@ impl ChangeDetector {
         object_id: i64,
         new_object: &R,
     ) -> Option<ChangeDetail> {
-        let (field_changes, full_document_fields) = Self::extract_all_fields::<R, R>(new_object, None);
+        let field_changes = Self::extract_all_fields::<R, R>(new_object, None);
         let key = Self::extract_key_from_object(new_object);
         
-        let full_document = Self::serialize_document_fields(&full_document_fields);
+        // Directly serialize the new_object instead of reconstructing from fields
+        let full_document = Self::serialize_isar_object(new_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Insert,
@@ -78,6 +79,9 @@ impl ChangeDetector {
     ) -> Option<ChangeDetail> {
         let field_changes = Self::extract_field_changes_for_delete(old_object);
         let key = Self::extract_key_from_object(old_object);
+        
+        // Directly serialize the old_object instead of reconstructing from fields
+        let full_document = Self::serialize_isar_object(old_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Delete,
@@ -85,7 +89,7 @@ impl ChangeDetector {
             object_id,
             key,
             field_changes,
-            full_document: None,
+            full_document,
         })
     }
 
@@ -95,14 +99,16 @@ impl ChangeDetector {
         old_object: &R1,
         new_object: &R2,
     ) -> Option<ChangeDetail> {
-        let (field_changes, full_document_fields) = Self::extract_all_fields(new_object, Some(old_object));
+        let field_changes = Self::extract_all_fields(new_object, Some(old_object));
         
         if field_changes.is_empty() {
             return None;
         }
 
         let key = Self::extract_key_from_object(new_object);
-        let full_document = Self::serialize_document_fields(&full_document_fields);
+        
+        // Directly serialize the new_object instead of reconstructing from fields
+        let full_document = Self::serialize_isar_object(new_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Update,
@@ -117,9 +123,8 @@ impl ChangeDetector {
     fn extract_all_fields<R1: IsarReader, R2: IsarReader>(
         new_object: &R1,
         old_object: Option<&R2>,
-    ) -> (Vec<FieldChange>, HashMap<String, String>) {
+    ) -> Vec<FieldChange> {
         let mut field_changes = Vec::new();
-        let mut full_document_fields = HashMap::new();
 
         for (index, (field_name, data_type)) in new_object.properties().enumerate() {
             let field_index = index + 1;
@@ -144,14 +149,9 @@ impl ChangeDetector {
                     new_value: processed_new_value.clone(),
                 });
             }
-
-            // Always include current field value in full document if present
-            if let Some(value) = &processed_new_value {
-                full_document_fields.insert(field_name.to_string(), value.clone());
-            }
         }
 
-        (field_changes, full_document_fields)
+        field_changes
     }
 
     fn extract_field_changes_for_delete<R: IsarReader>(old_object: &R) -> Vec<FieldChange> {
@@ -202,19 +202,19 @@ impl ChangeDetector {
         }
     }
 
-    fn serialize_document_fields(fields: &HashMap<String, String>) -> Option<String> {
-        if fields.is_empty() {
-            None
-        } else {
-            // Create a proper JSON object without double-escaping
-            let mut json_obj = serde_json::Map::new();
-            for (key, value) in fields {
-                // Try to parse the value as JSON first, if it fails, treat it as a string
-                let json_value = serde_json::from_str::<JsonValue>(value)
-                    .unwrap_or_else(|_| JsonValue::String(value.clone()));
-                json_obj.insert(key.clone(), json_value);
+    /// Directly serializes an IsarReader object to JSON string
+    fn serialize_isar_object<R: IsarReader>(reader: &R) -> String {
+        let mut buffer = Vec::new();
+        let mut serializer = serde_json::Serializer::new(&mut buffer);
+        
+        match reader.serialize(&mut serializer) {
+            Ok(()) => {
+                String::from_utf8(buffer)
+                    .unwrap_or_else(|_| panic!("Failed to convert serialized data to UTF-8 string"))
             }
-            serde_json::to_string(&JsonValue::Object(json_obj)).ok()
+            Err(_) => {
+                panic!("Failed to serialize IsarReader object")
+            }
         }
     }
 
@@ -310,6 +310,9 @@ impl ChangeDetector {
     ) -> Option<ChangeDetail> {
         let field_changes = Self::extract_json_fields_for_delete(old_object);
         let key = Self::extract_key_from_json(old_object);
+        
+        // Create full_document from the deleted object
+        let full_document = Self::create_clean_full_document(old_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Delete,
@@ -317,7 +320,7 @@ impl ChangeDetector {
             object_id,
             key,
             field_changes,
-            full_document: None,
+            full_document,
         })
     }
 
@@ -415,9 +418,13 @@ impl ChangeDetector {
     }
 
     /// Creates a clean full document JSON string with unpacked nested JSON values
-    fn create_clean_full_document(object: &JsonValue) -> Option<String> {
+    fn create_clean_full_document(object: &JsonValue) -> String {
         match object {
             JsonValue::Object(map) => {
+                if map.is_empty() {
+                    panic!("Cannot create full document from empty JSON object");
+                }
+                
                 let mut clean_map = serde_json::Map::new();
                 
                 for (key, value) in map {
@@ -437,9 +444,12 @@ impl ChangeDetector {
                     clean_map.insert(key.clone(), clean_value);
                 }
                 
-                serde_json::to_string(&JsonValue::Object(clean_map)).ok()
+                serde_json::to_string(&JsonValue::Object(clean_map))
+                    .unwrap_or_else(|_| panic!("Failed to serialize clean full document"))
             }
-            _ => serde_json::to_string(object).ok()
+            JsonValue::Null => panic!("Cannot create full document from null JSON value"),
+            _ => serde_json::to_string(object)
+                .unwrap_or_else(|_| panic!("Failed to serialize JSON value to full document"))
         }
     }
 
