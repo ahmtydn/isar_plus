@@ -28,10 +28,10 @@ impl TxnWithCursor {
         )
     }
 
-    fn put(&mut self, collection: &NativeCollection, id: i64, bytes: &[u8]) -> Result<()> {
+    fn put(&mut self, collection: &NativeCollection, id: i64, bytes: &[u8], all_collections: &[NativeCollection]) -> Result<()> {
         self.with_mut(|mut this| {
             this.txn
-                .guard(|| collection.put(this.txn, &mut this.change_set, this.cursor, id, bytes))
+                .guard(|| collection.put(this.txn, &mut this.change_set, this.cursor, id, bytes, all_collections))
         })
     }
 
@@ -78,7 +78,7 @@ impl<'a> IsarInsert<'a> for NativeInsert<'a> {
             if buffer.len() > MAX_OBJ_SIZE as usize {
                 return Result::Err(IsarError::ObjectLimitReached {});
             }
-            self.txn_cursor.put(self.collection, id, &buffer)?;
+            self.txn_cursor.put(self.collection, id, &buffer, self.all_collections)?;
 
             self.remaining -= 1;
             buffer.clear();

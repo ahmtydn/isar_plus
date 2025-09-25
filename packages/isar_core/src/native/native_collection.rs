@@ -5,10 +5,13 @@ use super::native_index::NativeIndex;
 use super::native_txn::{NativeTxn, TxnCursor};
 use super::query::NativeQuery;
 use super::{BytesToId, IdToBytes};
+use crate::core::change_detector::ChangeDetector;
 use crate::core::data_type::DataType;
 use crate::core::error::{IsarError, Result};
+use crate::core::reader::IsarReader;
 use crate::core::value::IsarValue;
 use crate::core::watcher::{ChangeSet, CollectionWatchers};
+use super::native_reader::NativeReader;
 use std::sync::atomic::{self, AtomicI64};
 use std::sync::Arc;
 
@@ -135,38 +138,63 @@ impl NativeCollection {
         cursor: &mut TxnCursor<'a>,
         id: i64,
         bytes: &[u8],
+        all_collections: &[NativeCollection],
     ) -> Result<()> {
         let id_bytes = id.to_id_bytes();
 
-        // we only fetch the previous object if there are query watchers or indexes
-        if !self.indexes.is_empty() || self.watchers.has_query_watchers() {
-            if let Some((_, bytes)) = cursor.move_to(&id_bytes)? {
-                let object = IsarDeserializer::from_bytes(&bytes);
-                // register old object change
-                change_set.register_change(&self.watchers, id, &object);
+        // For detailed watchers, we need to capture both old and new objects
+        let old_object = if !self.indexes.is_empty() || self.watchers.has_query_watchers() || self.watchers.has_detailed_watchers() {
+            cursor.move_to(&id_bytes)?.map(|(_, bytes)| IsarDeserializer::from_bytes(&bytes))
+        } else {
+            None
+        };
 
-                if !self.indexes.is_empty() {
-                    let mut buffer = txn.take_buffer();
-                    // delete old object indexes
-                    for index in &self.indexes {
-                        buffer = index.delete_for_object(txn, id, object, buffer)?;
-                    }
-                    txn.put_buffer(buffer);
+        // Register old object change for simple watchers
+        if let Some(old_obj) = &old_object {
+            change_set.register_change(&self.watchers, id, old_obj);
+
+            if !self.indexes.is_empty() {
+                let mut buffer = txn.take_buffer();
+                // delete old object indexes
+                for index in &self.indexes {
+                    buffer = index.delete_for_object(txn, id, *old_obj, buffer)?;
                 }
+                txn.put_buffer(buffer);
             }
         }
 
-        let object = IsarDeserializer::from_bytes(&bytes);
-        // register new object change
-        change_set.register_change(&self.watchers, id, &object);
+        let new_object = IsarDeserializer::from_bytes(&bytes);
+        
+        // Register new object change for simple watchers
+        change_set.register_change(&self.watchers, id, &new_object);
+
+        // Register detailed watchers for change detection
+        change_set.register_detailed_changes_for_watchers(&self.watchers);
+
+        // Detect detailed changes if there are detailed watchers
+        if self.watchers.has_detailed_watchers() {
+            let old_reader = old_object.as_ref().map(|obj| {
+                NativeReader::new(id, *obj, self, all_collections)
+            });
+            let new_reader = NativeReader::new(id, new_object, self, all_collections);
+            
+            if let Some(change_detail) = ChangeDetector::detect_changes(
+                &self.name,
+                id,
+                old_reader.as_ref(),
+                Some(&new_reader),
+            ) {
+                change_set.register_detailed_change(change_detail);
+            }
+        }
 
         if !self.indexes.is_empty() {
             let mut buffer = txn.take_buffer();
 
             // create new object indexes
             for index in &self.indexes {
-                buffer = index.create_for_object(txn, id, object, buffer, |id| {
-                    self.delete(txn, change_set, cursor, id)?;
+                buffer = index.create_for_object(txn, id, new_object, buffer, |id| {
+                    self.delete(txn, change_set, cursor, id, all_collections)?;
                     Ok(())
                 })?;
             }
@@ -184,10 +212,30 @@ impl NativeCollection {
         change_set: &mut ChangeSet,
         cursor: &mut TxnCursor<'a>,
         id: i64,
+        all_collections: &[NativeCollection],
     ) -> Result<bool> {
         if let Some((_, bytes)) = cursor.move_to(&id.to_id_bytes())? {
             let object = IsarDeserializer::from_bytes(&bytes);
+            
+            // Register change for simple watchers
             change_set.register_change(&self.watchers, id, &object);
+            
+            // Register detailed watchers for change detection
+            change_set.register_detailed_changes_for_watchers(&self.watchers);
+
+            // Detect detailed changes if there are detailed watchers
+            if self.watchers.has_detailed_watchers() {
+                let old_reader = NativeReader::new(id, object, self, all_collections);
+                
+                if let Some(change_detail) = ChangeDetector::detect_changes(
+                    &self.name,
+                    id,
+                    Some(&old_reader),
+                    None::<&NativeReader>,
+                ) {
+                    change_set.register_detailed_change(change_detail);
+                }
+            }
 
             if !self.indexes.is_empty() {
                 let mut buffer = txn.take_buffer();
@@ -211,6 +259,7 @@ impl NativeCollection {
         cursor: &mut TxnCursor<'a>,
         id: i64,
         updates: &[(u16, Option<IsarValue>)],
+        all_collections: &[NativeCollection],
     ) -> Result<bool> {
         if let Some((_, old_object)) = cursor.move_to(&id.to_id_bytes())? {
             let mut buffer = txn.take_buffer();
@@ -222,7 +271,7 @@ impl NativeCollection {
             }
 
             let buffer = new_object.finish();
-            self.put(txn, change_set, cursor, id, &buffer)?;
+            self.put(txn, change_set, cursor, id, &buffer, all_collections)?;
             txn.put_buffer(buffer);
 
             Ok(true)
@@ -270,10 +319,36 @@ impl NativeCollection {
         }
     }
 
-    pub fn clear(&self, txn: &NativeTxn) -> Result<()> {
+    pub fn clear(&self, txn: &NativeTxn, all_collections: &[NativeCollection]) -> Result<()> {
         let db = self.db.ok_or(IsarError::UnsupportedOperation {})?;
         let mut change_set = txn.get_change_set();
+        
+        // Register simple watchers
         change_set.register_all(&self.watchers);
+        
+        // Register detailed watchers for change detection
+        change_set.register_detailed_changes_for_watchers(&self.watchers);
+
+        // For detailed watchers, we need to record all objects being deleted
+        if self.watchers.has_detailed_watchers() {
+            let mut cursor = self.get_cursor(txn)?;
+            for result in cursor.iter()? {
+                let (key, value) = result;
+                let id = key.to_id();
+                let object = IsarDeserializer::from_bytes(value);
+                let old_reader = NativeReader::new(id, object, self, all_collections);
+                
+                if let Some(change_detail) = ChangeDetector::detect_changes(
+                    &self.name,
+                    id,
+                    Some(&old_reader),
+                    None::<&NativeReader>,
+                ) {
+                    change_set.register_detailed_change(change_detail);
+                }
+            }
+        }
+        
         txn.clear_db(db)?;
         for index in &self.indexes {
             index.clear(txn)?;

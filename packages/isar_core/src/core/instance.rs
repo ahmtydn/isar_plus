@@ -6,7 +6,7 @@ use super::query_builder::IsarQueryBuilder;
 use super::reader::IsarReader;
 use super::schema::IsarSchema;
 use super::value::IsarValue;
-use super::watcher::{WatchHandle, WatcherCallback};
+use crate::core::watcher::{WatchHandle, WatcherCallback, DetailedWatcherCallback};
 use serde::Deserializer;
 
 pub struct CompactCondition {
@@ -150,6 +150,8 @@ pub trait IsarInstance: Sized {
     }
 
     fn watch(&self, collection_index: u16, callback: WatcherCallback) -> Result<WatchHandle>;
+
+    fn watch_detailed(&self, collection_index: u16, callback: DetailedWatcherCallback) -> Result<WatchHandle>;
 
     fn watch_object(
         &self,

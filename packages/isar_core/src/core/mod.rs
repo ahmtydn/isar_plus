@@ -1,3 +1,4 @@
+pub mod change_detector;
 pub mod cursor;
 pub mod data_type;
 pub mod de;

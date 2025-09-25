@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, c_void, CStr};
+use std::ffi::{c_char, c_int, c_void, CStr, CString};
 use std::mem;
 use std::sync::OnceLock;
 
@@ -37,8 +37,37 @@ static DART_FUNCTIONS: OnceLock<DartFunctions> = OnceLock::new();
 pub type DartPort = i64;
 type DartIsolate = *mut std::ffi::c_void;
 
+#[repr(C)]
+pub enum DartCObjectType {
+    Null = 0,
+    Bool = 1,
+    Int32 = 2,
+    Int64 = 3,
+    Double = 4,
+    String = 5,
+    TypedData = 6,
+    Array = 7,
+    Map = 8,
+}
+
+#[repr(C)]
+pub struct DartCObject {
+    pub r#type: DartCObjectType,
+    pub value: DartCObjectValue,
+}
+
+#[repr(C)]
+pub union DartCObjectValue {
+    pub as_bool: bool,
+    pub as_int32: i32,
+    pub as_int64: i64,
+    pub as_double: f64,
+    pub as_string: *const c_char,
+}
+
 pub struct DartFunctions {
     pub post_integer: unsafe extern "C" fn(DartPort, i64) -> bool,
+    pub post_c_object: unsafe extern "C" fn(DartPort, *mut DartCObject) -> bool,
     pub current_isolate: unsafe extern "C" fn() -> DartIsolate,
     pub exit_isolate: unsafe extern "C" fn(),
     pub enter_isolate: unsafe extern "C" fn(DartIsolate),
@@ -47,6 +76,21 @@ pub struct DartFunctions {
 pub unsafe fn dart_post_int(port: DartPort, value: i64) {
     if let Some(dartfn) = DART_FUNCTIONS.get() {
         (dartfn.post_integer)(port, value);
+    }
+}
+
+pub unsafe fn dart_post_string(port: DartPort, string: String) {
+    if let Some(dartfn) = DART_FUNCTIONS.get() {
+        let c_string = CString::new(string).unwrap();
+        let mut dart_object = DartCObject {
+            r#type: DartCObjectType::String,
+            value: DartCObjectValue {
+                as_string: c_string.as_ptr(),
+            },
+        };
+        (dartfn.post_c_object)(port, &mut dart_object);
+        // Keep c_string alive until post_c_object returns
+        drop(c_string);
     }
 }
 
@@ -69,6 +113,7 @@ pub unsafe extern "C" fn isar_connect_dart_api(ptr: *mut c_void) {
         }
         DartFunctions {
             post_integer: mem::transmute(api.lookup_fn("Dart_PostInteger")),
+            post_c_object: mem::transmute(api.lookup_fn("Dart_PostCObject")),
             current_isolate: mem::transmute(api.lookup_fn("Dart_CurrentIsolate")),
             exit_isolate: mem::transmute(api.lookup_fn("Dart_ExitIsolate")),
             enter_isolate: mem::transmute(api.lookup_fn("Dart_EnterIsolate")),

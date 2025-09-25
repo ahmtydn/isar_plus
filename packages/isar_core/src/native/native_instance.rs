@@ -12,7 +12,7 @@ use crate::core::error::{IsarError, Result};
 use crate::core::instance::{Aggregation, CompactCondition, IsarInstance};
 use crate::core::schema::IsarSchema;
 use crate::core::value::IsarValue;
-use crate::core::watcher::{WatchHandle, WatcherCallback};
+use crate::core::watcher::{WatchHandle, WatcherCallback, DetailedWatcherCallback};
 use intmap::IntMap;
 use parking_lot::Mutex;
 use std::fs::remove_file;
@@ -191,14 +191,14 @@ impl IsarInstance for NativeInstance {
         self.verify_instance_id(txn.instance_id)?;
         let collection = self.get_collection(collection_index)?;
         let mut cursor = collection.get_cursor(txn)?;
-        txn.guard(|| collection.update(txn, &mut txn.get_change_set(), &mut cursor, id, updates))
+        txn.guard(|| collection.update(txn, &mut txn.get_change_set(), &mut cursor, id, updates, &self.collections))
     }
 
     fn delete<'a>(&'a self, txn: &'a Self::Txn, collection_index: u16, id: i64) -> Result<bool> {
         self.verify_instance_id(txn.instance_id)?;
         let collection = self.get_collection(collection_index)?;
         let mut cursor = collection.get_cursor(txn)?;
-        txn.guard(|| collection.delete(txn, &mut txn.get_change_set(), &mut cursor, id))
+        txn.guard(|| collection.delete(txn, &mut txn.get_change_set(), &mut cursor, id, &self.collections))
     }
 
     fn count(&self, txn: &Self::Txn, collection_index: u16) -> Result<u32> {
@@ -210,7 +210,7 @@ impl IsarInstance for NativeInstance {
     fn clear(&self, txn: &Self::Txn, collection_index: u16) -> Result<()> {
         self.verify_instance_id(txn.instance_id)?;
         let collection = self.get_collection(collection_index)?;
-        txn.guard(|| collection.clear(txn))
+        txn.guard(|| collection.clear(txn, &self.collections))
     }
 
     fn get_size(
@@ -276,7 +276,7 @@ impl IsarInstance for NativeInstance {
             let change_set = &mut txn.get_change_set();
             let mut cursor = collection.get_cursor(txn)?;
             for id in &ids {
-                collection.update(txn, change_set, &mut cursor, *id, updates)?;
+                collection.update(txn, change_set, &mut cursor, *id, updates, &self.collections)?;
             }
             Ok(ids.len() as u32)
         })
@@ -298,7 +298,7 @@ impl IsarInstance for NativeInstance {
             let change_set = &mut txn.get_change_set();
             let mut cursor = collection.get_cursor(txn)?;
             for id in &ids {
-                collection.delete(txn, change_set, &mut cursor, *id)?;
+                collection.delete(txn, change_set, &mut cursor, *id, &self.collections)?;
             }
             Ok(ids.len() as u32)
         })
@@ -307,6 +307,12 @@ impl IsarInstance for NativeInstance {
     fn watch(&self, collection_index: u16, callback: WatcherCallback) -> Result<WatchHandle> {
         let collection = self.get_collection(collection_index)?;
         let handle = collection.watchers.watch(callback);
+        Ok(handle)
+    }
+
+    fn watch_detailed(&self, collection_index: u16, callback: DetailedWatcherCallback) -> Result<WatchHandle> {
+        let collection = self.get_collection(collection_index)?;
+        let handle = collection.watchers.watch_detailed(callback);
         Ok(handle)
     }
 

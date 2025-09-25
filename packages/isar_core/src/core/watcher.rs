@@ -2,14 +2,44 @@ use arc_swap::ArcSwap;
 use intmap::IntMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use serde::{Serialize, Deserialize};
 
 static WATCHER_ID: AtomicU64 = AtomicU64::new(0);
 
 pub type WatcherCallback = Box<dyn Fn() + Send + Sync + 'static>;
+pub type DetailedWatcherCallback = Box<dyn Fn(ChangeDetail) + Send + Sync + 'static>;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ChangeType {
+    Insert,
+    Update,
+    Delete,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FieldChange {
+    pub field_name: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChangeDetail {
+    pub change_type: ChangeType,
+    pub collection_name: String,
+    pub object_id: i64,
+    pub field_changes: Vec<FieldChange>,
+    pub full_document: Option<String>, // JSON representation of the full document after change
+}
 
 struct Watcher {
     id: u64,
     callback: WatcherCallback,
+}
+
+struct DetailedWatcher {
+    id: u64,
+    callback: DetailedWatcherCallback,
 }
 
 impl Watcher {
@@ -25,9 +55,27 @@ impl Watcher {
     }
 
     pub fn notify(&self) {
-        (*self.callback)()
+        (self.callback)();
     }
 }
+
+impl DetailedWatcher {
+    pub fn new(callback: DetailedWatcherCallback) -> Self {
+        DetailedWatcher {
+            id: WATCHER_ID.fetch_add(1, Ordering::SeqCst),
+            callback,
+        }
+    }
+
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn notify(&self, change: ChangeDetail) {
+        (*self.callback)(change)
+    }
+}
+
 
 pub struct WatchHandle {
     stop_callback: Option<Box<dyn FnOnce()>>,
@@ -58,12 +106,35 @@ pub(crate) trait QueryMatches: Clone {
 
 pub(crate) struct ChangeSet {
     changes: IntMap<Arc<Watcher>>,
+    detailed_changes: Vec<ChangeDetail>,
+    detailed_watchers: Vec<Arc<DetailedWatcher>>,
 }
 
 impl ChangeSet {
     pub fn new() -> Self {
         ChangeSet {
             changes: IntMap::new(),
+            detailed_changes: Vec::new(),
+            detailed_watchers: Vec::new(),
+        }
+    }
+
+    pub fn add_detailed_watcher(&mut self, watcher: Arc<DetailedWatcher>) {
+        self.detailed_watchers.push(watcher);
+    }
+
+    pub fn remove_detailed_watcher(&mut self, watcher_id: u64) {
+        self.detailed_watchers.retain(|w| w.get_id() != watcher_id);
+    }
+
+    pub fn register_detailed_change(&mut self, change: ChangeDetail) {
+        self.detailed_changes.push(change);
+    }
+
+    pub fn register_detailed_changes_for_watchers<Q: QueryMatches>(&mut self, cw: &CollectionWatchers<Q>) {
+        let w = cw.col_watchers.load();
+        for watcher in &w.detailed_watchers {
+            self.detailed_watchers.push(watcher.clone());
         }
     }
 
@@ -109,8 +180,18 @@ impl ChangeSet {
     }
 
     pub fn notify_watchers(&self) {
+        // Notify simple watchers
         for watcher in self.changes.values() {
             watcher.notify();
+        }
+        
+        // Notify detailed watchers with each change separately
+        if !self.detailed_changes.is_empty() && !self.detailed_watchers.is_empty() {
+            for change_detail in &self.detailed_changes {
+                for watcher in &self.detailed_watchers {
+                    watcher.notify(change_detail.clone());
+                }
+            }
         }
     }
 }
@@ -120,6 +201,7 @@ struct RawCollectionWatchers<Q: QueryMatches> {
     watchers: Vec<Arc<Watcher>>,
     object_watchers: IntMap<Vec<Arc<Watcher>>>,
     query_watchers: Vec<(Q, Arc<Watcher>)>,
+    detailed_watchers: Vec<Arc<DetailedWatcher>>,
 }
 
 pub(crate) struct CollectionWatchers<Q: QueryMatches> {
@@ -132,6 +214,7 @@ impl<Q: QueryMatches + 'static> CollectionWatchers<Q> {
             watchers: Vec::new(),
             object_watchers: IntMap::new(),
             query_watchers: Vec::new(),
+            detailed_watchers: Vec::new(),
         };
         let watchers = CollectionWatchers {
             col_watchers: ArcSwap::new(Arc::new(raw)),
@@ -209,8 +292,33 @@ impl<Q: QueryMatches + 'static> CollectionWatchers<Q> {
         !self.col_watchers.load().query_watchers.is_empty()
     }
 
+    pub fn watch_detailed(self: &Arc<Self>, callback: DetailedWatcherCallback) -> WatchHandle {
+        let watcher = Arc::new(DetailedWatcher::new(callback));
+        let watcher_id = watcher.get_id();
+
+        let watchers = self.clone();
+        watchers.col_watchers.rcu(|cw| {
+            let mut cw = (**cw).clone();
+            cw.detailed_watchers.push(watcher.clone());
+            cw
+        });
+
+        WatchHandle::new(Box::new(move || {
+            watchers.col_watchers.rcu(|cw| {
+                let mut cw = (**cw).clone();
+                cw.detailed_watchers.retain(|w| w.get_id() != watcher_id);
+                cw
+            });
+        }))
+    }
+
+    pub fn has_detailed_watchers(&self) -> bool {
+        !self.col_watchers.load().detailed_watchers.is_empty()
+    }
+
     pub fn has_watchers(&self) -> bool {
         let w = self.col_watchers.load();
         !w.watchers.is_empty() || !w.object_watchers.is_empty() || !w.query_watchers.is_empty()
     }
 }
+
