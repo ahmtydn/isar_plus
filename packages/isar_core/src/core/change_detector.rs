@@ -22,12 +22,27 @@ impl ChangeDetector {
                 for (index, (field_name, data_type)) in new_obj.properties().enumerate() {
                     let new_value = Self::read_field_value(new_obj, index + 1, data_type);
                     if let Some(value) = &new_value {
+                        let processed_value = if field_name == "value" && data_type == DataType::String {
+                            // Try to parse the JSON string and extract the inner value
+                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
+                                if let Some(inner_value) = parsed.get("value") {
+                                    inner_value.to_string()
+                                } else {
+                                    value.clone()
+                                }
+                            } else {
+                                value.clone()
+                            }
+                        } else {
+                            value.clone()
+                        };
+                        
                         field_changes.push(FieldChange {
                             field_name: field_name.to_string(),
                             old_value: None,
-                            new_value: Some(value.clone()),
+                            new_value: Some(processed_value.clone()),
                         });
-                        full_document_fields.insert(field_name.to_string(), value.clone());
+                        full_document_fields.insert(field_name.to_string(), processed_value);
                     }
                 }
                 
@@ -52,9 +67,24 @@ impl ChangeDetector {
                 for (index, (field_name, data_type)) in old_obj.properties().enumerate() {
                     let old_value = Self::read_field_value(old_obj, index + 1, data_type);
                     if let Some(value) = old_value {
+                        let processed_value = if field_name == "value" && data_type == DataType::String {
+                            // Try to parse the JSON string and extract the inner value
+                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) {
+                                if let Some(inner_value) = parsed.get("value") {
+                                    inner_value.to_string()
+                                } else {
+                                    value.clone()
+                                }
+                            } else {
+                                value.clone()
+                            }
+                        } else {
+                            value.clone()
+                        };
+                        
                         field_changes.push(FieldChange {
                             field_name: field_name.to_string(),
-                            old_value: Some(value),
+                            old_value: Some(processed_value),
                             new_value: None,
                         });
                     }
@@ -79,17 +109,54 @@ impl ChangeDetector {
                     let old_value = Self::read_field_value(old_obj, index + 1, data_type);
                     let new_value = Self::read_field_value(new_obj, index + 1, data_type);
                     
-                    if old_value != new_value {
+                    // Process values for "value" field to extract inner JSON content
+                    let processed_old_value = if field_name == "value" && data_type == DataType::String {
+                        if let Some(ref value) = old_value {
+                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
+                                if let Some(inner_value) = parsed.get("value") {
+                                    Some(inner_value.to_string())
+                                } else {
+                                    old_value.clone()
+                                }
+                            } else {
+                                old_value.clone()
+                            }
+                        } else {
+                            old_value.clone()
+                        }
+                    } else {
+                        old_value.clone()
+                    };
+                    
+                    let processed_new_value = if field_name == "value" && data_type == DataType::String {
+                        if let Some(ref value) = new_value {
+                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(value) {
+                                if let Some(inner_value) = parsed.get("value") {
+                                    Some(inner_value.to_string())
+                                } else {
+                                    new_value.clone()
+                                }
+                            } else {
+                                new_value.clone()
+                            }
+                        } else {
+                            new_value.clone()
+                        }
+                    } else {
+                        new_value.clone()
+                    };
+                    
+                    if processed_old_value != processed_new_value {
                         field_changes.push(FieldChange {
                             field_name: field_name.to_string(),
-                            old_value,
-                            new_value: new_value.clone(),
+                            old_value: processed_old_value,
+                            new_value: processed_new_value.clone(),
                         });
                         has_changes = true;
                     }
                     
                     // Include current field value in full document
-                    if let Some(value) = &new_value {
+                    if let Some(value) = &processed_new_value {
                         full_document_fields.insert(field_name.to_string(), value.clone());
                     }
                 }
