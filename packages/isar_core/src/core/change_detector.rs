@@ -44,12 +44,20 @@ impl ChangeDetector {
 
     // Private helper methods for IsarReader-based changes
     
+    /// Extracts the key field from an object (typically at index 2 for Frame objects)
+    fn extract_key_from_object<R: IsarReader>(object: &R) -> String {
+        // For Frame objects, the key field is at index 2 (after id and typeId)
+        // Try to read the key field, fallback to empty string if not found
+        object.read_string(2).unwrap_or("").to_string()
+    }
+    
     fn create_insert_change<R: IsarReader>(
         collection_name: &str,
         object_id: i64,
         new_object: &R,
     ) -> Option<ChangeDetail> {
         let (field_changes, full_document_fields) = Self::extract_all_fields::<R, R>(new_object, None);
+        let key = Self::extract_key_from_object(new_object);
         
         let full_document = Self::serialize_document_fields(&full_document_fields);
 
@@ -57,6 +65,7 @@ impl ChangeDetector {
             change_type: ChangeType::Insert,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document,
         })
@@ -68,11 +77,13 @@ impl ChangeDetector {
         old_object: &R,
     ) -> Option<ChangeDetail> {
         let field_changes = Self::extract_field_changes_for_delete(old_object);
+        let key = Self::extract_key_from_object(old_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Delete,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document: None,
         })
@@ -90,12 +101,14 @@ impl ChangeDetector {
             return None;
         }
 
+        let key = Self::extract_key_from_object(new_object);
         let full_document = Self::serialize_document_fields(&full_document_fields);
 
         Some(ChangeDetail {
             change_type: ChangeType::Update,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document,
         })
@@ -261,12 +274,21 @@ impl ChangeDetector {
 
     // Private helper methods for JSON-based changes
 
+    /// Extracts the key field from a JSON object
+    fn extract_key_from_json(object: &JsonValue) -> String {
+        object.get("key")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string()
+    }
+
     fn create_json_insert_change(
         collection_name: &str,
         object_id: i64,
         new_object: &JsonValue,
     ) -> Option<ChangeDetail> {
         let field_changes = Self::extract_json_fields_for_insert(new_object);
+        let key = Self::extract_key_from_json(new_object);
 
         // Create a clean full_document with unpacked JSON values  
         let full_document = Self::create_clean_full_document(new_object);
@@ -275,6 +297,7 @@ impl ChangeDetector {
             change_type: ChangeType::Insert,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document,
         })
@@ -286,11 +309,13 @@ impl ChangeDetector {
         old_object: &JsonValue,
     ) -> Option<ChangeDetail> {
         let field_changes = Self::extract_json_fields_for_delete(old_object);
+        let key = Self::extract_key_from_json(old_object);
 
         Some(ChangeDetail {
             change_type: ChangeType::Delete,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document: None,
         })
@@ -308,6 +333,7 @@ impl ChangeDetector {
             return None;
         }
 
+        let key = Self::extract_key_from_json(new_object);
         // Create a clean full_document with unpacked JSON values
         let full_document = Self::create_clean_full_document(new_object);
 
@@ -315,6 +341,7 @@ impl ChangeDetector {
             change_type: ChangeType::Update,
             collection_name: collection_name.to_string(),
             object_id,
+            key,
             field_changes,
             full_document,
         })
