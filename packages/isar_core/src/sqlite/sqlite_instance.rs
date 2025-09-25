@@ -268,7 +268,7 @@ impl IsarInstance for SQLiteInstance {
         query: &'a Self::Query,
         offset: Option<u32>,
         limit: Option<u32>,
-    ) -> Result<Self::QueryCursor<'_>> {
+    ) -> Result<Self::QueryCursor<'a>> {
         query.cursor(txn, &self.info.collections, offset, limit)
     }
 

@@ -102,7 +102,7 @@ pub trait IsarInstance: Sized {
         query: &'a Self::Query,
         offset: Option<u32>,
         limit: Option<u32>,
-    ) -> Result<Self::QueryCursor<'_>>;
+    ) -> Result<Self::QueryCursor<'a>>;
 
     fn query_aggregate(
         &self,

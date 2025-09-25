@@ -101,7 +101,7 @@ impl<'a> IsarReader for SQLiteReader<'a> {
         }
     }
 
-    fn read_blob(&self, index: u32) -> Option<Cow<[u8]>> {
+    fn read_blob(&self, index: u32) -> Option<Cow<'_, [u8]>> {
         if self.is_null(index) {
             None
         } else {
@@ -381,5 +381,79 @@ impl<'a> IsarReader for SQLiteListReader<'a> {
 
     fn read_list(&self, _: u32) -> Option<(Self::ListReader<'_>, u32)> {
         None
+    }
+}
+
+impl<'a> SQLiteReader<'a> {
+    /// Convert the current SQLite row to JSON
+    pub(crate) fn to_json(&self) -> serde_json::Value {
+        let mut result = serde_json::Map::new();
+        
+        // Add the ID
+        result.insert("id".to_string(), serde_json::Value::Number(self.read_id().into()));
+        
+        // Add all properties
+        for (index, (field_name, data_type)) in self.properties().enumerate() {
+            let index = index as u32 + 1; // Skip ID column
+            
+            let value = match data_type {
+                DataType::Bool => {
+                    if let Some(v) = self.read_bool(index) {
+                        serde_json::Value::Bool(v)
+                    } else {
+                        serde_json::Value::Null
+                    }
+                }
+                DataType::Byte => serde_json::Value::Number((self.read_byte(index) as i64).into()),
+                DataType::Int => serde_json::Value::Number(self.read_int(index).into()),
+                DataType::Float => {
+                    if let Some(n) = serde_json::Number::from_f64(self.read_float(index) as f64) {
+                        serde_json::Value::Number(n)
+                    } else {
+                        serde_json::Value::Null
+                    }
+                }
+                DataType::Long => serde_json::Value::Number(self.read_long(index).into()),
+                DataType::Double => {
+                    if let Some(n) = serde_json::Number::from_f64(self.read_double(index)) {
+                        serde_json::Value::Number(n)
+                    } else {
+                        serde_json::Value::Null
+                    }
+                }
+                DataType::String => {
+                    if let Some(s) = self.read_string(index) {
+                        serde_json::Value::String(s.to_string())
+                    } else {
+                        serde_json::Value::Null
+                    }
+                }
+                // Handle binary data - Note: DataType doesn't have Bytes, using ByteList pattern
+                DataType::ByteList => {
+                    if let Some(bytes) = self.read_blob(index) {
+                        let encoded = general_purpose::STANDARD_NO_PAD.encode(&bytes);
+                        serde_json::Value::String(encoded)
+                    } else {
+                        serde_json::Value::Null
+                    }
+                }
+                // For complex types, use the existing JSON representation
+                DataType::Object | DataType::Json | DataType::BoolList | DataType::IntList | 
+                DataType::FloatList | DataType::LongList | DataType::DoubleList | 
+                DataType::StringList | DataType::ObjectList => {
+                    if self.is_null(index) {
+                        serde_json::Value::Null
+                    } else {
+                        // For SQLite, complex types are already stored as JSON strings
+                        let json_str = self.stmt.get_text(index);
+                        serde_json::from_str(json_str).unwrap_or(serde_json::Value::Null)
+                    }
+                }
+            };
+            
+            result.insert(field_name.to_string(), value);
+        }
+        
+        serde_json::Value::Object(result)
     }
 }

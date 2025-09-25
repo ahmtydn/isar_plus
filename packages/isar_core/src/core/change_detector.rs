@@ -180,13 +180,113 @@ impl ChangeDetector {
             DataType::BoolList | DataType::ByteList | DataType::IntList | 
             DataType::FloatList | DataType::LongList | DataType::DoubleList | 
             DataType::StringList | DataType::ObjectList => {
-                if let Some((list_reader, length)) = reader.read_list(index) {
+                if let Some((_list_reader, length)) = reader.read_list(index) {
                     // For now, just indicate it's a list with length
                     Some(format!("[list:{}]", length))
                 } else {
                     None
                 }
             }
+        }
+    }
+    
+    /// Compare two JSON objects and generate field changes
+    pub fn detect_changes_from_json(
+        collection_name: &str,
+        object_id: i64,
+        old_json: Option<&serde_json::Value>,
+        new_json: Option<&serde_json::Value>,
+    ) -> Option<ChangeDetail> {
+        match (old_json, new_json) {
+            (None, Some(new_obj)) => {
+                // Insert operation
+                let mut field_changes = Vec::new();
+                if let serde_json::Value::Object(new_map) = new_obj {
+                    for (field_name, new_value) in new_map {
+                        field_changes.push(FieldChange {
+                            field_name: field_name.clone(),
+                            old_value: None,
+                            new_value: Some(new_value.to_string()),
+                        });
+                    }
+                }
+
+                Some(ChangeDetail {
+                    change_type: ChangeType::Insert,
+                    collection_name: collection_name.to_string(),
+                    object_id,
+                    field_changes,
+                    full_document: Some(new_obj.to_string()),
+                })
+            }
+            (Some(old_obj), None) => {
+                // Delete operation
+                let mut field_changes = Vec::new();
+                if let serde_json::Value::Object(old_map) = old_obj {
+                    for (field_name, old_value) in old_map {
+                        field_changes.push(FieldChange {
+                            field_name: field_name.clone(),
+                            old_value: Some(old_value.to_string()),
+                            new_value: None,
+                        });
+                    }
+                }
+
+                Some(ChangeDetail {
+                    change_type: ChangeType::Delete,
+                    collection_name: collection_name.to_string(),
+                    object_id,
+                    field_changes,
+                    full_document: Some(old_obj.to_string()),
+                })
+            }
+            (Some(old_obj), Some(new_obj)) => {
+                // Update operation
+                let mut field_changes = Vec::new();
+                let mut has_changes = false;
+
+                // Compare fields from both objects
+                let mut all_fields = std::collections::HashSet::new();
+                
+                if let serde_json::Value::Object(old_map) = old_obj {
+                    for field_name in old_map.keys() {
+                        all_fields.insert(field_name.clone());
+                    }
+                }
+                
+                if let serde_json::Value::Object(new_map) = new_obj {
+                    for field_name in new_map.keys() {
+                        all_fields.insert(field_name.clone());
+                    }
+                }
+
+                for field_name in all_fields {
+                    let old_value = old_obj.get(&field_name);
+                    let new_value = new_obj.get(&field_name);
+                    
+                    if old_value != new_value {
+                        has_changes = true;
+                        field_changes.push(FieldChange {
+                            field_name: field_name.clone(),
+                            old_value: old_value.map(|v| v.to_string()),
+                            new_value: new_value.map(|v| v.to_string()),
+                        });
+                    }
+                }
+
+                if has_changes {
+                    Some(ChangeDetail {
+                        change_type: ChangeType::Update,
+                        collection_name: collection_name.to_string(),
+                        object_id,
+                        field_changes,
+                        full_document: Some(new_obj.to_string()),
+                    })
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 }

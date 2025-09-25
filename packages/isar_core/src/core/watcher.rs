@@ -37,7 +37,7 @@ struct Watcher {
     callback: WatcherCallback,
 }
 
-struct DetailedWatcher {
+pub(crate) struct DetailedWatcher {
     id: u64,
     callback: DetailedWatcherCallback,
 }
@@ -119,10 +119,12 @@ impl ChangeSet {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add_detailed_watcher(&mut self, watcher: Arc<DetailedWatcher>) {
         self.detailed_watchers.push(watcher);
     }
 
+    #[allow(dead_code)]
     pub fn remove_detailed_watcher(&mut self, watcher_id: u64) {
         self.detailed_watchers.retain(|w| w.get_id() != watcher_id);
     }

@@ -8,7 +8,6 @@ use super::{BytesToId, IdToBytes};
 use crate::core::change_detector::ChangeDetector;
 use crate::core::data_type::DataType;
 use crate::core::error::{IsarError, Result};
-use crate::core::reader::IsarReader;
 use crate::core::value::IsarValue;
 use crate::core::watcher::{ChangeSet, CollectionWatchers};
 use super::native_reader::NativeReader;
@@ -331,7 +330,7 @@ impl NativeCollection {
 
         // For detailed watchers, we need to record all objects being deleted
         if self.watchers.has_detailed_watchers() {
-            let mut cursor = self.get_cursor(txn)?;
+            let cursor = self.get_cursor(txn)?;
             for result in cursor.iter()? {
                 let (key, value) = result;
                 let id = key.to_id();

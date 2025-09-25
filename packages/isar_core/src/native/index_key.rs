@@ -1,6 +1,6 @@
 use xxhash_rust::xxh3::xxh3_64;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct IndexKey {
     bytes: Vec<u8>,
     contains_null: bool,

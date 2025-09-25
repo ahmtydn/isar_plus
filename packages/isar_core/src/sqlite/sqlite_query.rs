@@ -8,6 +8,7 @@ use super::sqlite_txn::SQLiteTxn;
 use crate::core::cursor::IsarQueryCursor;
 use crate::core::data_type::DataType;
 use crate::core::error::Result;
+use crate::core::reader::IsarReader;
 use crate::core::filter::JsonCondition;
 use crate::core::instance::Aggregation;
 use crate::core::value::IsarValue;
@@ -145,6 +146,40 @@ impl SQLiteQuery {
         updates: &[(u16, Option<IsarValue>)],
     ) -> Result<u32> {
         let collection: &SQLiteCollection = &all_collections[self.collection_index as usize];
+        
+        // Collect before states for detailed change detection
+        let mut before_data: Vec<(i64, serde_json::Value)> = Vec::new();
+        if collection.watchers.has_detailed_watchers() {
+            let select_sql = if offset.is_some() || limit.is_some() || self.has_sort_distinct {
+                format!(
+                    "SELECT * FROM {} WHERE {} IN (SELECT {} FROM {} {} {})",
+                    collection.name,
+                    SQLiteProperty::ID_NAME,
+                    SQLiteProperty::ID_NAME,
+                    collection.name,
+                    self.sql,
+                    offset_limit_sql(offset, limit)
+                )
+            } else {
+                format!("SELECT * FROM {} {}", collection.name, self.sql)
+            };
+            
+            let sqlite = txn.get_sqlite(false)?;
+            let mut select_stmt = sqlite.prepare(&select_sql)?;
+            Self::bind_params(&mut select_stmt, &self.params, 0)?;
+            
+            while select_stmt.step()? {
+                let reader = SQLiteReader::new(
+                    std::borrow::Cow::Borrowed(&select_stmt),
+                    collection,
+                    all_collections,
+                );
+                let object_id = reader.read_id();
+                let serialized = reader.to_json();
+                before_data.push((object_id, serialized));
+            }
+        }
+
         let (update_sql, update_params) = update_properties_sql(collection, updates);
         let sql = if offset.is_some() || limit.is_some() || self.has_sort_distinct {
             format!(
@@ -166,6 +201,44 @@ impl SQLiteQuery {
         Self::bind_params(&mut stmt, &self.params, update_params.len())?;
         stmt.step()?;
         let count = sqlite.count_changes();
+
+        // Generate detailed changes for each updated object
+        if collection.watchers.has_detailed_watchers() && !before_data.is_empty() {
+            use crate::core::change_detector::ChangeDetector;
+            
+            for (object_id, before_json) in before_data {
+                // Read after state
+                let after_sql = format!(
+                    "SELECT * FROM {} WHERE {} = ?",
+                    collection.name,
+                    SQLiteProperty::ID_NAME
+                );
+                let mut after_stmt = sqlite.prepare(&after_sql)?;
+                after_stmt.bind_long(0, object_id)?;
+                
+                if after_stmt.step()? {
+                    let after_reader = SQLiteReader::new(
+                        std::borrow::Cow::Borrowed(&after_stmt),
+                        collection,
+                        all_collections,
+                    );
+                    let after_json = after_reader.to_json();
+                    
+                    // Detect field-level changes using JSON comparison
+                    if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
+                        &collection.name,
+                        object_id,
+                        Some(&before_json),
+                        Some(&after_json),
+                    ) {
+                        if let Ok(mut change_set) = txn.change_set.try_borrow_mut() {
+                            change_set.register_detailed_change(change_detail);
+                        }
+                    }
+                }
+            }
+        }
+
         Ok(count as u32)
     }
 
@@ -177,6 +250,40 @@ impl SQLiteQuery {
         limit: Option<u32>,
     ) -> Result<u32> {
         let collection = &all_collections[self.collection_index as usize];
+        
+        // Collect before states for detailed change detection
+        let mut before_data: Vec<(i64, serde_json::Value)> = Vec::new();
+        if collection.watchers.has_detailed_watchers() {
+            let select_sql = if offset.is_some() || limit.is_some() || self.has_sort_distinct {
+                format!(
+                    "SELECT * FROM {} WHERE {} IN (SELECT {} FROM {} {} {})",
+                    collection.name,
+                    SQLiteProperty::ID_NAME,
+                    SQLiteProperty::ID_NAME,
+                    collection.name,
+                    self.sql,
+                    offset_limit_sql(offset, limit)
+                )
+            } else {
+                format!("SELECT * FROM {} {}", collection.name, self.sql)
+            };
+            
+            let sqlite = txn.get_sqlite(false)?;
+            let mut select_stmt = sqlite.prepare(&select_sql)?;
+            Self::bind_params(&mut select_stmt, &self.params, 0)?;
+            
+            while select_stmt.step()? {
+                let reader = SQLiteReader::new(
+                    std::borrow::Cow::Borrowed(&select_stmt),
+                    collection,
+                    all_collections,
+                );
+                let object_id = reader.read_id();
+                let serialized = reader.to_json();
+                before_data.push((object_id, serialized));
+            }
+        }
+
         let sql = if offset.is_some() || limit.is_some() || self.has_sort_distinct {
             format!(
                 "DELETE FROM {} WHERE {} IN (SELECT {} FROM {} {} {})",
@@ -195,6 +302,26 @@ impl SQLiteQuery {
         Self::bind_params(&mut stmt, &self.params, 0)?;
         stmt.step()?;
         let count = sqlite.count_changes();
+
+        // Generate detailed changes for each deleted object
+        if collection.watchers.has_detailed_watchers() && !before_data.is_empty() {
+            use crate::core::change_detector::ChangeDetector;
+            
+            for (object_id, before_json) in before_data {
+                // Delete operation - only have before state, no after state
+                if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
+                    &collection.name,
+                    object_id,
+                    Some(&before_json),
+                    None, // No after state for delete
+                ) {
+                    if let Ok(mut change_set) = txn.change_set.try_borrow_mut() {
+                        change_set.register_detailed_change(change_detail);
+                    }
+                }
+            }
+        }
+
         Ok(count as u32)
     }
 

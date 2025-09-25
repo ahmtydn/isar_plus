@@ -11,7 +11,7 @@ pub struct SQLiteTxn {
     write: bool,
     sqlite: Rc<SQLite3>,
     active: Cell<bool>,
-    change_set: Rc<RefCell<ChangeSet>>,
+    pub(crate) change_set: Rc<RefCell<ChangeSet>>,
 }
 
 impl SQLiteTxn {
@@ -55,36 +55,16 @@ impl SQLiteTxn {
         result
     }
 
-    pub(crate) fn monitor_changes(&self, watchers: &Arc<CollectionWatchers<SQLiteQuery>>, collection_name: &str) {
-        if watchers.has_watchers() || watchers.has_detailed_watchers() {
+    pub(crate) fn monitor_changes(&self, watchers: &Arc<CollectionWatchers<SQLiteQuery>>, _collection_name: &str) {
+        if watchers.has_watchers() {
             let change_set = self.change_set.clone();
             let watchers = watchers.clone();
-            let collection_name = collection_name.to_string();
             
-            // Register detailed watchers for change detection
-            if watchers.has_detailed_watchers() {
-                if let Ok(mut change_set) = change_set.try_borrow_mut() {
-                    change_set.register_detailed_changes_for_watchers(&watchers);
-                }
-            }
-            
+            // For basic watchers only, use update hook for simple notifications
+            // Detailed change detection is now handled in individual operations (update, delete, insert)
             self.sqlite.set_update_hook(move |id| {
                 if let Ok(mut change_set) = change_set.try_borrow_mut() {
                     change_set.register_change(&watchers, id, &());
-                    
-                    // For SQLite, we create a basic change detail since we don't have 
-                    // access to before/after object data in the update hook
-                    if watchers.has_detailed_watchers() {
-                        use crate::core::watcher::{ChangeDetail, ChangeType, FieldChange};
-                        let change_detail = ChangeDetail {
-                            change_type: ChangeType::Update, // SQLite hook only tells us something changed
-                            collection_name: collection_name.clone(),
-                            object_id: id,
-                            field_changes: Vec::new(), // Can't determine field changes from SQLite hook alone
-                            full_document: None,
-                        };
-                        change_set.register_detailed_change(change_detail);
-                    }
                 }
             });
         }
