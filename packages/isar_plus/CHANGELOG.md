@@ -1,4 +1,16 @@
+## 1.0.12 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.12 -->
+
+## What's Changed
+### Other Changes
+* fix: resolve duplicate watcher events in detailed watchers (v1.0.4) by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/16
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.11...1.0.12
+
 ## 1.0.11
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.11 -->
 
