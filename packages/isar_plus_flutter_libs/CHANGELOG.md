@@ -1,4 +1,16 @@
+## 1.0.13 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.13 -->
+
+## What's Changed
+### Other Changes
+* feat: Enhance detailed change tracking with field-level granularity and JSON serialization support by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/17
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.12...1.0.13
+
 ## 1.0.12 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.12 -->
 
