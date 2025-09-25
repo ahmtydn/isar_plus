@@ -229,7 +229,7 @@ class ChangeDetail<T extends DocumentSerializable> {
   /// [key] is the unique identifier for this data object.
   /// [changeType] specifies the nature of the modification.
   /// [fieldChanges] contains the individual field modifications.
-  /// [fullDocument] optionally holds the complete post-change state.
+  /// [fullDocument] holds the complete post-change state.
   /// [timestamp] records when the change occurred (defaults to current time).
   const ChangeDetail({
     required this.collectionName,
@@ -237,7 +237,7 @@ class ChangeDetail<T extends DocumentSerializable> {
     required this.key,
     required this.changeType,
     required this.fieldChanges,
-    this.fullDocument,
+    required this.fullDocument,
     this.timestamp,
   }) : assert(collectionName != '', 'Collection name cannot be empty');
 
@@ -280,7 +280,7 @@ class ChangeDetail<T extends DocumentSerializable> {
           )
           .toList(growable: false);
 
-      T? fullDocument;
+      T fullDocument;
       final fullDocumentJson = json['full_document'];
       if (fullDocumentJson != null && documentParser != null) {
         if (fullDocumentJson is Map<String, dynamic>) {
@@ -293,6 +293,10 @@ class ChangeDetail<T extends DocumentSerializable> {
             'full_document must be a Map<String, dynamic> or JSON string',
           );
         }
+      } else {
+        throw const FormatException(
+          'full_document is required and documentParser must be provided',
+        );
       }
 
       DateTime? timestamp;
@@ -336,9 +340,8 @@ class ChangeDetail<T extends DocumentSerializable> {
 
   /// The complete document state after the change was applied.
   ///
-  /// This is optional and may be null if full document tracking is disabled
-  /// or if the document was deleted.
-  final T? fullDocument;
+  /// This contains the full document data and is guaranteed to be present.
+  final T fullDocument;
 
   /// Individual field-level changes within this object.
   ///
@@ -375,7 +378,7 @@ class ChangeDetail<T extends DocumentSerializable> {
     'key': key,
     'change_type': changeType.value,
     'timestamp': timestamp?.toIso8601String(),
-    'full_document': fullDocument?.toJson(),
+    'full_document': fullDocument.toJson(),
     'field_changes': fieldChanges.map((fc) => fc.toJson()).toList(),
   };
 

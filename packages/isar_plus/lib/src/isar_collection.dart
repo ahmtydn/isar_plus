@@ -146,10 +146,8 @@ abstract class IsarCollection<ID, OBJ> {
   /// }
   ///
   /// collection.watchDetailed<User>().listen((change) {
-  ///   if (change.fullDocument != null) {
-  ///     print('User name: ${change.fullDocument!.name}');
-  ///     print('User age: ${change.fullDocument!.age}');
-  ///   }
+  ///   print('User name: ${change.fullDocument.name}');
+  ///   print('User age: ${change.fullDocument.age}');
   /// });
   /// ```
   ///
