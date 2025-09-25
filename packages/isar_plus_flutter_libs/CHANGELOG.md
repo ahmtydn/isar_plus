@@ -1,4 +1,16 @@
+## 1.0.15 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.15 -->
+
+## What's Changed
+### Other Changes
+* feat: enhance FieldChange and ChangeDetail classes with document parseing support by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/19
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.14...1.0.15
+
 ## 1.0.14 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.14 -->
 
