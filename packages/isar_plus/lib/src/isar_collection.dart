@@ -170,7 +170,9 @@ abstract class IsarCollection<ID, OBJ> {
   ///
   /// @throws UnsupportedError if called on web platforms
   /// @returns A stream of [ChangeDetail] objects representing database changes
-  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>();
+  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>({
+    T Function(Map<String, dynamic> json)? documentParser,
+  });
 
   /// Build a query dynamically for example to build a custom query language.
   ///
