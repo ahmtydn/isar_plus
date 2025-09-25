@@ -1,4 +1,16 @@
+## 1.0.18 (2025-09-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.18 -->
+
+## What's Changed
+### Other Changes
+* feat: refactor ChangeDetector to streamline change detection for objects and JSON by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/23
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.17...1.0.18
+
 ## 1.0.17 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.17 -->
 
