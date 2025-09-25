@@ -183,8 +183,9 @@ fn main() {
     cc_builder.flag_if_supported("-Wno-everything");
 
     if cfg!(windows) {
-        let dst = cmake::Config::new(&mdbx)
-            .define("MDBX_INSTALL_STATIC", "1")
+        // Use native cc build for Windows (much faster than CMake)
+        cc_builder
+            .define("MDBX_BUILD_FLAGS", flags.as_str())
             .define("MDBX_BUILD_CXX", "0")
             .define("MDBX_BUILD_TOOLS", "0")
             .define("MDBX_BUILD_SHARED_LIBRARY", "0")
@@ -194,18 +195,20 @@ fn main() {
             .define("UNICODE", "1")
             .define("HAVE_LIBM", "1")
             .define("NDEBUG", "1")
-            .cflag("/w")
-            .init_c_cfg(cc_builder)
-            .build();
-
-        println!("cargo:rustc-link-lib=mdbx");
-        println!(
-            "cargo:rustc-link-search=native={}",
-            dst.join("lib").display()
-        );
+            // Windows specific includes and flags
+            .include(mdbx_root.join("src"))
+            .file(mdbx_src.join("alloy.c"))
+            .flag_if_supported("/w") // Suppress warnings on MSVC
+            .flag_if_supported("-w") // Suppress warnings on MinGW
+            .compile("libmdbx.a");
+            
+        // Link Windows system libraries
         println!(r"cargo:rustc-link-lib=ntdll");
-        println!(r"cargo:rustc-link-search=C:\windows\system32");
+        println!(r"cargo:rustc-link-lib=kernel32");
+        println!(r"cargo:rustc-link-lib=user32");
+        println!(r"cargo:rustc-link-lib=advapi32");
     } else {
+        // Non-Windows platforms (Linux, macOS, etc.)
         cc_builder
             .define("MDBX_BUILD_FLAGS", flags.as_str())
             .define("MDBX_BUILD_CXX", "0")
