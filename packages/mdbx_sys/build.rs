@@ -189,10 +189,8 @@ fn main() {
             .define("MDBX_BUILD_CXX", "0")
             .define("MDBX_BUILD_TOOLS", "0")
             .define("MDBX_BUILD_SHARED_LIBRARY", "0")
-            .define("MDBX_LOCK_SUFFIX", "\".lock\"")
             .define("MDBX_TXN_CHECKOWNER", "0")
             .define("MDBX_WITHOUT_MSVC_CRT", "1")
-            .define("UNICODE", "1")
             .define("HAVE_LIBM", "1")
             .define("NDEBUG", "1")
             // Windows specific includes and flags
