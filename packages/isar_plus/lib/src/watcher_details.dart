@@ -302,8 +302,11 @@ class ChangeDetail<T extends DocumentSerializable> {
         fullDocument: fullDocument,
         timestamp: timestamp ?? DateTime.now(),
       );
-    } catch (e) {
-      throw Exception('Failed to deserialize ChangeDetail<$T> from JSON $e');
+    } catch (e, stack) {
+      throw Exception(
+        'Failed to deserialize ChangeDetail<$T> from JSON  '
+        ':\nError: $e\nStack: $stack\nJSON: $json',
+      );
     }
   }
 
