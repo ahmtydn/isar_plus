@@ -4,20 +4,18 @@ runs:
   using: "composite"
   steps:
     - name: Install latest Rust nightly
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: nightly
-        override: true
         components: rustfmt, clippy
     - name: Install LLVM and Clang
       if: runner.os == 'Windows'
-      uses: KyleMayes/install-llvm-action@v1
+      uses: KyleMayes/install-llvm-action@v2
       with:
         version: "11.0"
         directory: ${{ runner.temp }}/llvm
     - name: Install Perl
       if: runner.os == 'Windows'
-      uses: shogo82148/actions-setup-perl@v1
+      uses: shogo82148/actions-setup-perl@v1.31.1
       with:
         distribution: strawberry
         perl-version: "5.32"
