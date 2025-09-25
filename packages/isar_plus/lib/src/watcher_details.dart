@@ -1,5 +1,63 @@
 part of isar_plus;
 
+/// Abstract base class for objects that can be serialized to/from JSON.
+///
+/// This provides a contract for objects that need to be converted to JSON
+/// and parsed back from JSON strings, typically used for database document
+/// serialization in change tracking.
+abstract class DocumentSerializable {
+  /// Converts this object to a JSON map.
+  Map<String, dynamic> toJson();
+
+  /// Creates an instance from a JSON string.
+  ///
+  /// This should be implemented by concrete classes to provide
+  /// proper deserialization from JSON strings.
+  ///
+  /// Example implementation:
+  /// ```dart
+  /// static User fromJsonString(String json) {
+  ///   return User.fromJson(jsonDecode(json));
+  /// }
+  /// ```
+  static T fromJsonString<T extends DocumentSerializable>(String json) {
+    throw UnimplementedError(
+      'Concrete classes must implement static fromJsonString method',
+    );
+  }
+}
+
+/// Type definition for document parser functions.
+///
+/// Used to parse JSON strings into strongly typed objects.
+typedef DocumentParser<T extends DocumentSerializable> =
+    T Function(String json);
+
+/// Registry for document parsers by type.
+///
+/// This allows the change tracking system to automatically parse
+/// full documents back to their original types.
+class DocumentParserRegistry {
+  static final Map<Type, Function> _parsers = {};
+
+  /// Registers a parser for a specific type.
+  static void register<T extends DocumentSerializable>(
+    DocumentParser<T> parser,
+  ) {
+    _parsers[T] = parser;
+  }
+
+  /// Gets a parser for a specific type.
+  static DocumentParser<T>? getParser<T extends DocumentSerializable>() {
+    return _parsers[T] as DocumentParser<T>?;
+  }
+
+  /// Clears all registered parsers.
+  static void clear() {
+    _parsers.clear();
+  }
+}
+
 /// Represents the type of change that occurred in a database operation.
 ///
 /// This enum is used to categorize different types of database changes
@@ -13,6 +71,9 @@ enum ChangeType {
 
   /// A record was removed from the database
   delete,
+
+  /// An unknown change type (should not occur in practice)
+  unknown,
 }
 
 /// Represents a field change with before and after values.
@@ -34,7 +95,7 @@ class FieldChange {
   /// [fieldName] is required and represents the name of the changed field.
   /// [oldValue] is the previous value of the field (null for inserts).
   /// [newValue] is the current value of the field (null for deletes).
-  FieldChange({required this.fieldName, this.oldValue, this.newValue});
+  const FieldChange({required this.fieldName, this.oldValue, this.newValue});
 
   /// Creates a [FieldChange] instance from a JSON map.
   ///
@@ -90,6 +151,19 @@ class FieldChange {
   String toString() {
     return 'FieldChange(field: $fieldName, old: $oldValue, new: $newValue)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is FieldChange &&
+        other.fieldName == fieldName &&
+        other.oldValue == oldValue &&
+        other.newValue == newValue;
+  }
+
+  @override
+  int get hashCode =>
+      fieldName.hashCode ^ oldValue.hashCode ^ newValue.hashCode;
 }
 
 /// Detailed change information for a single database object.
@@ -97,9 +171,12 @@ class FieldChange {
 /// This class contains comprehensive information about a change that occurred
 /// to a specific object in the database, including what changed and how.
 ///
+/// The generic type [T] should extend [DocumentSerializable] to ensure
+/// proper serialization capabilities.
+///
 /// Example usage:
 /// ```dart
-/// final changeDetail = ChangeDetail(
+/// final changeDetail = ChangeDetail<User>(
 ///   collectionName: 'users',
 ///   objectId: 123,
 ///   changeType: ChangeType.update,
@@ -108,7 +185,7 @@ class FieldChange {
 ///   ],
 /// );
 /// ```
-class ChangeDetail {
+class ChangeDetail<T extends DocumentSerializable> {
   /// Creates a new [ChangeDetail] instance.
   ///
   /// [collectionName] is the name of the collection/table where the change occurred.
@@ -116,12 +193,12 @@ class ChangeDetail {
   /// [changeType] specifies what type of change occurred (insert, update, delete).
   /// [fullDocument] is an optional complete representation of the object after change.
   /// [fieldChanges] is a list of individual field changes within the object.
-  ChangeDetail({
+  const ChangeDetail({
     required this.collectionName,
     required this.objectId,
     required this.changeType,
-    this.fullDocument,
     required this.fieldChanges,
+    this.fullDocument,
   });
 
   /// Creates a [ChangeDetail] instance from a JSON map.
@@ -137,15 +214,18 @@ class ChangeDetail {
   /// }
   /// ```
   ///
-  /// If the change_type is invalid, defaults to [ChangeType.update].
+  /// The [parser] function is used to deserialize the full_document field
+  /// back to the original type [T].
+  ///
+  /// If the change_type is invalid, defaults to [ChangeType.unknown].
   /// If field_changes is missing, defaults to an empty list.
   ///
   /// Throws [TypeError] if required fields are missing or have wrong types.
   factory ChangeDetail.fromJson(Map<String, dynamic> json) {
     final changeTypeStr = json['change_type'] as String;
     final changeType = ChangeType.values.firstWhere(
-      (e) => e.name == changeTypeStr,
-      orElse: () => ChangeType.update,
+      (e) => e.name.toLowerCase() == changeTypeStr.toLowerCase(),
+      orElse: () => ChangeType.unknown, // Default to unknown for invalid types
     );
 
     final fieldChangesJson = json['field_changes'] as List<dynamic>? ?? [];
@@ -154,11 +234,20 @@ class ChangeDetail {
             .map((json) => FieldChange.fromJson(json as Map<String, dynamic>))
             .toList();
 
-    return ChangeDetail(
+    final fullDocumentStr = json['full_document'] as String?;
+
+    final documentParser = DocumentParserRegistry.getParser<T>();
+
+    final parsedFullDocument =
+        fullDocumentStr != null && documentParser != null
+            ? documentParser(fullDocumentStr)
+            : null;
+
+    return ChangeDetail<T>(
       collectionName: json['collection_name'] as String,
       objectId: json['object_id'] as int,
       changeType: changeType,
-      fullDocument: json['full_document'] as String?,
+      fullDocument: parsedFullDocument,
       fieldChanges: fieldChanges,
     );
   }
@@ -174,9 +263,9 @@ class ChangeDetail {
 
   /// Optional complete document representation after the change.
   ///
-  /// This might contain a JSON string or other serialized representation
-  /// of the entire object after the change was applied.
-  final String? fullDocument;
+  /// This contains the parsed object representation of the entire
+  /// object after the change was applied.
+  final T? fullDocument;
 
   /// List of individual field changes within this object.
   ///
@@ -193,20 +282,68 @@ class ChangeDetail {
       'collection_name': collectionName,
       'object_id': objectId,
       'change_type': changeType.name,
-      'full_document': fullDocument,
+      'full_document': fullDocument?.toJson(),
       'field_changes': fieldChanges.map((fc) => fc.toJson()).toList(),
     };
   }
 
   /// Returns a string representation of this change detail.
   ///
-  /// Format: `ChangeDetail(collection: name, id: objectId,
+  /// Format: `ChangeDetail<T>(collection: name, id: objectId,
   /// type: changeType, changes: count)`
   ///
   /// The changes count shows how many individual field changes are included.
   @override
   String toString() {
-    return 'ChangeDetail(collection: $collectionName, id: $objectId, '
-        'type: $changeType, changes: ${fieldChanges.length})';
+    return 'ChangeDetail<$T>('
+        'collection: $collectionName, id: $objectId, '
+        'type: $changeType, changes: ${fieldChanges.length}, '
+        'fullDocument: ${fullDocument?.toJson()})';
+  }
+
+  /// Creates a copy of this [ChangeDetail] with some fields replaced.
+  ChangeDetail<T> copyWith({
+    String? collectionName,
+    int? objectId,
+    ChangeType? changeType,
+    T? fullDocument,
+    List<FieldChange>? fieldChanges,
+  }) {
+    return ChangeDetail<T>(
+      collectionName: collectionName ?? this.collectionName,
+      objectId: objectId ?? this.objectId,
+      changeType: changeType ?? this.changeType,
+      fullDocument: fullDocument ?? this.fullDocument,
+      fieldChanges: fieldChanges ?? this.fieldChanges,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ChangeDetail<T> &&
+        other.collectionName == collectionName &&
+        other.objectId == objectId &&
+        other.changeType == changeType &&
+        other.fullDocument == fullDocument &&
+        _listEquals(other.fieldChanges, fieldChanges);
+  }
+
+  @override
+  int get hashCode {
+    return collectionName.hashCode ^
+        objectId.hashCode ^
+        changeType.hashCode ^
+        fullDocument.hashCode ^
+        fieldChanges.hashCode;
+  }
+
+  /// Helper method to compare lists for equality.
+  bool _listEquals<E>(List<E> a, List<E> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 }

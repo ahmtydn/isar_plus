@@ -256,7 +256,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   }
 
   @override
-  Stream<ChangeDetail> watchDetailed({bool fireImmediately = false}) {
+  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>() {
     if (IsarCore.kIsWeb) {
       throw UnsupportedError('Detailed watchers are not supported on the web');
     }
@@ -274,7 +274,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
         .checkNoError();
 
     final handlePtr = handlePtrPtr.ptrValue;
-    final controller = StreamController<ChangeDetail>(
+    final controller = StreamController<ChangeDetail<T>>(
       onCancel: () {
         isar.getPtr(); // Make sure Isar is not closed
         IsarCore.b.isar_stop_watching(handlePtr);
@@ -285,13 +285,9 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
     // Listen to the port for JSON strings
     port.listen((data) {
       if (data is String) {
-        try {
-          final changeDetailMap = json.decode(data) as Map<String, dynamic>;
-          final changeDetail = ChangeDetail.fromJson(changeDetailMap);
-          controller.add(changeDetail);
-        } on Exception catch (_) {
-          // Skip malformed JSON
-        }
+        final changeDetailMap = json.decode(data) as Map<String, dynamic>;
+        final changeDetail = ChangeDetail<T>.fromJson(changeDetailMap);
+        controller.add(changeDetail);
       }
     });
 

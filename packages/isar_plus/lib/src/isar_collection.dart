@@ -100,12 +100,77 @@ abstract class IsarCollection<ID, OBJ> {
   /// If [fireImmediately] is `true`, an event will be fired immediately.
   Stream<void> watchObjectLazy(ID id, {bool fireImmediately = false});
 
-  /// Watch the collection for detailed changes showing
-  /// which objects and fields changed.
+  /// Watch the collection for detailed changes with field-level tracking.
   ///
-  /// This provides MongoDB-like change stream functionality with
-  /// field-level change tracking.
-  Stream<ChangeDetail> watchDetailed({bool fireImmediately = false});
+  /// Returns a stream of [ChangeDetail] objects that contain comprehensive
+  /// information about each change that occurs in the collection, including:
+  /// - The type of change (insert, update, delete)
+  /// - Individual field changes with before/after values
+  /// - Complete document representation (if T extends DocumentSerializable)
+  /// - Object ID and collection name
+  ///
+  /// **Type Parameter:**
+  /// - `T`: The type to parse fullDocument into. Must extend [DocumentSerializable]
+  ///   to enable automatic JSON parsing, or use custom parsing with documentParser.
+  ///
+  /// **Platform Support:**
+  /// This method is not supported on web platforms and will throw an
+  /// [UnsupportedError] if called on web.
+  ///
+  /// **Usage Examples:**
+  ///
+  /// Basic usage without document parsing:
+  /// ```dart
+  /// collection.watchDetailed<dynamic>().listen((change) {
+  ///   print('Change type: ${change.changeType}');
+  ///   print('Object ID: ${change.objectId}');
+  ///   print('Field changes: ${change.fieldChanges.length}');
+  /// });
+  /// ```
+  ///
+  /// With custom document parsing:
+  /// ```dart
+  /// class User extends DocumentSerializable {
+  ///   final String name;
+  ///   final int age;
+  ///
+  ///   User({required this.name, required this.age});
+  ///
+  ///   factory User.fromJsonString(String json) {
+  ///     final map = jsonDecode(json);
+  ///     return User(name: map['name'], age: map['age']);
+  ///   }
+  ///
+  ///   @override
+  ///   Map<String, dynamic> toJson() => {'name': name, 'age': age};
+  /// }
+  ///
+  /// collection.watchDetailed<User>().listen((change) {
+  ///   if (change.fullDocument != null) {
+  ///     print('User name: ${change.fullDocument!.name}');
+  ///     print('User age: ${change.fullDocument!.age}');
+  ///   }
+  /// });
+  /// ```
+  ///
+  /// **Performance Considerations:**
+  /// - Detailed watchers have more overhead than regular watchers
+  /// - Field-level change tracking requires additional processing
+  /// - Consider using [watchLazy] if you only need change notifications
+  /// - The stream automatically handles cleanup when canceled
+  ///
+  /// **Change Types:**
+  /// - [ChangeType.insert]: New object was added to the collection
+  /// - [ChangeType.update]: Existing object was modified
+  /// - [ChangeType.delete]: Object was removed from the collection
+  ///
+  /// **Thread Safety:**
+  /// This method is thread-safe and can be called from any isolate.
+  /// The returned stream will emit changes that occur across all isolates.
+  ///
+  /// @throws UnsupportedError if called on web platforms
+  /// @returns A stream of [ChangeDetail] objects representing database changes
+  Stream<ChangeDetail<T>> watchDetailed<T extends DocumentSerializable>();
 
   /// Build a query dynamically for example to build a custom query language.
   ///
