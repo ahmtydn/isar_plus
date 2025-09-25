@@ -148,10 +148,8 @@ impl NativeCollection {
             None
         };
 
-        // Register old object change for simple watchers
+        // Delete old object indexes if they exist
         if let Some(old_obj) = &old_object {
-            change_set.register_change(&self.watchers, id, old_obj);
-
             if !self.indexes.is_empty() {
                 let mut buffer = txn.take_buffer();
                 // delete old object indexes
@@ -164,14 +162,14 @@ impl NativeCollection {
 
         let new_object = IsarDeserializer::from_bytes(&bytes);
         
-        // Register new object change for simple watchers
+        // Register changes for watchers - do this once, not multiple times
         change_set.register_change(&self.watchers, id, &new_object);
 
-        // Register detailed watchers for change detection
-        change_set.register_detailed_changes_for_watchers(&self.watchers);
-
-        // Detect detailed changes if there are detailed watchers
+        // Register detailed watchers for change detection only if there are detailed watchers
         if self.watchers.has_detailed_watchers() {
+            change_set.register_detailed_changes_for_watchers(&self.watchers);
+
+            // Detect detailed changes 
             let old_reader = old_object.as_ref().map(|obj| {
                 NativeReader::new(id, *obj, self, all_collections)
             });
@@ -218,12 +216,12 @@ impl NativeCollection {
             
             // Register change for simple watchers
             change_set.register_change(&self.watchers, id, &object);
-            
-            // Register detailed watchers for change detection
-            change_set.register_detailed_changes_for_watchers(&self.watchers);
 
-            // Detect detailed changes if there are detailed watchers
+            // Register detailed watchers for change detection only if there are detailed watchers
             if self.watchers.has_detailed_watchers() {
+                change_set.register_detailed_changes_for_watchers(&self.watchers);
+
+                // Detect detailed changes
                 let old_reader = NativeReader::new(id, object, self, all_collections);
                 
                 if let Some(change_detail) = ChangeDetector::detect_changes(

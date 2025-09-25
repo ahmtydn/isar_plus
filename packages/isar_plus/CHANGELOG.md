@@ -1,3 +1,17 @@
+## 1.0.4
+
+### Fixed
+- **Watchers**: Fixed duplicate event notifications in detailed watchers
+  - Delete and update operations now trigger only 1 event instead of 4
+  - Resolved issue where `register_detailed_changes_for_watchers` was registering duplicate watchers
+  - Optimized watcher registration in `put()` and `delete()` methods to prevent redundant notifications
+- **Performance**: Improved watcher notification efficiency by preventing duplicate registrations
+
+### Technical Changes
+- Modified `register_detailed_changes_for_watchers` to check for existing watchers before adding
+- Streamlined watcher registration logic in native collection operations
+- Reduced unnecessary `register_change` calls in put/delete operations
+
 ## 1.0.3
 
 ### Updated

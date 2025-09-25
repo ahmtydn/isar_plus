@@ -136,7 +136,10 @@ impl ChangeSet {
     pub fn register_detailed_changes_for_watchers<Q: QueryMatches>(&mut self, cw: &CollectionWatchers<Q>) {
         let w = cw.col_watchers.load();
         for watcher in &w.detailed_watchers {
-            self.detailed_watchers.push(watcher.clone());
+            // Only add watcher if it's not already registered to prevent duplicates
+            if !self.detailed_watchers.iter().any(|existing| existing.get_id() == watcher.get_id()) {
+                self.detailed_watchers.push(watcher.clone());
+            }
         }
     }
 
@@ -188,6 +191,7 @@ impl ChangeSet {
         }
         
         // Notify detailed watchers with each change separately
+        // Since we now prevent duplicate watcher registration, each change should only be notified once per watcher
         if !self.detailed_changes.is_empty() && !self.detailed_watchers.is_empty() {
             for change_detail in &self.detailed_changes {
                 for watcher in &self.detailed_watchers {
