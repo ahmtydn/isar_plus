@@ -82,7 +82,7 @@ enum ChangeType {
 /// The class implements value equality and provides comprehensive
 /// debugging information.
 @immutable
-class FieldChange {
+class FieldChange<T extends DocumentSerializable> {
   /// Creates a field change record.
   ///
   /// [fieldName] must be non-empty and represent a valid field identifier.
@@ -92,16 +92,35 @@ class FieldChange {
     : assert(fieldName != '', 'Field name cannot be empty');
 
   /// Deserializes a FieldChange from JSON with validation.
-  factory FieldChange.fromJson(Map<String, dynamic> json) {
+  factory FieldChange.fromJson(
+    Map<String, dynamic> json, {
+    T Function(Map<String, dynamic>)? documentParser,
+  }) {
     final fieldName = json['field_name'];
     if (fieldName is! String || fieldName.isEmpty) {
       throw const FormatException('field_name must be a non-empty string');
     }
+    var oldValue = json['old_value'];
+    var newValue = json['new_value'];
+    if (fieldName == 'value') {
+      if (oldValue is Map<String, dynamic> && documentParser != null) {
+        oldValue = documentParser(oldValue);
+      } else if (oldValue is String && documentParser != null) {
+        final parsed = jsonDecode(oldValue) as Map<String, dynamic>;
+        oldValue = documentParser(parsed);
+      }
+      if (newValue is Map<String, dynamic> && documentParser != null) {
+        newValue = documentParser(newValue);
+      } else if (newValue is String && documentParser != null) {
+        final parsed = jsonDecode(newValue) as Map<String, dynamic>;
+        newValue = documentParser(parsed);
+      }
+    }
 
     return FieldChange(
       fieldName: fieldName,
-      oldValue: json['old_value'],
-      newValue: json['new_value'],
+      oldValue: oldValue,
+      newValue: newValue,
     );
   }
 
@@ -248,7 +267,10 @@ class ChangeDetail<T extends DocumentSerializable> {
       final fieldChangesJson = json['field_changes'] as List<dynamic>? ?? [];
       final fieldChanges = fieldChangesJson
           .cast<Map<String, dynamic>>()
-          .map(FieldChange.fromJson)
+          .map(
+            (json) =>
+                FieldChange.fromJson(json, documentParser: documentParser),
+          )
           .toList(growable: false);
 
       T? fullDocument;
@@ -266,7 +288,11 @@ class ChangeDetail<T extends DocumentSerializable> {
         }
       }
 
-      final timestamp = DateTime.tryParse(json['timestamp'] as String? ?? '');
+      DateTime? timestamp;
+      final timestampValue = json['timestamp'];
+      if (timestampValue is String && timestampValue.isNotEmpty) {
+        timestamp = DateTime.tryParse(timestampValue);
+      }
 
       return ChangeDetail<T>(
         collectionName: collectionName,
