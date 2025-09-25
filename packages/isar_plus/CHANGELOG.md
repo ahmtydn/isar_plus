@@ -1,4 +1,4 @@
-## 1.0.11 (2025-09-25)
+## 1.0.11
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.11 -->
 
@@ -9,7 +9,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.10...1.0.11
 
-## 1.0.9 (2025-09-21)
+## 1.0.9
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.9 -->
@@ -23,6 +23,7 @@
 
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.8...1.0.9
+
 
 ## 1.0.3
 
