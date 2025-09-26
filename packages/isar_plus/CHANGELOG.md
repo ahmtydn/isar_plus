@@ -1,4 +1,16 @@
+## 1.0.21 (2025-09-26)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.21 -->
+
+## What's Changed
+### Other Changes
+* feat: enhance JSON serialization in ChangeDetector to handle nested values and Frame structures by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/26
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.20...1.0.21
+
 ## 1.0.20 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.20 -->
 
