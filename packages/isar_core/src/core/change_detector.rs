@@ -202,15 +202,21 @@ impl ChangeDetector {
         }
     }
 
-    /// Directly serializes an IsarReader object to JSON string
+    /// Serializes an IsarReader object to a clean JSON string, extracting the actual object data
     fn serialize_isar_object<R: IsarReader>(reader: &R) -> String {
         let mut buffer = Vec::new();
         let mut serializer = serde_json::Serializer::new(&mut buffer);
         
         match reader.serialize(&mut serializer) {
             Ok(()) => {
-                String::from_utf8(buffer)
-                    .unwrap_or_else(|_| panic!("Failed to convert serialized data to UTF-8 string"))
+                let json_str = String::from_utf8(buffer)
+                    .unwrap_or_else(|_| panic!("Failed to convert serialized data to UTF-8 string"));
+                
+                // Parse the JSON and extract the actual object data
+                match serde_json::from_str::<JsonValue>(&json_str) {
+                    Ok(json_value) => Self::create_clean_full_document(&json_value),
+                    Err(_) => json_str, // Fallback to original if parsing fails
+                }
             }
             Err(_) => {
                 panic!("Failed to serialize IsarReader object")
@@ -418,6 +424,7 @@ impl ChangeDetector {
     }
 
     /// Creates a clean full document JSON string with unpacked nested JSON values
+    /// Handles both Frame structures and direct JSON objects
     fn create_clean_full_document(object: &JsonValue) -> String {
         match object {
             JsonValue::Object(map) => {
@@ -425,15 +432,33 @@ impl ChangeDetector {
                     panic!("Cannot create full document from empty JSON object");
                 }
                 
+                // Check if this is a Frame structure (has typeId, key, value)
+                if map.contains_key("typeId") && map.contains_key("key") && map.contains_key("value") {
+                    // This is a Frame structure, extract the actual object data
+                    if let Some(value_field) = map.get("value") {
+                        return Self::extract_nested_value(value_field);
+                    }
+                }
+                
+                // Not a Frame structure, clean nested values in regular objects
                 let mut clean_map = serde_json::Map::new();
                 
                 for (key, value) in map {
                     let clean_value = if key == "value" {
-                        // Try to unpack JSON strings in the "value" field
                         match value {
+                            // Handle JSON string unpacking
                             JsonValue::String(s) => {
                                 serde_json::from_str::<JsonValue>(s)
                                     .unwrap_or_else(|_| value.clone())
+                            }
+                            // Handle nested object with inner "value" field
+                            JsonValue::Object(inner_map) => {
+                                if let Some(inner_value) = inner_map.get("value") {
+                                    // If there's a nested "value" field, use that as the main value
+                                    inner_value.clone()
+                                } else {
+                                    value.clone()
+                                }
                             }
                             _ => value.clone()
                         }
@@ -450,6 +475,42 @@ impl ChangeDetector {
             JsonValue::Null => panic!("Cannot create full document from null JSON value"),
             _ => serde_json::to_string(object)
                 .unwrap_or_else(|_| panic!("Failed to serialize JSON value to full document"))
+        }
+    }
+
+    /// Extracts nested value from Frame value field
+    fn extract_nested_value(value_field: &JsonValue) -> String {
+        match value_field {
+            // If value is an object, look for nested "value" field
+            JsonValue::Object(value_map) => {
+                if let Some(inner_value) = value_map.get("value") {
+                    // Return the inner value (actual object data)
+                    serde_json::to_string(inner_value)
+                        .unwrap_or_else(|_| panic!("Failed to serialize actual object data"))
+                } else {
+                    // No nested value, return the value object itself
+                    serde_json::to_string(value_field)
+                        .unwrap_or_else(|_| panic!("Failed to serialize value object"))
+                }
+            }
+            // If value is a string, try to parse it as JSON
+            JsonValue::String(s) => {
+                match serde_json::from_str::<JsonValue>(s) {
+                    Ok(parsed) => {
+                        if let Some(inner_value) = parsed.get("value") {
+                            serde_json::to_string(inner_value)
+                                .unwrap_or_else(|_| panic!("Failed to serialize inner value from string"))
+                        } else {
+                            s.clone()
+                        }
+                    }
+                    Err(_) => s.clone(),
+                }
+            }
+            _ => {
+                serde_json::to_string(value_field)
+                    .unwrap_or_else(|_| panic!("Failed to serialize value field"))
+            }
         }
     }
 
