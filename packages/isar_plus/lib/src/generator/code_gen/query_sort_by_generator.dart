@@ -1,12 +1,12 @@
-// ignore_for_file: use_string_buffers
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateSortBy(ObjectInfo oi) {
   final prefix = 'QueryBuilder<${oi.dartName}, ${oi.dartName}, QAfterSortBy>';
 
-  var code = '''
-  extension ${oi.dartName}QuerySortBy on QueryBuilder<${oi.dartName}, ${oi.dartName}, QSortBy> {''';
+  final buffer = StringBuffer(
+    '''
+  extension ${oi.dartName}QuerySortBy on QueryBuilder<${oi.dartName}, ${oi.dartName}, QSortBy> {''',
+  );
 
   for (final property in oi.properties) {
     if (property.type.isList || property.type.isObject) {
@@ -18,7 +18,7 @@ String _generateSortBy(ObjectInfo oi) {
     final caseSensitiveArg =
         property.type.isString ? ', caseSensitive: caseSensitive,' : '';
 
-    code += '''
+    buffer.write('''
     ${prefix}sortBy${property.dartName.capitalize()}($caseSensitiveParam) {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(${property.index} $caseSensitiveArg);
@@ -29,13 +29,15 @@ String _generateSortBy(ObjectInfo oi) {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(${property.index}, sort: Sort.desc $caseSensitiveArg);
       });
-    }''';
+    }''');
   }
 
-  code += '''
+  buffer.write(
+    '''
   }
 
-  extension ${oi.dartName}QuerySortThenBy on QueryBuilder<${oi.dartName}, ${oi.dartName}, QSortThenBy> {''';
+  extension ${oi.dartName}QuerySortThenBy on QueryBuilder<${oi.dartName}, ${oi.dartName}, QSortThenBy> {''',
+  );
 
   for (final property in oi.properties) {
     if (property.type.isList || property.type.isObject) {
@@ -47,7 +49,7 @@ String _generateSortBy(ObjectInfo oi) {
     final caseSensitiveArg =
         property.type.isString ? ', caseSensitive: caseSensitive' : '';
 
-    code += '''
+    buffer.write('''
     ${prefix}thenBy${property.dartName.capitalize()}($caseSensitiveParam) {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(${property.index} $caseSensitiveArg);
@@ -58,8 +60,8 @@ String _generateSortBy(ObjectInfo oi) {
       return QueryBuilder.apply(this, (query) {
         return query.addSortBy(${property.index}, sort: Sort.desc $caseSensitiveArg);
       });
-    }''';
+    }''');
   }
 
-  return '$code}';
+  return '$buffer}';
 }

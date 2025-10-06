@@ -1,24 +1,25 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:async';
-import 'dart:html';
-import 'dart:js_util';
+import 'dart:js_interop';
 
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus/src/web/interop.dart';
+import 'package:web/web.dart';
 
 export 'bindings.dart';
 export 'ffi.dart';
 export 'interop.dart';
 
+/// Initializes the Isar WebAssembly bindings.
 FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) async {
-  final url = library ?? 'https://unpkg.com/isar@${Isar.version}/isar.wasm';
+  final url =
+      library ?? 'https://unpkg.com/isar_plus@${Isar.version}/isar.wasm';
   final w = window as JSWindow;
-  final promise = w.WebAssembly.instantiateStreaming(
-    w.fetch(url),
-    jsify({'env': <String, String>{}}),
-  );
-  final wasm = await promiseToFuture<JSWasmModule>(promise);
+  final object = {'env': <String, String>{}}.jsify();
+  if (object == null) {
+    throw Exception('Failed to create import object for WebAssembly.');
+  }
+  final promise = w.WebAssembly.instantiateStreaming(w.fetch(url), object);
+  final wasm = await promise.toDart;
   return wasm.instance.exports;
 }
 

@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_asserts_with_message
-
 part of isar_plus;
 
 /// The Isar storage engine.
@@ -101,7 +99,7 @@ abstract class Isar {
         _IsarConnect.initialize(isar);
       }
       return true;
-    }());
+    }(), 'Isar inspector initialization');
 
     return isar;
   }
@@ -135,7 +133,7 @@ abstract class Isar {
         _IsarConnect.initialize(isar);
       }
       return true;
-    }());
+    }(), 'Isar inspector initialization');
 
     return isar;
   }

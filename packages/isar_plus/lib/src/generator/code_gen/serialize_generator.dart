@@ -1,41 +1,42 @@
-// ignore_for_file: use_string_buffers
-// ignore_for_file: always_put_required_named_parameters_first
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateSerialize(ObjectInfo object) {
-  var code = '''
+  final buffer = StringBuffer(
+    '''
   @isarProtected
-  int serialize${object.dartName}(IsarWriter writer, ${object.dartName} object) {''';
+  int serialize${object.dartName}(IsarWriter writer, ${object.dartName} object) {''',
+  );
 
   for (final property in object.properties) {
     if (property.isId && property.type == IsarType.long) {
       continue;
     }
 
-    code += _writeProperty(
-      index: property.index.toString(),
-      type: property.type,
-      nullable: property.nullable,
-      elementNullable: property.elementNullable,
-      typeClassName: property.typeClassName,
-      value: 'object.${property.dartName}',
-      enumProperty: property.enumProperty,
+    buffer.write(
+      _writeProperty(
+        index: property.index.toString(),
+        type: property.type,
+        nullable: property.nullable,
+        elementNullable: property.elementNullable,
+        typeClassName: property.typeClassName,
+        value: 'object.${property.dartName}',
+        enumProperty: property.enumProperty,
+      ),
     );
   }
 
   final idProp = object.idProperty;
   if (idProp != null) {
     if (idProp.type == IsarType.long) {
-      code += 'return object.${idProp.dartName};';
+      buffer.write('return object.${idProp.dartName};');
     } else {
-      code += 'return Isar.fastHash(object.${idProp.dartName});';
+      buffer.write('return Isar.fastHash(object.${idProp.dartName});');
     }
   } else {
-    code += 'return 0;';
+    buffer.write('return 0;');
   }
 
-  return '$code}';
+  return '$buffer}';
 }
 
 String _writeProperty({
@@ -83,7 +84,8 @@ String _writeProperty({
     case IsarType.dateTime:
       final converted =
           nullable
-              ? '$value$enumGetter?.toUtc().microsecondsSinceEpoch ?? $_nullLong'
+              ? '$value$enumGetter?.toUtc().microsecondsSinceEpoch '
+                  '?? $_nullLong'
               : '$value$enumGetter.toUtc().microsecondsSinceEpoch';
       return 'IsarCore.writeLong($writer, $index, $converted);';
     case IsarType.double:

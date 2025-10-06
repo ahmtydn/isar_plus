@@ -1,6 +1,4 @@
-// ignore_for_file: use_string_buffers
-
-part of isar_plus_generator;
+part of 'isar_plus_generator.dart';
 
 class _IsarAnalyzer {
   ObjectInfo analyzeCollection(Element element) {
@@ -23,6 +21,13 @@ class _IsarAnalyzer {
       idPropertyName = idProperties.single.name ?? 'id';
     } else {
       _err('Two or more properties are annotated with @id.', modelClass);
+    }
+
+    final idPropertyElement = modelClass.allAccessors.firstWhere(
+      (e) => e.name == idPropertyName,
+    );
+    if (idPropertyElement is! FieldElement) {
+      _err('Id property must be a field.', modelClass);
     }
 
     final properties = <PropertyInfo>[];
@@ -102,7 +107,10 @@ class _IsarAnalyzer {
     }
 
     if (modelClass.isAbstract) {
-      _err('Class must not be abstract.', modelClass);
+      final hasFactory = modelClass.constructors.any((c) => c.isFactory);
+      if (!hasFactory) {
+        _err('Class must not be abstract.', modelClass);
+      }
     }
 
     if (!modelClass.isPublic) {
@@ -111,10 +119,11 @@ class _IsarAnalyzer {
 
     final constructor =
         modelClass.constructors
-            .where((c) => (c.name ?? '').isEmpty)
-            .firstOrNull;
+            .where((c) => !c.isFactory && !c.isConst)
+            .firstOrNull ??
+        modelClass.constructors.firstOrNull;
     if (constructor == null) {
-      _err('Class needs an unnamed constructor.', modelClass);
+      _err('Class needs a constructor.', modelClass);
     }
 
     final hasCollectionSupertype = modelClass.allSupertypes.any((type) {
@@ -214,15 +223,14 @@ class _IsarAnalyzer {
         final element = enumElements[i];
         dynamic propertyValue = i;
         if (enumProperty != null) {
-          final property =
-              element.computeConstantValue()!.getField(
-                enumProperty.name ?? '',
-              )!;
+          final property = element.computeConstantValue()!.getField(
+            enumProperty.name ?? '',
+          );
           propertyValue =
-              property.toBoolValue() ??
-              property.toIntValue() ??
-              property.toDoubleValue() ??
-              property.toStringValue();
+              property?.toBoolValue() ??
+              property?.toIntValue() ??
+              property?.toDoubleValue() ??
+              property?.toStringValue();
         }
 
         if (propertyValue == null) {
@@ -352,7 +360,7 @@ class _IsarAnalyzer {
     } else if (type.isDartCoreMap) {
       return 'const <String, dynamic>{}';
     } else {
-      final element = type.element!;
+      final element = type.element;
       if (element is EnumElement) {
         final firstConst = element.fields.where((f) => f.isEnumConstant).first;
         return '${element.name}.${firstConst.name}';

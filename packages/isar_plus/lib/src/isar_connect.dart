@@ -1,9 +1,10 @@
-// ignore_for_file: avoid_print
-
 part of isar_plus;
 
 abstract class _IsarConnect {
-  static const Map<ConnectAction, Future Function(Map<String, dynamic> _)>
+  static const Map<
+    ConnectAction,
+    Future<dynamic> Function(Map<String, dynamic> _)
+  >
   _handlers = {
     ConnectAction.listInstances: _listInstances,
     ConnectAction.getSchemas: _getSchemas,
@@ -17,7 +18,6 @@ abstract class _IsarConnect {
   static final _instances = <String, Isar>{};
   static var _initialized = false;
 
-  // ignore: cancel_subscriptions
   static final _querySubscription = <StreamSubscription<void>>[];
   static final _collectionSubscriptions = <StreamSubscription<void>>[];
 
@@ -44,7 +44,7 @@ abstract class _IsarConnect {
                   : <String, dynamic>{};
           final result = <String, dynamic>{'result': await handler.value(args)};
           return ServiceExtensionResponse.result(jsonEncode(result));
-        } catch (e) {
+        } on Exception catch (e) {
           return ServiceExtensionResponse.error(
             ServiceExtensionResponse.extensionError,
             e.toString(),
@@ -77,14 +77,14 @@ abstract class _IsarConnect {
         return left.join() + text + right.join();
       }
 
-      print('╔${line('', '═')}╗');
-      print('║${line('ISAR CONNECT STARTED', ' ')}║');
-      print('╟${line('', '─')}╢');
-      print('║${line('Open the link to connect to the Isar', ' ')}║');
-      print('║${line('Inspector while this build is running.', ' ')}║');
-      print('╟${line('', '─')}╢');
-      print('║$url║');
-      print('╚${line('', '═')}╝');
+      log('╔${line('', '═')}╗');
+      log('║${line('ISAR CONNECT STARTED', ' ')}║');
+      log('╟${line('', '─')}╢');
+      log('║${line('Open the link to connect to the Isar', ' ')}║');
+      log('║${line('Inspector while this build is running.', ' ')}║');
+      log('╟${line('', '─')}╢');
+      log('║$url║');
+      log('╚${line('', '═')}╝');
     });
   }
 

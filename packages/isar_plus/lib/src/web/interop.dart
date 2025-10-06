@@ -1,57 +1,54 @@
-// ignore_for_file: public_member_api_docs, non_constant_identifier_names
-
+import 'dart:js_interop';
 import 'dart:typed_data';
 
-import 'package:js/js.dart';
-
 @JS()
-@staticInterop
-class JSWindow {}
+extension type JSWindow._(JSObject _) implements JSObject {}
 
 extension JSWIndowX on JSWindow {
   external JSIsar get isar;
 
+  /// ignored to avoid "non-constant identifier names" warning
+  // ignore: non_constant_identifier_names
   external JSWasm get WebAssembly;
 
-  external Object fetch(String url);
+  external JSObject fetch(String url);
 }
 
 @JS()
-@staticInterop
-class JSWasm {}
+extension type JSWasm._(JSObject _) implements JSObject {}
 
 extension JSWasmX on JSWasm {
-  external Object instantiateStreaming(Object source, dynamic importObject);
+  external JSPromise<JSWasmModule> instantiateStreaming(
+    JSObject source,
+    JSAny importObject,
+  );
 }
 
 @JS()
-@staticInterop
-class JSWasmModule {}
+extension type JSWasmModule._(JSObject _) implements JSObject {}
 
 extension JSWasmModuleX on JSWasmModule {
   external JSWasmInstance get instance;
 }
 
 @JS()
-@staticInterop
-class JSWasmInstance {}
+extension type JSWasmInstance._(JSObject _) implements JSObject {}
 
 extension JSWasmInstanceX on JSWasmInstance {
   external JSIsar get exports;
 }
 
 @JS()
-@staticInterop
-class JSIsar {}
+extension type JSIsar._(JSObject _) implements JSObject {}
 
 extension JSIsarX on JSIsar {
   external JsMemory get memory;
 
-  Uint8List get u8Heap => memory.buffer.asUint8List();
+  Uint8List get u8Heap => memory.buffer.toDart.asUint8List();
 
-  Uint16List get u16Heap => memory.buffer.asUint16List();
+  Uint16List get u16Heap => memory.buffer.toDart.asUint16List();
 
-  Uint32List get u32Heap => memory.buffer.asUint32List();
+  Uint32List get u32Heap => memory.buffer.toDart.asUint32List();
 
   external int malloc(int byteCount);
 
@@ -59,11 +56,8 @@ extension JSIsarX on JSIsar {
 }
 
 @JS()
-@staticInterop
-class JsMemory {}
+extension type JsMemory._(JSObject _) implements JSObject {}
 
-@JS()
-@staticInterop
-extension on JsMemory {
-  external ByteBuffer get buffer;
+extension JsMemoryX on JsMemory {
+  external JSArrayBuffer get buffer;
 }

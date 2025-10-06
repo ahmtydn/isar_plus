@@ -23,12 +23,12 @@ jobs:
         run: sh tool/prepare_tests.sh
       - name: Build dummy APK
         run: flutter build apk integration_test.dart
-        working-directory: packages/isar_test
+        working-directory: packages/isar_plus_test
       - name: Build APKs
         run: |
           ./gradlew app:assembleAndroidTest
           ./gradlew app:assembleDebug -Ptarget=integration_test.dart
-        working-directory: packages/isar_test/android
+        working-directory: packages/isar_plus_test/android
       - name: Login to Google Cloud
         uses: "google-github-actions/auth@v1"
         with:
@@ -43,4 +43,4 @@ jobs:
             --device model=cheetah,version=33 \
             --app build/app/outputs/apk/debug/app-debug.apk \
             --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-        working-directory: packages/isar_test
+        working-directory: packages/isar_plus_test

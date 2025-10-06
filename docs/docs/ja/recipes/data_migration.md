@@ -43,7 +43,7 @@ class User {
 問題は、バージョン1では `birthYear` フィールドが存在しないため、既存のUserモデルを作成しても空の `birthYear`が設定されることです。 `birthYear` フィールドを設定するために、データを移行する必要があります。
 
 ```dart
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

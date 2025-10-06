@@ -1,5 +1,5 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:pub_app/models/api/metrics.dart';
 import 'package:pub_app/models/api/package.dart';
 import 'package:pubspec/pubspec.dart';
@@ -84,8 +84,9 @@ class Package {
           documentation: p.pubspec.documentation,
           description: p.pubspec.description,
           dependencies: Dependency.fromDependencies(p.pubspec.dependencies),
-          devDependencies:
-              Dependency.fromDependencies(p.pubspec.devDependencies),
+          devDependencies: Dependency.fromDependencies(
+            p.pubspec.devDependencies,
+          ),
           published: p.published,
         ),
       );
@@ -95,10 +96,12 @@ class Package {
   }
 
   Package copyWithMetrics(ApiPackageMetrics metrics) {
-    final publishers =
-        metrics.tags.where((t) => t.startsWith('publisher:')).toList();
-    final publisher =
-        publishers.isNotEmpty ? publishers.first.substring(10) : null;
+    final publishers = metrics.tags
+        .where((t) => t.startsWith('publisher:'))
+        .toList();
+    final publisher = publishers.isNotEmpty
+        ? publishers.first.substring(10)
+        : null;
     return copyWith(
       points: metrics.grantedPoints,
       likes: metrics.likeCount,
@@ -146,14 +149,10 @@ class Dependency {
     final dependencies = <Dependency>[];
     for (final package in dependenciesMap.keys) {
       final dep = dependenciesMap[package]!;
-      final constraint =
-          dep is HostedReference ? dep.versionConstraint.toString() : 'unknown';
-      dependencies.add(
-        Dependency(
-          name: package,
-          constraint: constraint,
-        ),
-      );
+      final constraint = dep is HostedReference
+          ? dep.versionConstraint.toString()
+          : 'unknown';
+      dependencies.add(Dependency(name: package, constraint: constraint));
     }
 
     return dependencies;

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:isar_plus/src/generator/isar_generator.dart';
+import 'package:isar_plus/src/generator/isar_plus_generator.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
           await testBuilder(getIsarGenerator(BuilderOptions.empty), {
             'a|${file.path}': content.join('\n'),
           });
-        } catch (e) {
+        } on Exception catch (e) {
           error = e.toString();
         }
 

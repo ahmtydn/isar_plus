@@ -24,8 +24,11 @@ class QueryBuilder<OBJ, R, S> {
 
   /// @nodoc
   @protected
+  // Protected API uses private type for internal implementation
+  // ignore: library_private_types_in_public_api
   static QueryBuilder<OBJ, R, S> apply<OBJ, R, S>(
     QueryBuilder<OBJ, dynamic, dynamic> qb,
+    // Private type needed for internal query builder transformation
     // ignore: library_private_types_in_public_api
     _QueryBuilder<OBJ> Function(_QueryBuilder<OBJ> query) transform,
   ) {
@@ -101,12 +104,14 @@ class _QueryBuilder<OBJ> {
 
   /// @nodoc
   _QueryBuilder<OBJ> group(FilterQuery<OBJ> q) {
+    // Cannot be const due to runtime type requirements
     // ignore: prefer_const_constructors
     final qb = q(QueryBuilder._(_QueryBuilder()));
     final filter = qb._query.filter;
     if (filter != null) {
       return addFilterCondition(filter);
     } else {
+      // Returning this is intentional for fluent API
       // ignore: avoid_returning_this
       return this;
     }
@@ -114,6 +119,7 @@ class _QueryBuilder<OBJ> {
 
   /// @nodoc
   _QueryBuilder<OBJ> object<E>(FilterQuery<E> q, int property) {
+    // Cannot be const due to runtime type requirements
     // ignore: prefer_const_constructors
     final qb = q(QueryBuilder._(_QueryBuilder()));
     final filter = qb._query.filter;
@@ -122,6 +128,7 @@ class _QueryBuilder<OBJ> {
         ObjectFilter(property: property, filter: filter),
       );
     } else {
+      // Returning this is intentional for fluent API
       // ignore: avoid_returning_this
       return this;
     }

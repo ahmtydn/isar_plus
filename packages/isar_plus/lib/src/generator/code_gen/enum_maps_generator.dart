@@ -1,22 +1,20 @@
-// ignore_for_file: use_string_buffers
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateEnumMaps(ObjectInfo object) {
-  var code = '';
+  final buffer = StringBuffer();
   for (final property in object.properties.where((e) => e.isEnum)) {
     final enumName = property.typeClassName;
-    code += 'const ${property.enumMapName(object)} = {';
+    buffer.write('const ${property.enumMapName(object)} = {');
     for (final enumElementName in property.enumMap!.keys) {
       final value = property.enumMap![enumElementName];
       if (value is String) {
-        code += "r'$value': $enumName.$enumElementName,";
+        buffer.write("r'$value': $enumName.$enumElementName,");
       } else {
-        code += '$value: $enumName.$enumElementName,';
+        buffer.write('$value: $enumName.$enumElementName,');
       }
     }
-    code += '};';
+    buffer.write('};');
   }
 
-  return code;
+  return buffer.toString();
 }

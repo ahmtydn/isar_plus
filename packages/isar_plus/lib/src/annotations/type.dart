@@ -1,3 +1,4 @@
+// Type definitions use lowercase for consistency with Dart's primitive types
 // ignore_for_file: camel_case_types
 
 part of isar_plus;

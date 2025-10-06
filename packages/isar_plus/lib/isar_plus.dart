@@ -43,6 +43,8 @@ part 'src/watcher_details.dart';
 
 /// @nodoc
 @protected
+/// ignored to avoid "unused import" warnings
+// ignore: specify_nonobvious_property_types
 const isarProtected = protected;
 
 /// @nodoc

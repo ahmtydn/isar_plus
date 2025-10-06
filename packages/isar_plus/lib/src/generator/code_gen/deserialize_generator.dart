@@ -1,12 +1,9 @@
-// ignore_for_file: use_string_buffers, no_default_cases,
-// ignore_for_file: always_put_required_named_parameters_first
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateDeserialize(ObjectInfo object) {
-  var code = '''
+  final buffer = StringBuffer('''
   @isarProtected
-  ${object.dartName} deserialize${object.dartName}(IsarReader reader) {''';
+  ${object.dartName} deserialize${object.dartName}(IsarReader reader) {''');
 
   final propertiesByMode = {
     DeserializeMode.none: <PropertyInfo>[],
@@ -25,51 +22,55 @@ String _generateDeserialize(ObjectInfo object) {
   final named = propertiesByMode[DeserializeMode.namedParam]!;
 
   for (final p in [...positional, ...named]) {
-    code += 'final ${p.dartType} _${p.dartName};';
-    code += _deserializeProperty(object, p, (value) {
-      return '_${p.dartName} = $value;';
-    });
+    buffer.write('final ${p.dartType} _${p.dartName};');
+    buffer.write(
+      _deserializeProperty(object, p, (value) {
+        return '_${p.dartName} = $value;';
+      }),
+    );
   }
 
-  code += 'final object = ${object.dartName}(';
+  buffer.write('final object = ${object.dartName}(');
 
   for (final p in positional) {
-    code += '_${p.dartName},';
+    buffer.write('_${p.dartName},');
   }
 
   for (final p in named) {
-    code += '${p.dartName}: _${p.dartName},';
+    buffer.write('${p.dartName}: _${p.dartName},');
   }
 
-  code += ');';
+  buffer.write(');');
 
   final assign = propertiesByMode[DeserializeMode.assign]!;
   for (final p in assign) {
-    code += _deserializeProperty(object, p, (value) {
-      return 'object.${p.dartName} = $value;';
-    });
+    buffer.write(
+      _deserializeProperty(object, p, (value) {
+        return 'object.${p.dartName} = $value;';
+      }),
+    );
   }
 
   return '''
-    $code
+    $buffer
     return object;
   }''';
 }
 
 String _generateDeserializeProp(ObjectInfo object) {
-  var code = '''
+  final buffer = StringBuffer('''
     @isarProtected
     dynamic deserialize${object.dartName}Prop(IsarReader reader, int property) {
-      switch (property) {''';
+      switch (property) {''');
   for (final p in object.properties) {
     final deser = _deserializeProperty(object, p, (value) {
       return 'return $value;';
     });
-    code += 'case ${p.index}: $deser';
+    buffer.write('case ${p.index}: $deser');
   }
 
   return '''
-      $code
+      $buffer
       default:
         throw ArgumentError('Unknown property: \$property');
       }

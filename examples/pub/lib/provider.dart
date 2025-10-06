@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pub_app/models/asset.dart';
 import 'package:pub_app/models/package.dart';

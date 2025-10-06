@@ -1,42 +1,6 @@
 part of isar_plus;
 
 class _IsarImpl extends Isar {
-  _IsarImpl._(
-    this.instanceId,
-    Pointer<CIsarInstance> ptr,
-    this.generatedSchemas,
-  ) : _ptr = ptr {
-    for (final schema in generatedSchemas) {
-      if (schema.isEmbedded) {
-        continue;
-      }
-
-      collections[schema.converter.type] = schema.converter.withType(
-        <ID, OBJ>(converter) {
-          return _IsarCollectionImpl<ID, OBJ>(
-            this,
-            schema.schema,
-            collections.length,
-            converter,
-          );
-        },
-      );
-    }
-
-    _instances[instanceId] = this;
-  }
-
-  static final _instances = <int, _IsarImpl>{};
-
-  final int instanceId;
-  final List<IsarGeneratedSchema> generatedSchemas;
-  final collections = <Type, _IsarCollectionImpl<dynamic, dynamic>>{};
-
-  Pointer<CIsarInstance>? _ptr;
-  Pointer<CIsarTxn>? _txnPtr;
-  bool _txnWrite = false;
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.open({
     required List<IsarGeneratedSchema> schemas,
     required String name,
@@ -51,8 +15,10 @@ class _IsarImpl extends Isar {
 
     if (engine == IsarEngine.isar) {
       if (encryptionKey != null) {
-        throw ArgumentError('Isar engine does not support encryption. Please '
-            'set the engine to IsarEngine.sqlite.');
+        throw ArgumentError(
+          'Isar engine does not support encryption. Please '
+          'set the engine to IsarEngine.sqlite.',
+        );
       }
       maxSizeMiB ??= Isar.defaultMaxSizeMiB;
     } else {
@@ -64,12 +30,15 @@ class _IsarImpl extends Isar {
 
     final allSchemas = <IsarGeneratedSchema>{
       ...schemas,
-      ...schemas.expand((e) => e.embeddedSchemas ?? <IsarGeneratedSchema>[]),
+      ...schemas.expand((e) => e.allEmbeddedSchemas),
     };
-    final schemaJson =
-        jsonEncode(allSchemas.map((e) => e.schema.toJson()).toList());
+    final schemaJson = jsonEncode(
+      allSchemas.map((e) => e.schema.toJson()).toList(),
+    );
 
     final instanceId = Isar.fastHash(name);
+    // Check if instance already exists to avoid creating duplicates
+    // ignore: prefer_asserts_with_message
     final instance = _IsarImpl._instances[instanceId];
     if (instance != null) {
       return instance;
@@ -78,9 +47,10 @@ class _IsarImpl extends Isar {
     final namePtr = IsarCore._toNativeString(name);
     final directoryPtr = IsarCore._toNativeString(directory);
     final schemaPtr = IsarCore._toNativeString(schemaJson);
-    final encryptionKeyPtr = encryptionKey != null
-        ? IsarCore._toNativeString(encryptionKey)
-        : nullptr;
+    final encryptionKeyPtr =
+        encryptionKey != null
+            ? IsarCore._toNativeString(encryptionKey)
+            : nullptr;
 
     final isarPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarInstance>>();
     IsarCore.b
@@ -101,8 +71,6 @@ class _IsarImpl extends Isar {
 
     return _IsarImpl._(instanceId, isarPtrPtr.ptrValue, allSchemas.toList());
   }
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.get({
     required int instanceId,
     required List<IsarGeneratedSchema> schemas,
@@ -114,14 +82,14 @@ class _IsarImpl extends Isar {
       ptr = IsarCore.b.isar_get_instance(instanceId, true);
     }
     if (ptr.isNull) {
-      throw IsarNotReadyError('Instance has not been opened yet. Make sure to '
-          'call Isar.open() before using Isar.get().');
+      throw IsarNotReadyError(
+        'Instance has not been opened yet. Make sure to '
+        'call Isar.open() before using Isar.get().',
+      );
     }
 
     return _IsarImpl._(instanceId, ptr, schemas);
   }
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.getByName({
     required String name,
     required List<IsarGeneratedSchema> schemas,
@@ -132,11 +100,45 @@ class _IsarImpl extends Isar {
       return instance;
     }
 
-    return _IsarImpl.get(
-      instanceId: instanceId,
-      schemas: schemas,
-    );
+    return _IsarImpl.get(instanceId: instanceId, schemas: schemas);
   }
+  _IsarImpl._(
+    this.instanceId,
+    Pointer<CIsarInstance> ptr,
+    this.generatedSchemas,
+  ) : _ptr = ptr {
+    for (final schema in generatedSchemas) {
+      if (schema.isEmbedded) {
+        continue;
+      }
+      // Type parameters need to match the schema's generic types
+      // ignore: prefer_asserts_with_message
+      collections[schema.converter.type] = schema.converter.withType(<ID, OBJ>(
+        converter,
+      ) {
+        return _IsarCollectionImpl<ID, OBJ>(
+          this,
+          schema.schema,
+          collections.length,
+          converter,
+        );
+      });
+    }
+
+    _instances[instanceId] = this;
+  }
+
+  static final _instances = <int, _IsarImpl>{};
+
+  final int instanceId;
+  final List<IsarGeneratedSchema> generatedSchemas;
+  // Dynamic types needed for storing mixed collection types
+  // ignore: prefer_asserts_with_message
+  final collections = <Type, _IsarCollectionImpl<dynamic, dynamic>>{};
+
+  Pointer<CIsarInstance>? _ptr;
+  Pointer<CIsarTxn>? _txnPtr;
+  bool _txnWrite = false;
 
   static Future<Isar> openAsync({
     required List<IsarGeneratedSchema> schemas,
@@ -151,30 +153,27 @@ class _IsarImpl extends Isar {
 
     final receivePort = ReceivePort();
     final sendPort = receivePort.sendPort;
-    final isolate = runIsolate(
-      'Isar open async',
-      () async {
-        try {
-          final isar = _IsarImpl.open(
-            schemas: schemas,
-            directory: directory,
-            name: name,
-            engine: engine,
-            maxSizeMiB: maxSizeMiB,
-            encryptionKey: encryptionKey,
-            compactOnLaunch: compactOnLaunch,
-            library: library,
-          );
+    final isolate = runIsolate('Isar open async', () async {
+      try {
+        final isar = _IsarImpl.open(
+          schemas: schemas,
+          directory: directory,
+          name: name,
+          engine: engine,
+          maxSizeMiB: maxSizeMiB,
+          encryptionKey: encryptionKey,
+          compactOnLaunch: compactOnLaunch,
+          library: library,
+        );
 
-          final receivePort = ReceivePort();
-          sendPort.send(receivePort.sendPort);
-          await receivePort.first;
-          isar.close();
-        } catch (e) {
-          sendPort.send(e);
-        }
-      },
-    );
+        final receivePort = ReceivePort();
+        sendPort.send(receivePort.sendPort);
+        await receivePort.first;
+        isar.close();
+      } on Exception catch (e) {
+        sendPort.send(e);
+      }
+    });
 
     final response = await receivePort.first;
     if (response is SendPort) {
@@ -183,12 +182,13 @@ class _IsarImpl extends Isar {
       await isolate;
       return isar;
     } else {
-      // ignore: only_throw_errors
-      throw response as Object;
+      throw Exception(response);
     }
   }
 
   static _IsarImpl instance(int instanceId) {
+    // Getter for existing Isar instance
+    // ignore: prefer_asserts_with_message
     final instance = _instances[instanceId];
     if (instance == null) {
       throw IsarNotReadyError(
@@ -251,10 +251,8 @@ class _IsarImpl extends Isar {
 
   @tryInline
   T getTxn<T>(
-    T Function(
-      Pointer<CIsarInstance> isarPtr,
-      Pointer<CIsarTxn> txnPtr,
-    ) callback,
+    T Function(Pointer<CIsarInstance> isarPtr, Pointer<CIsarTxn> txnPtr)
+    callback,
   ) {
     final txnPtr = _txnPtr;
     if (txnPtr != null) {
@@ -269,7 +267,8 @@ class _IsarImpl extends Isar {
     (T, Pointer<CIsarTxn>?) Function(
       Pointer<CIsarInstance> isarPtr,
       Pointer<CIsarTxn> txnPtr,
-    ) callback, {
+    )
+    callback, {
     bool consume = false,
   }) {
     final txnPtr = _txnPtr;
@@ -376,19 +375,16 @@ class _IsarImpl extends Isar {
     final instance = instanceId;
     final library = IsarCore._library;
     final schemas = generatedSchemas.toList();
-    return runIsolate(
-      debugName ?? 'Isar async write',
-      () {
-        return _isarAsync(
-          instanceId: instance,
-          schemas: schemas,
-          write: true,
-          param: param,
-          callback: callback,
-          library: library,
-        );
-      },
-    );
+    return runIsolate(debugName ?? 'Isar async write', () {
+      return _isarAsync(
+        instanceId: instance,
+        schemas: schemas,
+        write: true,
+        param: param,
+        callback: callback,
+        library: library,
+      );
+    });
   }
 
   @override
