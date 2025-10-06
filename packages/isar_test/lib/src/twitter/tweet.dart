@@ -1,4 +1,4 @@
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_test/src/twitter/entities.dart';
 import 'package:isar_test/src/twitter/geo.dart';
 import 'package:isar_test/src/twitter/media.dart';

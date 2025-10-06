@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_test/isar_test.dart';
 import 'package:test/test.dart';
 

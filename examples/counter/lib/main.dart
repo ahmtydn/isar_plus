@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 
 part 'main.g.dart';
 

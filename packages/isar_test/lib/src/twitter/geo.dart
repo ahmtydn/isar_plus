@@ -1,4 +1,4 @@
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'geo.g.dart';

@@ -1,0 +1,6 @@
+dependency_overrides:
+  isar_plus:
+    path: ../../packages/isar_plus
+  isar_plus_flutter_libs:
+    path: ../../packages/isar_plus_flutter_libs
+  analyzer: ^8.2.0

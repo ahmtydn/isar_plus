@@ -43,7 +43,7 @@ class User {
 Le problème est que les modèles d'utilisateurs existants auront un champ `birthYear` vide, car il n'existait pas dans la version 1. Nous devons migrer les données pour définir le champ `birthYear`.
 
 ```dart
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

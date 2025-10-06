@@ -1,11 +1,11 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:typed_data';
+
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:ffi/src/allocation.dart';
 import 'package:isar_plus/src/native/native.dart';
 
 export 'dart:ffi';
+
 export 'package:ffi/ffi.dart';
 
 @tryInline

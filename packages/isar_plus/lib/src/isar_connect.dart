@@ -1,9 +1,10 @@
-// ignore_for_file: avoid_print
-
 part of isar_plus;
 
 abstract class _IsarConnect {
-  static const Map<ConnectAction, Future Function(Map<String, dynamic> _)>
+  static const Map<
+    ConnectAction,
+    Future<dynamic> Function(Map<String, dynamic> _)
+  >
   _handlers = {
     ConnectAction.listInstances: _listInstances,
     ConnectAction.getSchemas: _getSchemas,
@@ -17,7 +18,6 @@ abstract class _IsarConnect {
   static final _instances = <String, Isar>{};
   static var _initialized = false;
 
-  // ignore: cancel_subscriptions
   static final _querySubscription = <StreamSubscription<void>>[];
   static final _collectionSubscriptions = <StreamSubscription<void>>[];
 
