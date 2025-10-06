@@ -9,7 +9,7 @@ part 'async_test.g.dart';
 
 @collection
 class Model {
-  const Model(this.id, this.value);
+  Model(this.id, this.value);
 
   final int id;
 
@@ -33,7 +33,7 @@ void main() async {
       final isarDir = isar.directory;
 
       isar.write((isar) {
-        isar.models.put(const Model(1, 'abc'));
+        isar.models.put(Model(1, 'abc'));
       });
       expect(isar.close(), true);
 
@@ -44,7 +44,7 @@ void main() async {
         engine: isSQLite ? IsarEngine.sqlite : IsarEngine.isar,
       );
 
-      expect(isar2.models.get(1), const Model(1, 'abc'));
+      expect(isar2.models.get(1), Model(1, 'abc'));
       expect(isar2.close(), true);
     });
 

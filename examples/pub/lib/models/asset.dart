@@ -11,6 +11,7 @@ class Asset {
     required this.content,
   });
 
+  @Id()
   String get id => '$package$version$kind';
 
   final String package;

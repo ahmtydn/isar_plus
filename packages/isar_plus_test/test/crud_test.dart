@@ -1,3 +1,5 @@
+// ignore_for_file: non_nullable_equals_parameter
+
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
@@ -6,7 +8,7 @@ part 'crud_test.g.dart';
 
 @collection
 class IntModel {
-  const IntModel(this.id, this.value);
+  IntModel(this.id, this.value);
 
   final int id;
 
@@ -25,7 +27,7 @@ class IntModel {
 
 @collection
 class StringModel {
-  const StringModel(this.id);
+  StringModel(this.id);
 
   final String id;
 
@@ -42,12 +44,12 @@ class StringModel {
 
 void main() {
   group('CRUD', () {
-    const intM1 = IntModel(1, 'This is a new model');
-    const intM2 = IntModel(2, 'This is another new model');
-    const intM3 = IntModel(3, 'Yet another one');
-    const strM1 = StringModel('M1');
-    const strM2 = StringModel('M2');
-    const strM3 = StringModel('M3');
+    final intM1 = IntModel(1, 'This is a new model');
+    final intM2 = IntModel(2, 'This is another new model');
+    final intM3 = IntModel(3, 'Yet another one');
+    final strM1 = StringModel('M1');
+    final strM2 = StringModel('M2');
+    final strM3 = StringModel('M3');
     late Isar isar;
 
     setUp(() async {

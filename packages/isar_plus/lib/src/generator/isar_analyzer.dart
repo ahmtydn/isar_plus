@@ -25,6 +25,13 @@ class _IsarAnalyzer {
       _err('Two or more properties are annotated with @id.', modelClass);
     }
 
+    final idPropertyElement = modelClass.allAccessors.firstWhere(
+      (e) => e.name == idPropertyName,
+    );
+    if (idPropertyElement is! FieldElement) {
+      _err('Id property must be a field.', modelClass);
+    }
+
     final properties = <PropertyInfo>[];
     var index = 1;
     for (final propertyElement in modelClass.allAccessors) {
@@ -102,7 +109,10 @@ class _IsarAnalyzer {
     }
 
     if (modelClass.isAbstract) {
-      _err('Class must not be abstract.', modelClass);
+      final hasFactory = modelClass.constructors.any((c) => c.isFactory);
+      if (!hasFactory) {
+        _err('Class must not be abstract.', modelClass);
+      }
     }
 
     if (!modelClass.isPublic) {
@@ -111,10 +121,11 @@ class _IsarAnalyzer {
 
     final constructor =
         modelClass.constructors
-            .where((c) => (c.name ?? '').isEmpty)
-            .firstOrNull;
+            .where((c) => !c.isFactory && !c.isConst)
+            .firstOrNull ??
+        modelClass.constructors.firstOrNull;
     if (constructor == null) {
-      _err('Class needs an unnamed constructor.', modelClass);
+      _err('Class needs a constructor.', modelClass);
     }
 
     final hasCollectionSupertype = modelClass.allSupertypes.any((type) {

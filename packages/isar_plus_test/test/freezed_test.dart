@@ -10,7 +10,7 @@ part 'freezed_test.g.dart';
 
 @freezed
 @collection
-class Person with _$Person {
+abstract class Person with _$Person {
   const factory Person({
     @id required int isarId,
     required String firstName,

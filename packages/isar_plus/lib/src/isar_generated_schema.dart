@@ -8,6 +8,7 @@ final class IsarGeneratedSchema {
     required this.schema,
     required this.converter,
     this.embeddedSchemas,
+    this.getEmbeddedSchemas,
   });
 
   /// @nodoc
@@ -20,7 +21,16 @@ final class IsarGeneratedSchema {
 
   /// @nodoc
   @protected
-  bool get isEmbedded => embeddedSchemas == null;
+  final List<IsarGeneratedSchema> Function()? getEmbeddedSchemas;
+
+  /// @nodoc
+  @protected
+  List<IsarGeneratedSchema> get allEmbeddedSchemas =>
+      embeddedSchemas ?? getEmbeddedSchemas?.call() ?? [];
+
+  /// @nodoc
+  @protected
+  bool get isEmbedded => embeddedSchemas == null && getEmbeddedSchemas == null;
 
   /// @nodoc
   @protected

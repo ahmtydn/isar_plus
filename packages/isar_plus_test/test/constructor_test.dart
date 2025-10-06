@@ -1,3 +1,6 @@
+// ignore_for_file: non_nullable_equals_parameter
+
+import 'package:flutter/widgets.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
@@ -19,8 +22,9 @@ class EmptyConstructorModel {
 }
 
 @collection
+@immutable
 class NamedConstructorModel {
-  NamedConstructorModel({required this.name});
+  const NamedConstructorModel({required this.name});
 
   @id
   final String name;
@@ -110,8 +114,8 @@ void main() {
     });
 
     isarTest('NamedConstructorModel', () {
-      final obj1 = NamedConstructorModel(name: 'obj1');
-      final obj2 = NamedConstructorModel(name: 'obj2');
+      const obj1 = NamedConstructorModel(name: 'obj1');
+      const obj2 = NamedConstructorModel(name: 'obj2');
       isar.write((isar) {
         isar.namedConstructorModels.putAll([obj1, obj2]);
       });

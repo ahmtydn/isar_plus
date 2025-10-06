@@ -99,7 +99,7 @@ void main() {
       isar1.close();
 
       final isar2 = await openTempIsar([NullableModelSchema], name: isarName);
-      final obj = isar2.nullableModels.get(0);
+      final obj = isar2.nullableModels.get(0)!;
       expect(obj.boolValue, null);
       expect(obj.shortValue, null);
       expect(obj.intValue, null);
@@ -144,7 +144,7 @@ void main() {
         ],
         name: isarName,
       );
-      final obj = isar2.nullableListModels.get(0);
+      final obj = isar2.nullableListModels.get(0)!;
       expect(obj.boolValue, null);
       expect(obj.shortValue, null);
       expect(obj.intValue, null);

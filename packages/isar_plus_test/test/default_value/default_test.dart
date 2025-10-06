@@ -101,7 +101,7 @@ void main() {
       isar1.close();
 
       final isar2 = await openTempIsar([DefaultModelSchema], name: isarName);
-      final obj = isar2.defaultModels.get(0);
+      final obj = isar2.defaultModels.get(0)!;
       expect(obj.boolValue, true);
       expect(obj.byteValue, 55);
       expect(obj.shortValue, 123);
@@ -154,7 +154,7 @@ void main() {
         ],
         name: isarName,
       );
-      final obj = isar2.defaultListModels.get(0);
+      final obj = isar2.defaultListModels.get(0)!;
       expect(obj.boolValue, [true, false]);
       expect(obj.byteValue, [1, 3]);
       expect(obj.shortValue, [null, 23, 34]);
