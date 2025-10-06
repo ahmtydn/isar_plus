@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:isar_inspector/collection/collection_area.dart';
-import 'package:isar_inspector/connect_client.dart';
-import 'package:isar_inspector/sidebar.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/collection/collection_area.dart';
+import 'package:isar_plus_inspector/connect_client.dart';
+import 'package:isar_plus_inspector/sidebar.dart';
 
 class ConnectedLayout extends StatefulWidget {
   const ConnectedLayout({

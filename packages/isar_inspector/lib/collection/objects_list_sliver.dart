@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:isar_inspector/object/isar_object.dart';
-import 'package:isar_inspector/object/object_view.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/object/isar_object.dart';
+import 'package:isar_plus_inspector/object/object_view.dart';
 
 class ObjectsListSliver extends StatelessWidget {
   const ObjectsListSliver({
