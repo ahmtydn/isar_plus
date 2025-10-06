@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:isar_plus_inspector/common/confirm_delete_dialog.dart';
 
 /// A sophisticated JSON value renderer that handles nested structures
 /// recursively
@@ -144,28 +145,99 @@ class _NumJsonValueState extends State<_NumJsonValue> {
     super.dispose();
   }
 
+  bool _isTimestamp(num value) {
+    // Check if the number looks like a timestamp (milliseconds or microseconds)
+    if (value is! int) return false;
+
+    // Timestamps are typically between 2000-01-01 and 2100-01-01
+    // Milliseconds: 946684800000 to 4102444800000
+    // Microseconds: 946684800000000 to 4102444800000000
+    return (value >= 946684800000 && value <= 4102444800000) || // milliseconds
+        (value >= 946684800000000 && value <= 4102444800000000); // microseconds
+  }
+
+  String _formatTimestamp(num value) {
+    try {
+      DateTime date;
+      if (value >= 946684800000000) {
+        // Microseconds
+        date = DateTime.fromMicrosecondsSinceEpoch(value.toInt());
+      } else {
+        // Milliseconds
+        date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      }
+
+      return date.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      enabled: widget.onUpdate != null,
-      onSubmitted: (value) {
-        final numValue = num.tryParse(value);
-        if (numValue != null) {
-          widget.onUpdate?.call(numValue);
-        }
-      },
-      decoration: InputDecoration.collapsed(
-        hintText: '0',
-        hintStyle: GoogleFonts.jetBrainsMono(
-          color: Colors.grey,
-          fontWeight: FontWeight.bold,
+    final isTimestamp = _isTimestamp(widget.value);
+
+    if (!isTimestamp) {
+      return TextField(
+        controller: controller,
+        enabled: widget.onUpdate != null,
+        onSubmitted: (value) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) {
+            widget.onUpdate?.call(numValue);
+          }
+        },
+        decoration: InputDecoration.collapsed(
+          hintText: '0',
+          hintStyle: GoogleFonts.jetBrainsMono(
+            color: Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
-      style: GoogleFonts.jetBrainsMono(
-        color: Colors.blue,
-        fontWeight: FontWeight.w600,
-      ),
+        style: GoogleFonts.jetBrainsMono(
+          color: Colors.blue,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        TextField(
+          controller: controller,
+          enabled: widget.onUpdate != null,
+          onSubmitted: (value) {
+            final numValue = num.tryParse(value);
+            if (numValue != null) {
+              widget.onUpdate?.call(numValue);
+            }
+          },
+          decoration: InputDecoration.collapsed(
+            hintText: '0',
+            hintStyle: GoogleFonts.jetBrainsMono(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          style: GoogleFonts.jetBrainsMono(
+            color: Colors.blue,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Positioned(
+          top: 4,
+          bottom: 4,
+          left: controller.text.length * 10 + 10,
+          child: Text(
+            _formatTimestamp(widget.value),
+            style: GoogleFonts.jetBrainsMono(
+              color: Colors.grey.withValues(alpha: 0.5),
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -789,46 +861,15 @@ void _showJsonEditor(
   });
 }
 
-void _confirmDelete(
+Future<void> _confirmDelete(
   BuildContext context,
   String message,
   VoidCallback onConfirm,
-) {
-  showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Row(
-        children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            color: Colors.orange[700],
-            size: 24,
-          ),
-          const SizedBox(width: 8),
-          const Text('Confirm Delete'),
-        ],
-      ),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton.icon(
-          onPressed: () {
-            Navigator.of(context).pop(true);
-            onConfirm();
-          },
-          icon: const Icon(Icons.delete_outline, size: 18),
-          label: const Text('Delete'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[700],
-            foregroundColor: Colors.white,
-          ),
-        ),
-      ],
-    ),
-  );
+) async {
+  final confirmed = await showConfirmDeleteDialog(context, message);
+  if (confirmed ?? false) {
+    onConfirm();
+  }
 }
 
 void _showAddListItem(
