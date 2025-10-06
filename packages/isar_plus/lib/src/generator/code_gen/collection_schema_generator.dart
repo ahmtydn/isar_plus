@@ -1,4 +1,4 @@
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateSchema(ObjectInfo object) {
   String generatePropertySchema(PropertyInfo p) {

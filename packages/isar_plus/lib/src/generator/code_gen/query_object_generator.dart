@@ -1,6 +1,4 @@
-// ignore_for_file: use_string_buffers
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateQueryObjects(ObjectInfo oi) {
   var code =

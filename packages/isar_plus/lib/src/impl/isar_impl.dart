@@ -1,42 +1,6 @@
 part of isar_plus;
 
 class _IsarImpl extends Isar {
-  _IsarImpl._(
-    this.instanceId,
-    Pointer<CIsarInstance> ptr,
-    this.generatedSchemas,
-  ) : _ptr = ptr {
-    for (final schema in generatedSchemas) {
-      if (schema.isEmbedded) {
-        continue;
-      }
-
-      collections[schema.converter.type] = schema.converter.withType(<ID, OBJ>(
-        converter,
-      ) {
-        return _IsarCollectionImpl<ID, OBJ>(
-          this,
-          schema.schema,
-          collections.length,
-          converter,
-        );
-      });
-    }
-
-    _instances[instanceId] = this;
-  }
-
-  static final _instances = <int, _IsarImpl>{};
-
-  final int instanceId;
-  final List<IsarGeneratedSchema> generatedSchemas;
-  final collections = <Type, _IsarCollectionImpl<dynamic, dynamic>>{};
-
-  Pointer<CIsarInstance>? _ptr;
-  Pointer<CIsarTxn>? _txnPtr;
-  bool _txnWrite = false;
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.open({
     required List<IsarGeneratedSchema> schemas,
     required String name,
@@ -73,6 +37,8 @@ class _IsarImpl extends Isar {
     );
 
     final instanceId = Isar.fastHash(name);
+    // Check if instance already exists to avoid creating duplicates
+    // ignore: prefer_asserts_with_message
     final instance = _IsarImpl._instances[instanceId];
     if (instance != null) {
       return instance;
@@ -105,8 +71,6 @@ class _IsarImpl extends Isar {
 
     return _IsarImpl._(instanceId, isarPtrPtr.ptrValue, allSchemas.toList());
   }
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.get({
     required int instanceId,
     required List<IsarGeneratedSchema> schemas,
@@ -126,8 +90,6 @@ class _IsarImpl extends Isar {
 
     return _IsarImpl._(instanceId, ptr, schemas);
   }
-
-  // ignore: sort_constructors_first
   factory _IsarImpl.getByName({
     required String name,
     required List<IsarGeneratedSchema> schemas,
@@ -140,6 +102,43 @@ class _IsarImpl extends Isar {
 
     return _IsarImpl.get(instanceId: instanceId, schemas: schemas);
   }
+  _IsarImpl._(
+    this.instanceId,
+    Pointer<CIsarInstance> ptr,
+    this.generatedSchemas,
+  ) : _ptr = ptr {
+    for (final schema in generatedSchemas) {
+      if (schema.isEmbedded) {
+        continue;
+      }
+      // Type parameters need to match the schema's generic types
+      // ignore: prefer_asserts_with_message
+      collections[schema.converter.type] = schema.converter.withType(<ID, OBJ>(
+        converter,
+      ) {
+        return _IsarCollectionImpl<ID, OBJ>(
+          this,
+          schema.schema,
+          collections.length,
+          converter,
+        );
+      });
+    }
+
+    _instances[instanceId] = this;
+  }
+
+  static final _instances = <int, _IsarImpl>{};
+
+  final int instanceId;
+  final List<IsarGeneratedSchema> generatedSchemas;
+  // Dynamic types needed for storing mixed collection types
+  // ignore: prefer_asserts_with_message
+  final collections = <Type, _IsarCollectionImpl<dynamic, dynamic>>{};
+
+  Pointer<CIsarInstance>? _ptr;
+  Pointer<CIsarTxn>? _txnPtr;
+  bool _txnWrite = false;
 
   static Future<Isar> openAsync({
     required List<IsarGeneratedSchema> schemas,
@@ -171,7 +170,7 @@ class _IsarImpl extends Isar {
         sendPort.send(receivePort.sendPort);
         await receivePort.first;
         isar.close();
-      } catch (e) {
+      } on Exception catch (e) {
         sendPort.send(e);
       }
     });
@@ -183,12 +182,13 @@ class _IsarImpl extends Isar {
       await isolate;
       return isar;
     } else {
-      // ignore: only_throw_errors
       throw response as Object;
     }
   }
 
   static _IsarImpl instance(int instanceId) {
+    // Getter for existing Isar instance
+    // ignore: prefer_asserts_with_message
     final instance = _instances[instanceId];
     if (instance == null) {
       throw IsarNotReadyError(

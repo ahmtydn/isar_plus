@@ -83,6 +83,7 @@ extension on Abi {
 
 /// @nodoc
 int platformFastHash(String string) {
+  // This is native code, JS rounding is not applicable
   // ignore: avoid_js_rounded_ints
   var hash = 0xcbf29ce484222325;
 

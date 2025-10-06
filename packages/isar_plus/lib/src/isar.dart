@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_asserts_with_message
-
 part of isar_plus;
 
 /// The Isar storage engine.

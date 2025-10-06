@@ -1,4 +1,4 @@
-part of isar_plus_generator;
+part of 'isar_plus_generator.dart';
 
 const TypeChecker _collectionChecker = TypeChecker.typeNamed(Collection);
 const TypeChecker _embeddedChecker = TypeChecker.typeNamed(Embedded);

@@ -1,6 +1,6 @@
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
-const _updateableTypes = [
+const List<IsarType> _updateableTypes = [
   IsarType.bool,
   IsarType.byte,
   IsarType.int,

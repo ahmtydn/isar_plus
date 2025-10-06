@@ -1,7 +1,6 @@
-
-
 import 'package:isar_plus/isar_plus.dart';
 
+/// Actions for Isar Connect communication.
 enum ConnectAction {
   listInstances('ext.isar.listInstances'),
   getSchemas('ext.isar.getSchemas'),
@@ -14,9 +13,11 @@ enum ConnectAction {
 
   const ConnectAction(this.method);
 
+  /// The method name for the action.
   final String method;
 }
 
+/// Events for Isar Connect communication.
 enum ConnectEvent {
   instancesChanged('isar.instancesChanged'),
   queryChanged('isar.queryChanged'),
@@ -24,9 +25,11 @@ enum ConnectEvent {
 
   const ConnectEvent(this.event);
 
+  /// The event name.
   final String event;
 }
 
+/// Payload for connect instance.
 class ConnectInstancePayload {
   ConnectInstancePayload(this.instance);
 
@@ -34,6 +37,7 @@ class ConnectInstancePayload {
     return ConnectInstancePayload(json['instance'] as String);
   }
 
+  /// The instance name.
   final String instance;
 
   Map<String, dynamic> toJson() {
@@ -41,6 +45,7 @@ class ConnectInstancePayload {
   }
 }
 
+/// Payload for connect instance names.
 class ConnectInstanceNamesPayload {
   ConnectInstanceNamesPayload(this.instances);
 
@@ -68,6 +73,7 @@ class ConnectSchemasPayload {
     );
   }
 
+  /// The list of schemas.
   final List<IsarSchema> schemas;
 
   Map<String, dynamic> toJson() {
@@ -101,12 +107,25 @@ class ConnectQueryPayload {
     );
   }
 
+  /// The instance name.
   final String instance;
+
+  /// The collection name.
   final String collection;
+
+  /// The filter to apply.
   final Filter? filter;
+
+  /// The offset for pagination.
   final int? offset;
+
+  /// The limit for pagination.
   final int? limit;
+
+  /// The property to sort by.
   final int? sortProperty;
+
+  /// Whether to sort ascending.
   final bool sortAsc;
 
   Map<String, dynamic> toJson() {

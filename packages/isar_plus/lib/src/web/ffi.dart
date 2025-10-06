@@ -10,6 +10,7 @@ class NativeType {}
 @tryInline
 Pointer<T> ptrFromAddress<T>(int addr) => addr;
 
+// Late is required for lazy initialization after IsarCore is ready
 // ignore: unnecessary_late
 late final JSIsar b = IsarCore.b as JSIsar;
 

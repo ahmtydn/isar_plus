@@ -1,3 +1,4 @@
+// Single-method abstracts are acceptable for defining contracts
 // ignore_for_file: one_member_abstracts
 
 part of isar_plus;

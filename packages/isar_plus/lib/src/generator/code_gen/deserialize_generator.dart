@@ -1,7 +1,4 @@
-// ignore_for_file: use_string_buffers, no_default_cases,
-// ignore_for_file: always_put_required_named_parameters_first
-
-part of isar_plus_generator;
+part of '../isar_plus_generator.dart';
 
 String _generateDeserialize(ObjectInfo object) {
   var code = '''

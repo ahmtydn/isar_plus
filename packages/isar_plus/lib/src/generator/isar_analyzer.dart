@@ -1,6 +1,4 @@
-// ignore_for_file: use_string_buffers
-
-part of isar_plus_generator;
+part of 'isar_plus_generator.dart';
 
 class _IsarAnalyzer {
   ObjectInfo analyzeCollection(Element element) {
@@ -225,15 +223,14 @@ class _IsarAnalyzer {
         final element = enumElements[i];
         dynamic propertyValue = i;
         if (enumProperty != null) {
-          final property =
-              element.computeConstantValue()!.getField(
-                enumProperty.name ?? '',
-              )!;
+          final property = element.computeConstantValue()!.getField(
+            enumProperty.name ?? '',
+          );
           propertyValue =
-              property.toBoolValue() ??
-              property.toIntValue() ??
-              property.toDoubleValue() ??
-              property.toStringValue();
+              property?.toBoolValue() ??
+              property?.toIntValue() ??
+              property?.toDoubleValue() ??
+              property?.toStringValue();
         }
 
         if (propertyValue == null) {
@@ -363,7 +360,7 @@ class _IsarAnalyzer {
     } else if (type.isDartCoreMap) {
       return 'const <String, dynamic>{}';
     } else {
-      final element = type.element!;
+      final element = type.element;
       if (element is EnumElement) {
         final firstConst = element.fields.where((f) => f.isEnumConstant).first;
         return '${element.name}.${firstConst.name}';

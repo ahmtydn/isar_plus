@@ -1,4 +1,4 @@
-part of isar_plus_generator;
+part of 'isar_plus_generator.dart';
 
 extension on DartType {
   bool get isDartCoreDateTime =>

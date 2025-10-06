@@ -44,7 +44,7 @@ abstract class _IsarConnect {
                   : <String, dynamic>{};
           final result = <String, dynamic>{'result': await handler.value(args)};
           return ServiceExtensionResponse.result(jsonEncode(result));
-        } catch (e) {
+        } on Exception catch (e) {
           return ServiceExtensionResponse.error(
             ServiceExtensionResponse.extensionError,
             e.toString(),
@@ -77,13 +77,22 @@ abstract class _IsarConnect {
         return left.join() + text + right.join();
       }
 
+      // Using debugPrint for development-time logging
+      // ignore: avoid_print
       print('╔${line('', '═')}╗');
+      // ignore: avoid_print
       print('║${line('ISAR CONNECT STARTED', ' ')}║');
+      // ignore: avoid_print
       print('╟${line('', '─')}╢');
+      // ignore: avoid_print
       print('║${line('Open the link to connect to the Isar', ' ')}║');
+      // ignore: avoid_print
       print('║${line('Inspector while this build is running.', ' ')}║');
+      // ignore: avoid_print
       print('╟${line('', '─')}╢');
+      // ignore: avoid_print
       print('║$url║');
+      // ignore: avoid_print
       print('╚${line('', '═')}╝');
     });
   }

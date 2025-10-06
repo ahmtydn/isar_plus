@@ -34,8 +34,8 @@ dev_dependencies:
   very_good_analysis: ^5.0.0+1
 
 dependency_overrides:
+  analyzer: ^8.1.1
   isar_plus:
     path: ../isar_plus
   isar_plus_flutter_libs:
     path: ../isar_plus_flutter_libs
-  analyzer: ^8.1.1

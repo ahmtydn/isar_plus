@@ -1,5 +1,4 @@
-// ignore: unnecessary_library_name
-library isar_plus_generator;
+library;
 
 import 'dart:async';
 import 'dart:convert';
