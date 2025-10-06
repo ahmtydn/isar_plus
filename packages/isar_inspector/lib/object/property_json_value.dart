@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:isar_plus_inspector/object/property_builder.dart';
 
 /// A sophisticated JSON value renderer that handles nested structures
 /// recursively
@@ -197,7 +196,7 @@ class _BoolJsonValue extends StatelessWidget {
                 items: const [
                   PopupMenuItem<bool?>(value: true, child: Text('true')),
                   PopupMenuItem<bool?>(value: false, child: Text('false')),
-                  PopupMenuItem<bool?>(value: null, child: Text('null')),
+                  PopupMenuItem<bool?>(child: Text('null')),
                 ],
               );
               onUpdate?.call(newValue);
@@ -213,7 +212,7 @@ class _BoolJsonValue extends StatelessWidget {
   }
 }
 
-class _MapJsonValue extends StatelessWidget {
+class _MapJsonValue extends StatefulWidget {
   const _MapJsonValue({
     required this.value,
     required this.depth,
@@ -225,145 +224,224 @@ class _MapJsonValue extends StatelessWidget {
   final int depth;
 
   @override
+  State<_MapJsonValue> createState() => _MapJsonValueState();
+}
+
+class _MapJsonValueState extends State<_MapJsonValue> {
+  bool _isExpanded = true;
+
+  @override
   Widget build(BuildContext context) {
-    if (value.isEmpty) {
-      return Row(
-        children: [
-          GestureDetector(
-            onTap: onUpdate == null
-                ? null
-                : () => _showJsonEditor(context, value, onUpdate!),
-            child: Text(
-              '{}',
+    final theme = Theme.of(context);
+
+    if (widget.value.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color:
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '{ }',
               style: GoogleFonts.jetBrainsMono(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
               ),
             ),
-          ),
-          if (onUpdate != null) ...[
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 16),
-              onPressed: () => _showAddMapEntry(context, value, onUpdate!),
-              tooltip: 'Add key-value pair',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
+            if (widget.onUpdate != null) ...[
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _showAddMapEntry(
+                  context,
+                  widget.value,
+                  widget.onUpdate!,
+                ),
+                child: Icon(
+                  Icons.add_circle_outline,
+                  size: 16,
+                  color: Colors.blue[300],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Text(
-              '{',
-              style: GoogleFonts.jetBrainsMono(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${value.length} ${value.length == 1 ? 'key' : 'keys'}',
-              style: GoogleFonts.jetBrainsMono(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-            const Spacer(),
-            if (onUpdate != null) ...[
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, size: 16),
-                onPressed: () => _showAddMapEntry(context, value, onUpdate!),
-                tooltip: 'Add key-value pair',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.edit, size: 16),
-                onPressed: () => _showJsonEditor(context, value, onUpdate!),
-                tooltip: 'Edit JSON',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            width: 2,
+          ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final entry in value.entries)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: PropertyBuilder(
-                          property: entry.key,
-                          type: _getTypeName(entry.value),
-                          value: PropertyJsonValue(
-                            value: entry.value,
-                            depth: depth + 1,
-                            onUpdate: onUpdate == null
-                                ? null
-                                : (newValue) {
-                                    final updatedMap =
-                                        Map<String, dynamic>.from(value);
-                                    if (newValue == null) {
-                                      updatedMap.remove(entry.key);
-                                    } else {
-                                      updatedMap[entry.key] = newValue;
-                                    }
-                                    onUpdate?.call(updatedMap);
-                                  },
-                          ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_down
+                        : Icons.keyboard_arrow_right,
+                    size: 18,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      'Object',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: Colors.purple[300],
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${widget.value.length} '
+                    '${widget.value.length == 1 ? 'property' : 'properties'}',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: Colors.grey[500],
+                      fontSize: 11,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (widget.onUpdate != null) ...[
+                    InkWell(
+                      onTap: () => _showAddMapEntry(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.add_circle_outline,
+                          size: 14,
+                          color: Colors.blue[300],
                         ),
                       ),
-                      if (onUpdate != null)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            size: 14,
-                            color: Colors.red,
-                          ),
-                          onPressed: () {
-                            final updatedMap = Map<String, dynamic>.from(value);
-                            updatedMap.remove(entry.key);
-                            onUpdate?.call(updatedMap);
-                          },
-                          tooltip: 'Delete key',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: () => _showJsonEditor(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 14,
+                          color: Colors.amber[300],
                         ),
-                    ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final entry in widget.value.entries)
+                    _buildMapEntry(context, entry),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapEntry(BuildContext context, MapEntry<String, dynamic> entry) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${entry.key}: ',
+                  style: GoogleFonts.jetBrainsMono(
+                    color: Colors.lightBlue[200],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
-            ],
+                Expanded(
+                  child: PropertyJsonValue(
+                    value: entry.value,
+                    depth: widget.depth + 1,
+                    onUpdate: widget.onUpdate == null
+                        ? null
+                        : (newValue) {
+                            final updatedMap =
+                                Map<String, dynamic>.from(widget.value);
+                            if (newValue == null) {
+                              updatedMap.remove(entry.key);
+                            } else {
+                              updatedMap[entry.key] = newValue;
+                            }
+                            widget.onUpdate?.call(updatedMap);
+                          },
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          '}',
-          style: GoogleFonts.jetBrainsMono(
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
+          if (widget.onUpdate != null)
+            InkWell(
+              onTap: () {
+                final updatedMap = Map<String, dynamic>.from(widget.value);
+                updatedMap.remove(entry.key);
+                widget.onUpdate?.call(updatedMap);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Icons.close,
+                  size: 14,
+                  color: Colors.red[300],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
 
-class _ListJsonValue extends StatelessWidget {
+class _ListJsonValue extends StatefulWidget {
   const _ListJsonValue({
     required this.value,
     required this.depth,
@@ -375,154 +453,222 @@ class _ListJsonValue extends StatelessWidget {
   final int depth;
 
   @override
+  State<_ListJsonValue> createState() => _ListJsonValueState();
+}
+
+class _ListJsonValueState extends State<_ListJsonValue> {
+  bool _isExpanded = true;
+
+  @override
   Widget build(BuildContext context) {
-    if (value.isEmpty) {
-      return Row(
-        children: [
-          GestureDetector(
-            onTap: onUpdate == null
-                ? null
-                : () => _showJsonEditor(context, value, onUpdate!),
-            child: Text(
-              '[]',
+    final theme = Theme.of(context);
+
+    if (widget.value.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color:
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '[ ]',
               style: GoogleFonts.jetBrainsMono(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
               ),
             ),
-          ),
-          if (onUpdate != null) ...[
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 16),
-              onPressed: () => _showAddListItem(context, value, onUpdate!),
-              tooltip: 'Add item',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
+            if (widget.onUpdate != null) ...[
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _showAddListItem(
+                  context,
+                  widget.value,
+                  widget.onUpdate!,
+                ),
+                child: Icon(
+                  Icons.add_circle_outline,
+                  size: 16,
+                  color: Colors.blue[300],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Text(
-              '[',
-              style: GoogleFonts.jetBrainsMono(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${value.length} ${value.length == 1 ? 'item' : 'items'}',
-              style: GoogleFonts.jetBrainsMono(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-            const Spacer(),
-            if (onUpdate != null) ...[
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, size: 16),
-                onPressed: () => _showAddListItem(context, value, onUpdate!),
-                tooltip: 'Add item',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.edit, size: 16),
-                onPressed: () => _showJsonEditor(context, value, onUpdate!),
-                tooltip: 'Edit JSON',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            width: 2,
+          ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < value.length; i++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: PropertyBuilder(
-                          property: '[$i]',
-                          type: _getTypeName(value[i]),
-                          value: PropertyJsonValue(
-                            value: value[i],
-                            depth: depth + 1,
-                            onUpdate: onUpdate == null
-                                ? null
-                                : (newValue) {
-                                    final updatedList =
-                                        List<dynamic>.from(value);
-                                    if (newValue == null) {
-                                      updatedList.removeAt(i);
-                                    } else {
-                                      updatedList[i] = newValue;
-                                    }
-                                    onUpdate?.call(updatedList);
-                                  },
-                          ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_down
+                        : Icons.keyboard_arrow_right,
+                    size: 18,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      'Array',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: Colors.orange[300],
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${widget.value.length} '
+                    '${widget.value.length == 1 ? 'item' : 'items'}',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: Colors.grey[500],
+                      fontSize: 11,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (widget.onUpdate != null) ...[
+                    InkWell(
+                      onTap: () => _showAddListItem(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.add_circle_outline,
+                          size: 14,
+                          color: Colors.blue[300],
                         ),
                       ),
-                      if (onUpdate != null)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            size: 14,
-                            color: Colors.red,
-                          ),
-                          onPressed: () {
-                            final updatedList = List<dynamic>.from(value);
-                            updatedList.removeAt(i);
-                            onUpdate?.call(updatedList);
-                          },
-                          tooltip: 'Delete item',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: () => _showJsonEditor(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 14,
+                          color: Colors.amber[300],
                         ),
-                    ],
-                  ),
-                ),
-            ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-        Text(
-          ']',
-          style: GoogleFonts.jetBrainsMono(
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < widget.value.length; i++)
+                    _buildListItem(context, i),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
-}
 
-String _getTypeName(dynamic value) {
-  if (value == null) return 'null';
-  if (value is String) return 'String';
-  if (value is int) return 'int';
-  if (value is double) return 'double';
-  if (value is num) return 'num';
-  if (value is bool) return 'bool';
-  if (value is List) return 'List (${value.length})';
-  if (value is Map) return 'Map (${value.length})';
-  return value.runtimeType.toString();
+  Widget _buildListItem(BuildContext context, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            margin: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              color: Colors.grey[700],
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              '$index',
+              style: GoogleFonts.jetBrainsMono(
+                color: Colors.grey[300],
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: PropertyJsonValue(
+              value: widget.value[index],
+              depth: widget.depth + 1,
+              onUpdate: widget.onUpdate == null
+                  ? null
+                  : (newValue) {
+                      final updatedList = List<dynamic>.from(widget.value);
+                      if (newValue == null) {
+                        updatedList.removeAt(index);
+                      } else {
+                        updatedList[index] = newValue;
+                      }
+                      widget.onUpdate?.call(updatedList);
+                    },
+            ),
+          ),
+          if (widget.onUpdate != null)
+            InkWell(
+              onTap: () {
+                final updatedList = List<dynamic>.from(widget.value);
+                updatedList.removeAt(index);
+                widget.onUpdate?.call(updatedList);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Icons.close,
+                  size: 14,
+                  color: Colors.red[300],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 void _showJsonEditor(
