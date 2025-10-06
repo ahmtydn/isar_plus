@@ -3,7 +3,8 @@
 part of isar_plus;
 
 abstract class _IsarConnect {
-  static const _handlers = {
+  static const Map<ConnectAction, Future Function(Map<String, dynamic> _)>
+  _handlers = {
     ConnectAction.listInstances: _listInstances,
     ConnectAction.getSchemas: _getSchemas,
     ConnectAction.watchInstance: _watchInstance,
@@ -67,7 +68,8 @@ abstract class _IsarConnect {
       if (path.endsWith('=')) {
         path = path.substring(0, path.length - 1);
       }
-      final url = ' https://inspect.isar.dev/${Isar.version}/#/$port$path ';
+      final url =
+          ' https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path ';
       String line(String text, String fill) {
         final fillCount = url.length - text.length;
         final left = List.filled(fillCount ~/ 2, fill);
