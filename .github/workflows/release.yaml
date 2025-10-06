@@ -169,7 +169,7 @@ jobs:
         uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          package: ./package.json
+          package: ${{ github.workspace }}/package.json
       - name: pub.dev credentials
         run: |
           mkdir -p $HOME/.config/dart
