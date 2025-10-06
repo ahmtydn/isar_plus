@@ -1,4 +1,16 @@
+## 1.0.22 (2025-10-06)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.22 -->
+
+## What's Changed
+### Other Changes
+* refactor: Updated the inspector URL by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/28
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.21...1.0.22
+
 ## 1.0.21 (2025-09-26)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.21 -->
 
