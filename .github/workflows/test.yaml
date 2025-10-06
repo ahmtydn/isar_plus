@@ -35,7 +35,7 @@ jobs:
       - run: flutter pub get
         working-directory: packages/isar_plus_flutter_libs
       - run: flutter pub get
-        working-directory: packages/isar_inspector
+        working-directory: packages/isar_plus_inspector
       - run: |
           flutter pub get
           flutter pub run build_runner build
