@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:isar_inspector/object/property_builder.dart';
-import 'package:isar_inspector/object/property_value.dart';
-import 'package:isar_inspector/util.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/object/property_builder.dart';
+import 'package:isar_plus_inspector/object/property_value.dart';
+import 'package:isar_plus_inspector/util.dart';
 
 class PropertyView extends StatelessWidget {
   const PropertyView({

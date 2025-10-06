@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:isar_inspector/connection_screen.dart';
+import 'package:isar_plus_inspector/connection_screen.dart';
 
 void main() async {
   runApp(
@@ -20,7 +19,7 @@ final _router = GoRouter(
         return const Material(
           child: Center(
             child: Text(
-              'Welcome to the Isar Inspector!\nPlease open the link '
+              'Welcome to the Isar Plus Inspector!\nPlease open the link '
               'displayed when running the debug version of an Isar app.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18),
@@ -56,7 +55,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Isar Inspector',
+      title: 'Isar Plus Inspector',
       routeInformationProvider: _router.routeInformationProvider,
       routeInformationParser: _router.routeInformationParser,
       routerDelegate: _router.routerDelegate,

@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus/src/isar_connect_api.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';

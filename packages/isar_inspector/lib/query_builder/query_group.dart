@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:isar_inspector/query_builder/query_filter.dart';
-import 'package:isar_plus/isar.dart';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/query_builder/query_filter.dart';
 
 sealed class FilterOperation {
   Filter? toIsarFilter();
