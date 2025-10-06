@@ -421,11 +421,15 @@ class _MapJsonValueState extends State<_MapJsonValue> {
           ),
           if (widget.onUpdate != null)
             InkWell(
-              onTap: () {
-                final updatedMap = Map<String, dynamic>.from(widget.value);
-                updatedMap.remove(entry.key);
-                widget.onUpdate?.call(updatedMap);
-              },
+              onTap: () => _confirmDelete(
+                context,
+                'Delete property "${entry.key}"?',
+                () {
+                  final updatedMap = Map<String, dynamic>.from(widget.value);
+                  updatedMap.remove(entry.key);
+                  widget.onUpdate?.call(updatedMap);
+                },
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
@@ -651,11 +655,15 @@ class _ListJsonValueState extends State<_ListJsonValue> {
           ),
           if (widget.onUpdate != null)
             InkWell(
-              onTap: () {
-                final updatedList = List<dynamic>.from(widget.value);
-                updatedList.removeAt(index);
-                widget.onUpdate?.call(updatedList);
-              },
+              onTap: () => _confirmDelete(
+                context,
+                'Delete item at index $index?',
+                () {
+                  final updatedList = List<dynamic>.from(widget.value);
+                  updatedList.removeAt(index);
+                  widget.onUpdate?.call(updatedList);
+                },
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
@@ -676,6 +684,9 @@ void _showJsonEditor(
   dynamic currentValue,
   void Function(dynamic) onUpdate,
 ) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+
   final controller = TextEditingController(
     text: currentValue == null
         ? ''
@@ -684,59 +695,140 @@ void _showJsonEditor(
 
   showDialog<void>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Edit JSON Value'),
-      content: SizedBox(
-        width: 600,
-        height: 400,
-        child: TextField(
-          controller: controller,
-          maxLines: null,
-          expands: true,
-          decoration: InputDecoration(
-            hintText: 'Enter JSON value...',
-            border: const OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.grey[900],
-          ),
-          style: GoogleFonts.jetBrainsMono(
-            fontSize: 13,
-          ),
+    builder: (context) => Theme(
+      data: theme.copyWith(
+        dialogTheme: DialogThemeData(
+          backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         ),
       ),
+      child: AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.code,
+              color: theme.colorScheme.primary,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            const Text('Edit JSON Value'),
+          ],
+        ),
+        content: SizedBox(
+          width: 700,
+          height: 500,
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[850] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+              ),
+            ),
+            child: TextField(
+              controller: controller,
+              maxLines: null,
+              expands: true,
+              decoration: InputDecoration(
+                hintText: '{\n  "key": "value"\n}',
+                hintStyle: GoogleFonts.jetBrainsMono(
+                  color: isDark ? Colors.grey[600] : Colors.grey[400],
+                  fontSize: 13,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.all(16),
+              ),
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 13,
+                color: isDark ? Colors.green[300] : Colors.green[800],
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, size: 18),
+            label: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              try {
+                final text = controller.text.trim();
+                if (text.isEmpty) {
+                  onUpdate(null);
+                } else {
+                  final parsed = jsonDecode(text);
+                  onUpdate(parsed);
+                }
+                Navigator.of(context).pop();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Invalid JSON: $e')),
+                      ],
+                    ),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.save, size: 18),
+            label: const Text('Save'),
+          ),
+        ],
+      ),
+    ),
+  ).then((_) {
+    controller.dispose();
+  });
+}
+
+void _confirmDelete(
+  BuildContext context,
+  String message,
+  VoidCallback onConfirm,
+) {
+  showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.orange[700],
+            size: 24,
+          ),
+          const SizedBox(width: 8),
+          const Text('Confirm Delete'),
+        ],
+      ),
+      content: Text(message),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Cancel'),
         ),
-        TextButton(
+        ElevatedButton.icon(
           onPressed: () {
-            try {
-              final text = controller.text.trim();
-              if (text.isEmpty) {
-                onUpdate(null);
-              } else {
-                final parsed = jsonDecode(text);
-                onUpdate(parsed);
-              }
-              Navigator.of(context).pop();
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Invalid JSON: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
+            Navigator.of(context).pop(true);
+            onConfirm();
           },
-          child: const Text('Save'),
+          icon: const Icon(Icons.delete_outline, size: 18),
+          label: const Text('Delete'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[700],
+            foregroundColor: Colors.white,
+          ),
         ),
       ],
     ),
-  ).then((_) {
-    // Dispose controller after dialog is closed
-    controller.dispose();
-  });
+  );
 }
 
 void _showAddListItem(
@@ -744,39 +836,69 @@ void _showAddListItem(
   List<dynamic> currentList,
   void Function(dynamic) onUpdate,
 ) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
   final controller = TextEditingController();
 
   showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Add List Item'),
+      title: Row(
+        children: [
+          Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          const Text('Add Array Item'),
+        ],
+      ),
       content: SizedBox(
-        width: 400,
+        width: 450,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter JSON value for the new item:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              maxLines: 5,
-              decoration: InputDecoration(
-                hintText: 'e.g., "text", 123, true, {"key": "value"}, []',
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.grey[900],
+            Text(
+              'Enter a JSON value:',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[700],
               ),
-              style: GoogleFonts.jetBrainsMono(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                ),
+              ),
+              child: TextField(
+                controller: controller,
+                maxLines: 5,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: '"text" or 123 or true or {"key": "value"}',
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: isDark ? Colors.green[300] : Colors.green[800],
+                ),
+              ),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
+        TextButton.icon(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          icon: const Icon(Icons.close, size: 18),
+          label: const Text('Cancel'),
         ),
-        TextButton(
+        ElevatedButton.icon(
           onPressed: () {
             try {
               final text = controller.text.trim();
@@ -790,13 +912,21 @@ void _showAddListItem(
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Invalid JSON: $e'),
-                  backgroundColor: Colors.red,
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text('Invalid JSON: $e')),
+                    ],
+                  ),
+                  backgroundColor: Colors.red[700],
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             }
           },
-          child: const Text('Add'),
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('Add'),
         ),
       ],
     ),
@@ -811,51 +941,92 @@ void _showAddMapEntry(
   Map<String, dynamic> currentMap,
   void Function(dynamic) onUpdate,
 ) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
   final keyController = TextEditingController();
   final valueController = TextEditingController();
 
   showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Add Map Entry'),
+      title: Row(
+        children: [
+          Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          const Text('Add Property'),
+        ],
+      ),
       content: SizedBox(
-        width: 400,
+        width: 500,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: keyController,
-              decoration: InputDecoration(
-                labelText: 'Key',
-                hintText: 'Enter key name',
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.grey[900],
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                ),
               ),
-              style: GoogleFonts.jetBrainsMono(fontSize: 13),
+              child: TextField(
+                controller: keyController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Property Name',
+                  hintText: 'e.g., userName, age, isActive',
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: isDark ? Colors.lightBlue[300] : Colors.blue[700],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: valueController,
-              maxLines: 5,
-              decoration: InputDecoration(
-                labelText: 'Value (JSON)',
-                hintText: 'e.g., "text", 123, true, {"key": "value"}, []',
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.grey[900],
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                ),
               ),
-              style: GoogleFonts.jetBrainsMono(fontSize: 13),
+              child: TextField(
+                controller: valueController,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  labelText: 'Value (JSON)',
+                  hintText: '"text" or 123 or true or {"key": "value"}',
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: isDark ? Colors.green[300] : Colors.green[800],
+                ),
+              ),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
+        TextButton.icon(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          icon: const Icon(Icons.close, size: 18),
+          label: const Text('Cancel'),
         ),
-        TextButton(
+        ElevatedButton.icon(
           onPressed: () {
             try {
               final key = keyController.text.trim();
@@ -876,13 +1047,24 @@ void _showAddMapEntry(
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Error: $e'),
-                  backgroundColor: Colors.red,
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text('Invalid JSON: $e')),
+                    ],
+                  ),
+                  backgroundColor: Colors.red[700],
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               );
             }
           },
-          child: const Text('Add'),
+          icon: const Icon(Icons.check, size: 18),
+          label: const Text('Add'),
         ),
       ],
     ),
