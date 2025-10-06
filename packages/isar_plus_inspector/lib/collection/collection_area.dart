@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
 import 'dart:math';
 
 import 'package:clickup_fading_scroll/clickup_fading_scroll.dart';
@@ -17,6 +16,7 @@ import 'package:isar_plus_inspector/object/isar_object.dart';
 import 'package:isar_plus_inspector/query_builder/query_filter.dart';
 import 'package:isar_plus_inspector/query_builder/query_group.dart';
 import 'package:isar_plus_inspector/util.dart';
+import 'package:web/web.dart' hide Clipboard, Text;
 
 const objectsPerPage = 20;
 
@@ -168,7 +168,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                     IconButton(
                       icon: Icon(
                         Icons.add_rounded,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                       iconSize: 26,
                       tooltip: 'Create Object',
@@ -178,7 +178,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                     IconButton(
                       icon: Icon(
                         Icons.paste_rounded,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                       iconSize: 20,
                       tooltip: 'Import JSON from clipboard',
@@ -188,7 +188,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                     IconButton(
                       icon: Icon(
                         Icons.download_rounded,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                       tooltip: 'Download All',
                       onPressed: _onDownload,
@@ -197,7 +197,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                     IconButton(
                       icon: Icon(
                         Icons.delete_forever_rounded,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                       tooltip: 'Delete All',
                       onPressed: _onDeleteAll,
@@ -304,10 +304,10 @@ class _CollectionAreaState extends State<CollectionArea> {
     final data = await widget.client.exportJson(query);
     try {
       final base64 = base64Encode(utf8.encode(jsonEncode(data)));
-      final anchor =
-          AnchorElement(href: 'data:application/octet-stream;base64,$base64')
-            ..target = 'blank'
-            ..download = '${widget.collection}.json';
+      final anchor = HTMLAnchorElement()
+        ..href = 'data:application/octet-stream;base64,$base64'
+        ..target = 'blank'
+        ..download = '${widget.collection}.json';
 
       document.body!.append(anchor);
       anchor.click();
