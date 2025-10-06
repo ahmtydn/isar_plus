@@ -1,4 +1,137 @@
+## 1.0.22 (2025-10-06)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.22 -->
+
+## What's Changed
+### Other Changes
+* refactor: Updated the inspector URL by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/28
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.21...1.0.22
+
+## 1.0.21 (2025-09-26)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.21 -->
+
+## What's Changed
+### Other Changes
+* feat: enhance JSON serialization in ChangeDetector to handle nested values and Frame structures by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/26
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.20...1.0.21
+
+## 1.0.20 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.20 -->
+
+## What's Changed
+### Other Changes
+* refactor: Make fullDocument non-nullable with direct serialization by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/25
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.19...1.0.20
+
+## 1.0.19 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.19 -->
+
+## What's Changed
+### Other Changes
+* feat: add key field to watcher system for data identification by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/24
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.18...1.0.19
+
+## 1.0.18 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.18 -->
+
+## What's Changed
+### Other Changes
+* feat: refactor ChangeDetector to streamline change detection for objects and JSON by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/23
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.17...1.0.18
+
+## 1.0.17 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.17 -->
+
+## What's Changed
+### Other Changes
+* feat: update action versions and enhance change detection for JSON parsing by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/22
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.16...1.0.17
+
+## 1.0.16 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.16 -->
+
+## What's Changed
+### Other Changes
+* feat: improve error handling in ChangeDetail JSON deserialization and enhance Windows build script output by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/20
+* feat: remove unnecessary defines for MDBX_LOCK_SUFFIX and UNICODE in build script by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/21
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.15...1.0.16
+
+## 1.0.15 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.15 -->
+
+## What's Changed
+### Other Changes
+* feat: enhance FieldChange and ChangeDetail classes with document parseing support by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/19
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.14...1.0.15
+
+## 1.0.14 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.14 -->
+
+## What's Changed
+### Other Changes
+* feat: enhance watcher API with flexible document parsing by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/18
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.13...1.0.14
+
+## 1.0.13 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.13 -->
+
+## What's Changed
+### Other Changes
+* feat: Enhance detailed change tracking with field-level granularity and JSON serialization support by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/17
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.12...1.0.13
+
+## 1.0.12 (2025-09-25)
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.12 -->
+
+## What's Changed
+### Other Changes
+* fix: resolve duplicate watcher events in detailed watchers (v1.0.4) by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/16
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.11...1.0.12
+
 ## 1.0.11 (2025-09-25)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.11 -->
 

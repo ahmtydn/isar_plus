@@ -15,8 +15,10 @@ class FilterGroup extends FilterOperation {
   @override
   Filter? toIsarFilter() {
     if (filters.isEmpty) return null;
-    final isarFilters =
-        filters.map((e) => e.toIsarFilter()).whereType<Filter>().toList();
+    final isarFilters = filters
+        .map((e) => e.toIsarFilter())
+        .whereType<Filter>()
+        .toList();
     return and ? AndGroup(isarFilters) : OrGroup(isarFilters);
   }
 }
@@ -38,25 +40,42 @@ class FilterCondition extends FilterOperation {
   Filter toIsarFilter() {
     return switch (type) {
       FilterType.equalTo => EqualCondition(property: property, value: value1),
-      FilterType.greaterThan =>
-        GreaterCondition(property: property, value: value1),
+      FilterType.greaterThan => GreaterCondition(
+        property: property,
+        value: value1,
+      ),
       FilterType.lessThan => LessCondition(property: property, value: value1),
-      FilterType.between =>
-        BetweenCondition(property: property, lower: value1, upper: value2),
-      FilterType.startsWith =>
-        StartsWithCondition(property: property, value: value1! as String),
-      FilterType.endsWith =>
-        EndsWithCondition(property: property, value: value1! as String),
-      FilterType.contains =>
-        ContainsCondition(property: property, value: value1! as String),
-      FilterType.matches =>
-        MatchesCondition(property: property, wildcard: value1! as String),
+      FilterType.between => BetweenCondition(
+        property: property,
+        lower: value1,
+        upper: value2,
+      ),
+      FilterType.startsWith => StartsWithCondition(
+        property: property,
+        value: value1! as String,
+      ),
+      FilterType.endsWith => EndsWithCondition(
+        property: property,
+        value: value1! as String,
+      ),
+      FilterType.contains => ContainsCondition(
+        property: property,
+        value: value1! as String,
+      ),
+      FilterType.matches => MatchesCondition(
+        property: property,
+        wildcard: value1! as String,
+      ),
       FilterType.isNull => IsNullCondition(property: property),
       FilterType.isNotNull => NotGroup(IsNullCondition(property: property)),
-      FilterType.elementIsNull =>
-        EqualCondition(property: property, value: null),
-      FilterType.elementIsNotNull =>
-        GreaterCondition(property: property, value: null)
+      FilterType.elementIsNull => EqualCondition(
+        property: property,
+        value: null,
+      ),
+      FilterType.elementIsNotNull => GreaterCondition(
+        property: property,
+        value: null,
+      ),
     };
   }
 }
@@ -111,7 +130,7 @@ class QueryGroup extends StatelessWidget {
                           'Click the group type to change it.',
                           style: TextStyle(
                             color: theme.colorScheme.onPrimaryContainer
-                              ..withValues(alpha: 0.5),
+                                .withValues(alpha: 0.5),
                           ),
                         ),
                       ),
@@ -267,9 +286,7 @@ class GroupFilterButton extends StatelessWidget {
         ElevatedButton.icon(
           icon: const Icon(Icons.workspaces_rounded),
           label: const Text('Add Group'),
-          style: ButtonStyle(
-            elevation: WidgetStateProperty.all(level + 1),
-          ),
+          style: ButtonStyle(elevation: WidgetStateProperty.all(level + 1)),
           onPressed: () {
             onAdd(FilterGroup(true, []));
           },
@@ -278,9 +295,7 @@ class GroupFilterButton extends StatelessWidget {
         ElevatedButton.icon(
           icon: const Icon(Icons.filter_alt_rounded),
           label: const Text('Add Filter'),
-          style: ButtonStyle(
-            elevation: WidgetStateProperty.all(level + 1),
-          ),
+          style: ButtonStyle(elevation: WidgetStateProperty.all(level + 1)),
           onPressed: () {
             onAdd(
               FilterCondition(

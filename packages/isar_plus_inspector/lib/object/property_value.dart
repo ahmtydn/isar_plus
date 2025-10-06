@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/object/property_json_value.dart';
 
 class PropertyValue extends StatelessWidget {
   const PropertyValue(
@@ -23,6 +24,14 @@ class PropertyValue extends StatelessWidget {
         value: value,
         isByte: type == IsarType.byte || type == IsarType.byteList,
         enumMap: enumMap!,
+        onUpdate: onUpdate,
+      );
+    }
+
+    // Handle JSON type with recursive rendering
+    if (type == IsarType.json) {
+      return PropertyJsonValue(
+        value: value,
         onUpdate: onUpdate,
       );
     }

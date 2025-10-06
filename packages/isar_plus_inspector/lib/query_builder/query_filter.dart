@@ -25,7 +25,7 @@ class QueryFilter extends StatelessWidget {
       height: 60,
       decoration: BoxDecoration(
         border: Border.all(
-          color: theme.colorScheme.outline..withValues(alpha: 0.5),
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
         ),
         borderRadius: BorderRadius.circular(16),
       ),

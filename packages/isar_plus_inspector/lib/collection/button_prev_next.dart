@@ -49,20 +49,17 @@ class PrevNextButtons extends StatelessWidget {
               Text(
                 ' - ',
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface..withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
-              Text(
-                '$to',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text('$to', style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         Text(
           ' of ',
           style: TextStyle(
-            color: theme.colorScheme.onSurface..withValues(alpha: 0.7),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         Tooltip(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_inspector/common/confirm_delete_dialog.dart';
 import 'package:isar_plus_inspector/object/isar_object.dart';
 import 'package:isar_plus_inspector/object/object_view.dart';
 
@@ -73,7 +74,15 @@ class ObjectsListSliver extends StatelessWidget {
                           ),
                           tooltip: 'Delete',
                           visualDensity: VisualDensity.standard,
-                          onPressed: () => onDelete(id),
+                          onPressed: () async {
+                            final confirmed = await showConfirmDeleteDialog(
+                              context,
+                              'Delete this object?',
+                            );
+                            if (confirmed ?? false) {
+                              onDelete(id);
+                            }
+                          },
                         ),
                       ],
                     ),

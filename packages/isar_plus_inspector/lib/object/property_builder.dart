@@ -41,10 +41,7 @@ class _PropertyBuilderState extends State<PropertyBuilder> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Row(
               children: [
                 if (widget.children.isNotEmpty) ...[
@@ -67,8 +64,9 @@ class _PropertyBuilderState extends State<PropertyBuilder> {
                     style: GoogleFonts.jetBrainsMono(
                       fontWeight: widget.bold ? FontWeight.w800 : null,
                       color: theme.colorScheme.onPrimaryContainer,
-                      decoration:
-                          widget.underline ? TextDecoration.underline : null,
+                      decoration: widget.underline
+                          ? TextDecoration.underline
+                          : null,
                     ),
                   ),
                 ),
@@ -79,8 +77,9 @@ class _PropertyBuilderState extends State<PropertyBuilder> {
                   Text(
                     widget.type,
                     style: TextStyle(
-                      color: theme.colorScheme.onPrimaryContainer
-                        ..withValues(alpha: 0.5),
+                      color: theme.colorScheme.onPrimaryContainer.withValues(
+                        alpha: 0.5,
+                      ),
                     ),
                   ),
               ],

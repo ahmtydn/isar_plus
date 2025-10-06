@@ -38,6 +38,7 @@ class EmbeddedPropertyView extends StatelessWidget {
         ],
       );
     } else {
+      // Handle objectList type
       final children = object.getNestedList(property.name);
       final childrenLength = children != null ? '(${children.length})' : '';
       return PropertyBuilder(
@@ -47,7 +48,7 @@ class EmbeddedPropertyView extends StatelessWidget {
         children: [
           for (var i = 0; i < (children?.length ?? 0); i++)
             PropertyBuilder(
-              property: '$i',
+              property: '[$i]',
               type: property.target!,
               value: children![i] == null ? const NullValue() : null,
               children: [
