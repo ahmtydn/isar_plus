@@ -99,7 +99,7 @@ abstract class Isar {
         _IsarConnect.initialize(isar);
       }
       return true;
-    }());
+    }(), 'Isar inspector initialization');
 
     return isar;
   }
@@ -133,7 +133,7 @@ abstract class Isar {
         _IsarConnect.initialize(isar);
       }
       return true;
-    }());
+    }(), 'Isar inspector initialization');
 
     return isar;
   }

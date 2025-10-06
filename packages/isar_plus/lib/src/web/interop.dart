@@ -7,6 +7,8 @@ extension type JSWindow._(JSObject _) implements JSObject {}
 extension JSWIndowX on JSWindow {
   external JSIsar get isar;
 
+  /// ignored to avoid "non-constant identifier names" warning
+  // ignore: non_constant_identifier_names
   external JSWasm get WebAssembly;
 
   external JSObject fetch(String url);

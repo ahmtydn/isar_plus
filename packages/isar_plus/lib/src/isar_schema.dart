@@ -292,7 +292,8 @@ extension IsarTypeX on IsarType {
         return IsarType.string;
       case IsarType.objectList:
         return IsarType.object;
-      // Default case needed for exhaustiveness even though all cases are covered
+      // Default case needed for exhaustiveness even though all cases
+      // are covered
       // ignore: no_default_cases
       default:
         return this;
@@ -320,7 +321,8 @@ extension IsarTypeX on IsarType {
         return IsarType.stringList;
       case IsarType.object:
         return IsarType.objectList;
-      // Default case needed for exhaustiveness even though all cases are covered
+      // Default case needed for exhaustiveness even though all cases
+      // are covered
       // ignore: no_default_cases
       default:
         return this;

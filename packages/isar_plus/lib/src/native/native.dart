@@ -37,9 +37,9 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   if (coreVersion != Isar.version && coreVersion != 'debug') {
     throw IsarNotReadyError(
       'Incorrect Isar Core version: Required ${Isar.version} found '
-      '$coreVersion. Make sure to use the latest isar_plus_flutter_libs. If you '
-      'have a Dart only project, make sure that old Isar Core binaries are '
-      'deleted.',
+      '$coreVersion. Make sure to use the latest '
+      'isar_plus_flutter_libs. If you have a Dart only project, make '
+      'sure that old Isar Core binaries are deleted.',
     );
   }
 

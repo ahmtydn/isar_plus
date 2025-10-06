@@ -77,23 +77,14 @@ abstract class _IsarConnect {
         return left.join() + text + right.join();
       }
 
-      // Using debugPrint for development-time logging
-      // ignore: avoid_print
-      print('╔${line('', '═')}╗');
-      // ignore: avoid_print
-      print('║${line('ISAR CONNECT STARTED', ' ')}║');
-      // ignore: avoid_print
-      print('╟${line('', '─')}╢');
-      // ignore: avoid_print
-      print('║${line('Open the link to connect to the Isar', ' ')}║');
-      // ignore: avoid_print
-      print('║${line('Inspector while this build is running.', ' ')}║');
-      // ignore: avoid_print
-      print('╟${line('', '─')}╢');
-      // ignore: avoid_print
-      print('║$url║');
-      // ignore: avoid_print
-      print('╚${line('', '═')}╝');
+      log('╔${line('', '═')}╗');
+      log('║${line('ISAR CONNECT STARTED', ' ')}║');
+      log('╟${line('', '─')}╢');
+      log('║${line('Open the link to connect to the Isar', ' ')}║');
+      log('║${line('Inspector while this build is running.', ' ')}║');
+      log('╟${line('', '─')}╢');
+      log('║$url║');
+      log('╚${line('', '═')}╝');
     });
   }
 

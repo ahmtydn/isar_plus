@@ -12,6 +12,7 @@ Pointer<T> ptrFromAddress<T>(int addr) => addr;
 
 // Late is required for lazy initialization after IsarCore is ready
 // ignore: unnecessary_late
+// ignore: invalid_runtime_check_with_js_interop_types, unnecessary_late
 late final JSIsar b = IsarCore.b as JSIsar;
 
 extension PointerX on int {
@@ -50,6 +51,8 @@ extension PointerX on int {
 const nullptr = 0;
 
 class Native<T> {
+  /// ignored to avoid "unused constructor parameters" warning
+  // ignore: avoid_unused_constructor_parameters
   const Native({String? symbol});
 }
 

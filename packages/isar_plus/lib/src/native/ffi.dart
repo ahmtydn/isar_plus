@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart' as ffi;
+
+/// ignored to avoid "unused import" warnings
+// ignore: implementation_imports
 import 'package:ffi/src/allocation.dart';
 import 'package:isar_plus/src/native/native.dart';
 

@@ -75,6 +75,7 @@ extension on DartType {
           return IsarType.objectList;
         case IsarType.json:
           return IsarType.json;
+        // Needed for exhaustiveness checking
         // ignore: no_default_cases
         default:
           return null;

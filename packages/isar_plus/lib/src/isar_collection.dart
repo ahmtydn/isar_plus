@@ -110,8 +110,10 @@ abstract class IsarCollection<ID, OBJ> {
   /// - Object ID and collection name
   ///
   /// **Type Parameter:**
-  /// - `T`: The type to parse fullDocument into. Must extend [DocumentSerializable]
-  ///   to enable automatic JSON parsing, or use custom parsing with documentParser.
+  /// - `T`: The type to parse fullDocument into.
+  ///  Must extend [DocumentSerializable]
+  ///   to enable automatic JSON parsing,
+  /// or use custom parsing with documentParser.
   ///
   /// **Platform Support:**
   /// This method is not supported on web platforms and will throw an

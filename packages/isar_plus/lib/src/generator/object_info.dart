@@ -39,7 +39,8 @@ class ObjectInfo {
 
 enum DeserializeMode { none, assign, positionalParam, namedParam }
 
-/// Represents information about a property in an Isar object for code generation.
+/// Represents information about a property in an Isar object for code
+/// generation.
 class PropertyInfo {
   PropertyInfo({
     /// The index of the property.
