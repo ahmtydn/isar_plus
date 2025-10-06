@@ -1,14 +1,3 @@
-## 1.0.23 (2025-10-06)
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.0.23 -->
-
-## What's Changed
-### Other Changes
-* npm wasm publish by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/29
-
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.22...1.0.23
-
 ## 1.0.22 (2025-10-06)
 
 
