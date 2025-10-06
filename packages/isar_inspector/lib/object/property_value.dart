@@ -245,6 +245,7 @@ class _DateValue extends StatelessWidget {
   Widget build(BuildContext context) {
     final date =
         value != null ? DateTime.fromMicrosecondsSinceEpoch(value!) : null;
+
     return GestureDetector(
       onTap: onUpdate == null
           ? null
@@ -259,14 +260,62 @@ class _DateValue extends StatelessWidget {
                 onUpdate?.call(newDate.microsecondsSinceEpoch);
               }
             },
-      child: Text(
-        date?.toIso8601String() ?? 'null',
-        style: GoogleFonts.jetBrainsMono(
-          color: date != null ? Colors.blue : Colors.grey,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      child: value == null
+          ? Text(
+              'null',
+              style: GoogleFonts.jetBrainsMono(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : Row(
+              children: [
+                Text(
+                  value.toString(),
+                  style: GoogleFonts.jetBrainsMono(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '(${_formatDateTime(date!)})',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
     );
+  }
+
+  String _formatDateTime(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    // If it's today, show time
+    if (diff.inDays == 0) {
+      return 'Today ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
+
+    // If it's yesterday
+    if (diff.inDays == 1) {
+      return 'Yesterday ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
+
+    // If it's within a week
+    if (diff.inDays < 7 && diff.inDays > 0) {
+      return '${diff.inDays} days ago';
+    }
+
+    // Otherwise show full date
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 }
 

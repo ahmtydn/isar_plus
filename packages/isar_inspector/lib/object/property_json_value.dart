@@ -228,7 +228,7 @@ class _MapJsonValue extends StatefulWidget {
 }
 
 class _MapJsonValueState extends State<_MapJsonValue> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
