@@ -12,6 +12,7 @@
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+**/pubspec_overrides.yaml
 
 # Rust related
 target/

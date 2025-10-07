@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar_plus/isar_plus.dart';
 
@@ -13,7 +14,11 @@ class Count {
 }
 
 void main() async {
-  await Isar.initialize();
+  if (kIsWeb) {
+    await Isar.initialize('isar.wasm');
+  } else {
+    await Isar.initialize();
+  }
   runApp(const CounterApp());
 }
 
