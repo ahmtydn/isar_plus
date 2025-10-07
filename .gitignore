@@ -71,5 +71,6 @@ local.properties
 *.info
 *.profraw
 *.json
+!package.json
 
 packages/hive_plus
