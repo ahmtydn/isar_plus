@@ -14,14 +14,14 @@ extension GetCountCollection on Isar {
   IsarCollection<int, Count> get counts => this.collection();
 }
 
-const CountSchema = IsarGeneratedSchema(
+final CountSchema = IsarGeneratedSchema(
   schema: IsarSchema(
-    name: "Count",
-    idName: "id",
+    name: 'Count',
+    idName: 'id',
     embedded: false,
     properties: [
       IsarPropertySchema(
-        name: "step",
+        name: 'step',
         type: IsarType.long,
       ),
     ],
@@ -32,7 +32,7 @@ const CountSchema = IsarGeneratedSchema(
     deserialize: deserializeCount,
     deserializeProperty: deserializeCountProp,
   ),
-  embeddedSchemas: [],
+  getEmbeddedSchemas: () => [],
 );
 
 @isarProtected
