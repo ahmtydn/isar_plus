@@ -21,6 +21,9 @@ String _generateSchema(ObjectInfo object) {
     ),''';
   }
 
+  final embeddedSchemas = object.embeddedDartNames
+      .map((e) => '${e.capitalize()}Schema')
+      .join(',');
   final properties =
       object.properties
           .where((e) => !e.isId || e.type != IsarType.long)
@@ -41,6 +44,6 @@ String _generateSchema(ObjectInfo object) {
         deserialize: deserialize${object.dartName},
         ${!object.isEmbedded ? 'deserializeProperty: deserialize${object.dartName}Prop,' : ''}
       ),
-      ${object.isEmbedded ? '' : 'getEmbeddedSchemas: () => [],'}
+      ${object.isEmbedded ? '' : 'getEmbeddedSchemas: () => [$embeddedSchemas],'}
     );''';
 }
