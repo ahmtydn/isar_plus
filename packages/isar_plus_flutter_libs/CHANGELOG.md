@@ -1,4 +1,16 @@
+## 1.0.24 (2025-10-12)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.24 -->
+
+## What's Changed
+### Other Changes
+* Fix generator for embedded schemas and bump isar_plus to 1.0.24 by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/31
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.23...1.0.24
+
 ## 1.0.23 (2025-10-06)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.23 -->
 
