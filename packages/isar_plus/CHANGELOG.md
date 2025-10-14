@@ -1,4 +1,16 @@
+## 1.0.25 (2025-10-14)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.25 -->
+
+## What's Changed
+### Other Changes
+* Fix plugin class naming to match Flutter's code generation expectations by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/33
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.24...1.0.25
+
 ## 1.0.24 (2025-10-12)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.24 -->
 
