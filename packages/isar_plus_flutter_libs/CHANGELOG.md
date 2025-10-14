@@ -1,4 +1,16 @@
+## 1.0.27 (2025-10-14)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.0.27 -->
+
+## What's Changed
+### Other Changes
+* fix: update iOS deployment target to 13.0 and add Pods framework references by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/36
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.26...1.0.27
+
 ## 1.0.26 (2025-10-14)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.26 -->
 
