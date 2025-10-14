@@ -1,4 +1,4 @@
-#import "IsarFlutterLibsPlugin.h"
+#import "IsarPlusFlutterLibsPlugin.h"
 #if __has_include(<isar_plus_flutter_libs/isar_plus_flutter_libs-Swift.h>)
 #import <isar_plus_flutter_libs/isar_plus_flutter_libs-Swift.h>
 #else
