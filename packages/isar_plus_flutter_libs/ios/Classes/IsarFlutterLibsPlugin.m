@@ -8,8 +8,8 @@
 #import "isar_plus_flutter_libs-Swift.h"
 #endif
 
-@implementation IsarFlutterLibsPlugin
+@implementation IsarPlusFlutterLibsPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftIsarFlutterLibsPlugin registerWithRegistrar:registrar];
+  [SwiftIsarPlusFlutterLibsPlugin registerWithRegistrar:registrar];
 }
 @end

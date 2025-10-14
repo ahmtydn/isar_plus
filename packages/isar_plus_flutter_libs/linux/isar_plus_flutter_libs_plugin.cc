@@ -8,17 +8,17 @@
 
 #define ISAR_PLUS_FLUTTER_LIBS_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), isar_plus_flutter_libs_plugin_get_type(), \
-                              IsarFlutterLibsPlugin))
+                              IsarPlusFlutterLibsPlugin))
 
-struct _IsarFlutterLibsPlugin {
+struct _IsarPlusFlutterLibsPlugin {
   GObject parent_instance;
 };
 
-G_DEFINE_TYPE(IsarFlutterLibsPlugin, isar_plus_flutter_libs_plugin, g_object_get_type())
+G_DEFINE_TYPE(IsarPlusFlutterLibsPlugin, isar_plus_flutter_libs_plugin, g_object_get_type())
 
 // Called when a method call is received from Flutter.
 static void isar_plus_flutter_libs_plugin_handle_method_call(
-    IsarFlutterLibsPlugin* self,
+    IsarPlusFlutterLibsPlugin* self,
     FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
 
@@ -49,12 +49,12 @@ static void isar_plus_flutter_libs_plugin_init(IsarFlutterLibsPlugin* self) {}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
-  IsarFlutterLibsPlugin* plugin = ISAR_PLUS_FLUTTER_LIBS_PLUGIN(user_data);
+  IsarPlusFlutterLibsPlugin* plugin = ISAR_PLUS_FLUTTER_LIBS_PLUGIN(user_data);
   isar_plus_flutter_libs_plugin_handle_method_call(plugin, method_call);
 }
 
 void isar_plus_flutter_libs_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
-  IsarFlutterLibsPlugin* plugin = ISAR_PLUS_FLUTTER_LIBS_PLUGIN(
+  IsarPlusFlutterLibsPlugin* plugin = ISAR_PLUS_FLUTTER_LIBS_PLUGIN(
       g_object_new(isar_plus_flutter_libs_plugin_get_type(), nullptr));
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();

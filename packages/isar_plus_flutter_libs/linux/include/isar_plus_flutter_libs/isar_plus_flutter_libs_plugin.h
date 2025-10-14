@@ -11,10 +11,10 @@ G_BEGIN_DECLS
 #define FLUTTER_PLUGIN_EXPORT
 #endif
 
-typedef struct _IsarFlutterLibsPlugin IsarFlutterLibsPlugin;
+typedef struct _IsarPlusFlutterLibsPlugin IsarPlusFlutterLibsPlugin;
 typedef struct {
   GObjectClass parent_class;
-} IsarFlutterLibsPluginClass;
+} IsarPlusFlutterLibsPluginClass;
 
 FLUTTER_PLUGIN_EXPORT GType isar_plus_flutter_libs_plugin_get_type();
 

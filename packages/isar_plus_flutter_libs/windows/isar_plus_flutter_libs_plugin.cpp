@@ -16,13 +16,13 @@
 
 namespace {
 
-class IsarFlutterLibsPlugin : public flutter::Plugin {
+class IsarPlusFlutterLibsPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  IsarFlutterLibsPlugin();
+  IsarPlusFlutterLibsPlugin();
 
-  virtual ~IsarFlutterLibsPlugin();
+  virtual ~IsarPlusFlutterLibsPlugin();
 
  private:
   // Called when a method is called on this plugin's channel from Dart.
@@ -32,14 +32,14 @@ class IsarFlutterLibsPlugin : public flutter::Plugin {
 };
 
 // static
-void IsarFlutterLibsPlugin::RegisterWithRegistrar(
+void IsarPlusFlutterLibsPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           registrar->messenger(), "isar_plus_flutter_libs",
           &flutter::StandardMethodCodec::GetInstance());
 
-  auto plugin = std::make_unique<IsarFlutterLibsPlugin>();
+  auto plugin = std::make_unique<IsarPlusFlutterLibsPlugin>();
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -49,11 +49,11 @@ void IsarFlutterLibsPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-IsarFlutterLibsPlugin::IsarFlutterLibsPlugin() {}
+IsarPlusFlutterLibsPlugin::IsarPlusFlutterLibsPlugin() {}
 
-IsarFlutterLibsPlugin::~IsarFlutterLibsPlugin() {}
+IsarPlusFlutterLibsPlugin::~IsarPlusFlutterLibsPlugin() {}
 
-void IsarFlutterLibsPlugin::HandleMethodCall(
+void IsarPlusFlutterLibsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name().compare("getPlatformVersion") == 0) {
@@ -74,9 +74,9 @@ void IsarFlutterLibsPlugin::HandleMethodCall(
 
 }  // namespace
 
-void IsarFlutterLibsPluginRegisterWithRegistrar(
+void IsarPlusFlutterLibsPluginRegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar) {
-  IsarFlutterLibsPlugin::RegisterWithRegistrar(
+  IsarPlusFlutterLibsPlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarManager::GetInstance()
           ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar));
 }

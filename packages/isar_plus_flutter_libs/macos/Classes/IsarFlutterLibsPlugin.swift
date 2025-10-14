@@ -1,10 +1,10 @@
 import Cocoa
 import FlutterMacOS
 
-public class IsarFlutterLibsPlugin: NSObject, FlutterPlugin {
+public class IsarPlusFlutterLibsPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "isar_plus_flutter_libs", binaryMessenger: registrar.messenger)
-    let instance = IsarFlutterLibsPlugin()
+    let instance = IsarPlusFlutterLibsPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
