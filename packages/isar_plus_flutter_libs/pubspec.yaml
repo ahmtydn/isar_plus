@@ -18,13 +18,13 @@ flutter:
     platforms:
       android:
         package: dev.isar.isar_plus_flutter_libs
-        pluginClass: IsarFlutterLibsPlugin
+        pluginClass: IsarPlusFlutterLibsPlugin
       ios:
-        pluginClass: IsarFlutterLibsPlugin
+        pluginClass: IsarPlusFlutterLibsPlugin
       macos:
-        pluginClass: IsarFlutterLibsPlugin
+        pluginClass: IsarPlusFlutterLibsPlugin
       linux:
-        pluginClass: IsarFlutterLibsPlugin
+        pluginClass: IsarPlusFlutterLibsPlugin
       windows:
-        pluginClass: IsarFlutterLibsPlugin
+        pluginClass: IsarPlusFlutterLibsPlugin
       web:

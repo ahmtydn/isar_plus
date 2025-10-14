@@ -1,4 +1,4 @@
 #import <Flutter/Flutter.h>
 
-@interface IsarFlutterLibsPlugin : NSObject<FlutterPlugin>
+@interface IsarPlusFlutterLibsPlugin : NSObject<FlutterPlugin>
 @end
