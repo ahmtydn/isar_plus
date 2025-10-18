@@ -938,6 +938,25 @@ class IsarCoreBindings {
       _isar_closePtr
           .asFunction<bool Function(ffi.Pointer<CIsarInstance>, bool)>();
 
+  int isar_delete_database(
+    ffi.Pointer<CString> name,
+    ffi.Pointer<CString> path,
+    bool sqlite,
+  ) {
+    return _isar_delete_database(name, path, sqlite);
+  }
+
+  late final _isar_delete_databasePtr = _lookup<
+    ffi.NativeFunction<
+      ffi.Uint8 Function(ffi.Pointer<CString>, ffi.Pointer<CString>, ffi.Bool)
+    >
+  >('isar_delete_database');
+  late final _isar_delete_database =
+      _isar_delete_databasePtr
+          .asFunction<
+            int Function(ffi.Pointer<CString>, ffi.Pointer<CString>, bool)
+          >();
+
   int isar_query_new(
     ffi.Pointer<CIsarInstance> isar,
     int collection_index,
