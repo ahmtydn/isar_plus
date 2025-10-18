@@ -4,6 +4,7 @@ mod isar_serializer;
 mod mdbx;
 mod native_collection;
 mod native_cursor;
+pub mod native_delete;
 mod native_index;
 mod native_insert;
 pub mod native_instance;

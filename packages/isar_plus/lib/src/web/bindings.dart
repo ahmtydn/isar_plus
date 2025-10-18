@@ -457,6 +457,15 @@ extension IsarBindingsX on JSIsar {
   external int isar_close(ffi.Pointer<CIsarInstance> isar, bool delete_);
 
   @ffi.Native<
+    ffi.Uint8 Function(ffi.Pointer<CString>, ffi.Pointer<CString>, ffi.Bool)
+  >(symbol: 'isar_delete_database')
+  external int isar_delete_database(
+    ffi.Pointer<CString> name,
+    ffi.Pointer<CString> path,
+    bool sqlite,
+  );
+
+  @ffi.Native<
     ffi.Uint8 Function(
       ffi.Pointer<CIsarInstance>,
       ffi.Uint16,

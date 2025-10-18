@@ -389,6 +389,40 @@ pub unsafe extern "C" fn isar_verify(isar: &'static CIsarInstance, txn: &'static
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn isar_delete_database(
+    name: *mut String,
+    path: *mut String,
+    sqlite: bool,
+) -> u8 {
+    isar_try! {
+        let name = *Box::from_raw(name);
+        let path = *Box::from_raw(path);
+        
+        if sqlite {
+            #[cfg(feature = "sqlite")]
+            {
+                use isar_core::sqlite::sqlite_delete::delete_database_files;
+                delete_database_files(&name, &path)?;
+            }
+            #[cfg(not(feature = "sqlite"))]
+            {
+                return Err(IsarError::UnsupportedOperation {});
+            }
+        } else {
+            #[cfg(feature = "native")]
+            {
+                use isar_core::native::native_delete::delete_database_files;
+                delete_database_files(&name, &path)?;
+            }
+            #[cfg(not(feature = "native"))]
+            {
+                return Err(IsarError::UnsupportedOperation {});
+            }
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn isar_close(isar: *mut CIsarInstance, delete: bool) -> u8 {
     isar_pause_isolate! {
         let isar = *Box::from_raw(isar);
