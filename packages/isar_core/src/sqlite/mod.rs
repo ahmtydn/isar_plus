@@ -3,6 +3,7 @@ mod sql;
 mod sqlite3;
 mod sqlite_collection;
 mod sqlite_cursor;
+pub mod sqlite_delete;
 mod sqlite_insert;
 pub mod sqlite_instance;
 mod sqlite_open;

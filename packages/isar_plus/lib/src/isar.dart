@@ -288,4 +288,29 @@ abstract class Isar {
   static int fastHash(String string) {
     return platformFastHash(string);
   }
+
+  /// Delete a database without opening it first.
+  ///
+  /// This is useful when you need to delete a corrupted or encrypted database
+  /// that cannot be opened with the current encryption key.
+  ///
+  /// [name] is the name of the database instance.
+  /// [directory] is the directory where the database files are stored.
+  /// [engine] specifies whether it's an Isar or SQLite database.
+  static void deleteDatabase({
+    required String name,
+    required String directory,
+    IsarEngine engine = IsarEngine.isar,
+  }) {
+    final namePtr = IsarCore._toNativeString(name);
+    final directoryPtr = IsarCore._toNativeString(directory);
+
+    IsarCore.b
+        .isar_delete_database(
+          namePtr,
+          directoryPtr,
+          engine == IsarEngine.sqlite,
+        )
+        .checkNoError();
+  }
 }
