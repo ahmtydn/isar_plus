@@ -21,3 +21,4 @@ curl "${github}/libisar_linux_x64.so" -o packages/isar_plus_flutter_libs/linux/l
 curl "${github}/isar_windows_x64.dll" -o packages/isar_plus_flutter_libs/windows/isar.dll --create-dirs -L -f
 
 curl "${github}/isar.wasm" -o isar.wasm -L -f
+curl "${github}/isar.js" -o isar.js -L -f

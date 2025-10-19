@@ -63,7 +63,12 @@ Future<void> _loadWasmBindgenScript(String wasmUrl) async {
   script.onerror =
       (web.Event event) {
         completer.completeError(
-          Exception('Failed to load isar.js from $jsUrl'),
+          Exception(
+            'Failed to load isar.js from $jsUrl. '
+            'Make sure both isar.wasm and isar.js are '
+            'available at the same location. '
+            'For local usage, copy both files to your web/ directory.',
+          ),
         );
       }.toJS;
 
@@ -95,7 +100,11 @@ Future<void> _verifyWasmBindgenLoaded(
   }
 
   completer.completeError(
-    Exception('wasm_bindgen not available after loading $jsUrl'),
+    Exception(
+      'wasm_bindgen not available after loading $jsUrl. '
+      'This usually means isar.js failed to execute properly. '
+      'Check the browser console for more details.',
+    ),
   );
 }
 
