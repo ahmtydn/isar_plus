@@ -82,6 +82,20 @@ has_target() {
 export ISAR_VERSION="$VERSION"
 echo "Preparing local Isar Plus artifacts for targets: ${TARGETS[*]}"
 
+# Clean existing build artifacts before building
+echo "\n==> Cleaning existing build artifacts"
+rm -f "$REPO_ROOT/libisar_macos.dylib"
+rm -f "$REPO_ROOT/isar_ios.xcframework.zip"
+rm -rf "$REPO_ROOT/isar.xcframework"
+rm -f "$REPO_ROOT/isar.wasm"
+rm -f "$REPO_ROOT/libisar_android_arm64.so"
+rm -f "$REPO_ROOT/libisar_android_armv7.so"
+rm -f "$REPO_ROOT/libisar_android_x64.so"
+rm -f "$REPO_ROOT/libisar_linux_x64.so"
+rm -f "$REPO_ROOT/isar_windows_x64.dll"
+rm -f "$EXAMPLE_DIR/web/isar.wasm"
+echo "Build artifacts cleaned"
+
 declare -a built_artifacts=()
 
 if has_target "macos"; then
