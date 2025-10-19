@@ -24,6 +24,7 @@ target/
 *.zip
 *.xcframework/
 isar-dart.h
+isar.js
 
 # Android related
 gradle-wrapper.jar
@@ -74,3 +75,5 @@ local.properties
 !package.json
 
 packages/hive_plus
+
+*s.md

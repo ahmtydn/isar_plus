@@ -14,7 +14,7 @@ use crate::core::instance::{Aggregation, CompactCondition, IsarInstance};
 use crate::core::query_builder::IsarQueryBuilder;
 use crate::core::schema::IsarSchema;
 use crate::core::value::IsarValue;
-use crate::core::watcher::{WatchHandle, WatcherCallback, DetailedWatcherCallback};
+use crate::core::watcher::{DetailedWatcherCallback, WatchHandle, WatcherCallback};
 use parking_lot::lock_api::RawMutex;
 use std::cell::Cell;
 use std::rc::Rc;
@@ -76,7 +76,8 @@ impl IsarInstance for SQLiteInstance {
 
     type Reader<'a> = SQLiteReader<'a>;
 
-    type Cursor<'a> = SQLiteCursor<'a>
+    type Cursor<'a>
+        = SQLiteCursor<'a>
     where
         Self: 'a;
 
@@ -86,7 +87,8 @@ impl IsarInstance for SQLiteInstance {
 
     type Query = SQLiteQuery;
 
-    type QueryCursor<'a> = SQLiteQueryCursor<'a>
+    type QueryCursor<'a>
+        = SQLiteQueryCursor<'a>
     where
         Self: 'a;
 
@@ -192,7 +194,10 @@ impl IsarInstance for SQLiteInstance {
         count: u32,
     ) -> Result<Self::Insert<'a>> {
         let collection = self.get_collection(collection_index)?;
-        txn.monitor_changes(&collection.watchers, &self.info.collections[collection_index as usize].name);
+        txn.monitor_changes(
+            &collection.watchers,
+            &self.info.collections[collection_index as usize].name,
+        );
 
         SQLiteInsert::new(txn, collection, &self.info.collections, count)
     }
@@ -291,7 +296,10 @@ impl IsarInstance for SQLiteInstance {
         updates: &[(u16, Option<IsarValue>)],
     ) -> Result<u32> {
         let collection = self.get_collection(query.collection_index)?;
-        txn.monitor_changes(&collection.watchers, &self.info.collections[query.collection_index as usize].name);
+        txn.monitor_changes(
+            &collection.watchers,
+            &self.info.collections[query.collection_index as usize].name,
+        );
         let result =
             txn.guard(|| query.update(txn, &self.info.collections, offset, limit, updates))?;
         txn.stop_monitor_changes();
@@ -306,7 +314,10 @@ impl IsarInstance for SQLiteInstance {
         limit: Option<u32>,
     ) -> Result<u32> {
         let collection = self.get_collection(query.collection_index)?;
-        txn.monitor_changes(&collection.watchers, &self.info.collections[query.collection_index as usize].name);
+        txn.monitor_changes(
+            &collection.watchers,
+            &self.info.collections[query.collection_index as usize].name,
+        );
         let result = txn.guard(|| query.delete(txn, &self.info.collections, offset, limit))?;
         txn.stop_monitor_changes();
         Ok(result)
@@ -318,7 +329,11 @@ impl IsarInstance for SQLiteInstance {
         Ok(handle)
     }
 
-    fn watch_detailed(&self, collection_index: u16, callback: DetailedWatcherCallback) -> Result<WatchHandle> {
+    fn watch_detailed(
+        &self,
+        collection_index: u16,
+        callback: DetailedWatcherCallback,
+    ) -> Result<WatchHandle> {
         let collection = self.get_collection(collection_index)?;
         let handle = collection.watchers.watch_detailed(callback);
         Ok(handle)

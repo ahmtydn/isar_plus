@@ -15,4 +15,4 @@ mod sqlite_verify;
 mod sqlite_writer;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-mod wasm;
+pub mod wasm;

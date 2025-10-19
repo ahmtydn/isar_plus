@@ -27,6 +27,9 @@ pub mod value;
 pub mod watcher;
 pub mod writer;
 
+#[cfg(all(feature = "sqlite", target_arch = "wasm32", target_os = "unknown"))]
+pub mod web;
+
 #[cfg(feature = "native")]
 type NInstance = <NativeInstance as IsarInstance>::Instance;
 #[cfg(feature = "sqlite")]
@@ -224,4 +227,26 @@ pub(crate) fn isar_to_i64(value: IsarI64) -> i64 {
     } else {
         i64::MIN
     }
+}
+
+// Export malloc and free for WASM
+#[cfg(target_arch = "wasm32")]
+#[no_mangle]
+pub extern "C" fn malloc(size: usize) -> *mut u8 {
+    use std::alloc::{alloc, Layout};
+    if size == 0 {
+        return std::ptr::null_mut();
+    }
+    unsafe {
+        let layout = Layout::from_size_align_unchecked(size, 8);
+        alloc(layout)
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[no_mangle]
+pub extern "C" fn free(_ptr: *mut u8) {
+    // For now, we intentionally leak memory since we don't track allocation sizes
+    // This is a known limitation - in production, we'd need a proper allocator
+    // that tracks metadata or uses a different allocation strategy
 }

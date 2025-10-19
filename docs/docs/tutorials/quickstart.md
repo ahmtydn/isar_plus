@@ -62,6 +62,20 @@ final isar = await Isar.open(
 );
 ```
 
+:::tip Flutter web
+- Add `isar.wasm` and `isar.js` to your application's `web/` directory. You can download them from the latest release or regenerate them with `./tool/prepare_local_dev.sh --targets wasm`.
+- Call `await Isar.initialize();` before opening your first instance so the wasm runtime and persistence backend are ready.
+- Use the SQLite engine with a persistent folder name, for example:
+
+  ```dart
+  final isar = await Isar.open(
+    [UserSchema],
+    engine: IsarEngine.sqlite,
+    directory: 'isar_data',
+  );
+  ```
+:::
+
 ## 5. Write and read
 
 Once your instance is open, you can start using the collections.

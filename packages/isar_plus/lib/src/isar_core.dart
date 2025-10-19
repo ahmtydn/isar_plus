@@ -6,6 +6,8 @@ abstract final class IsarCore {
 
   static var _initialized = false;
   static String? _library;
+  static var _webPersistenceReady = false;
+  static Future<void>? _webPersistencePending;
 
   static late final IsarCoreBindings b;
 
@@ -37,16 +39,25 @@ abstract final class IsarCore {
     }
 
     final result = initializePlatformBindings(library);
-    if (result is Future) {
-      return (result as Future<IsarCoreBindings>).then((bindings) {
+    if (result is Future<IsarCoreBindings>) {
+      return result.then((bindings) async {
         b = bindings;
         _library = library;
+        if (kIsWeb) {
+          await _ensureWebPersistence();
+        }
         _initialized = true;
       });
     } else {
       b = result;
       _library = library;
+      if (kIsWeb) {
+        return _ensureWebPersistence().then((_) {
+          _initialized = true;
+        });
+      }
       _initialized = true;
+      return null;
     }
   }
 
@@ -216,6 +227,58 @@ abstract final class IsarCore {
     Pointer<CIsarWriter> objectWriter,
   ) {
     b.isar_write_object_end(writer, objectWriter);
+  }
+
+  static Future<void> _ensureWebPersistence() async {
+    if (!kIsWeb || _webPersistenceReady) {
+      return;
+    }
+
+    if (_webPersistencePending != null) {
+      await _webPersistencePending;
+      return;
+    }
+
+    final future = _initializeWebPersistence();
+    _webPersistencePending = future;
+    try {
+      await future;
+    } finally {
+      _webPersistencePending = null;
+    }
+  }
+
+  static Future<void> _initializeWebPersistence() async {
+    final directoryPtr = _toNativeString('isar');
+    final handle = b.isar_web_persistence_start(directoryPtr);
+    const pollInterval = Duration(milliseconds: 15);
+
+    while (true) {
+      final status = b.isar_web_persistence_poll(handle);
+      if (status == 0) {
+        await Future<void>.delayed(pollInterval);
+        continue;
+      }
+
+      if (status == 1) {
+        _webPersistenceReady = true;
+        return;
+      }
+
+      final error =
+          _currentErrorMessage() ??
+          'Failed to initialize Isar web persistence backend.';
+      throw DatabaseError(error);
+    }
+  }
+
+  static String? _currentErrorMessage() {
+    final length = b.isar_get_error(stringPtrPtr);
+    final ptr = stringPtr;
+    if (length == 0 || ptr.isNull) {
+      return null;
+    }
+    return utf8.decode(ptr.asU8List(length));
   }
 
   @tryInline

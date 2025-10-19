@@ -55,7 +55,7 @@ pub struct SQLiteInsert<'a> {
     remaining: u32,
     pub(crate) batch_size: u32,
     pub(crate) batch_remaining: u32,
-    
+
     // Track inserted IDs for detailed change detection
     inserted_ids: Vec<i64>,
 }
@@ -99,12 +99,12 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
             self.with_stmt(|stmt| stmt.bind_long(id_property, id))?;
 
             self.batch_remaining -= 1;
-            
+
             // Store ID for detailed change detection
             if self.collection.watchers.has_detailed_watchers() {
                 self.inserted_ids.push(id);
             }
-            
+
             if self.batch_remaining == 0 && self.remaining > 0 {
                 let batch_size = self.txn_stmt.next(self.collection, self.remaining)?;
                 self.remaining -= batch_size;
@@ -120,13 +120,13 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
 
     fn finish(self) -> Result<Self::Txn> {
         let txn = self.txn_stmt.finish()?;
-        
+
         // Generate detailed changes for inserted objects
         if self.collection.watchers.has_detailed_watchers() && !self.inserted_ids.is_empty() {
-            use crate::core::change_detector::ChangeDetector;
-            use super::sqlite_reader::SQLiteReader;
             use super::sqlite_collection::SQLiteProperty;
-            
+            use super::sqlite_reader::SQLiteReader;
+            use crate::core::change_detector::ChangeDetector;
+
             for object_id in self.inserted_ids {
                 // Read the inserted object
                 let select_sql = format!(
@@ -134,7 +134,7 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
                     self.collection.name,
                     SQLiteProperty::ID_NAME
                 );
-                
+
                 if let Ok(sqlite) = txn.get_sqlite(false) {
                     if let Ok(mut stmt) = sqlite.prepare(&select_sql) {
                         if stmt.bind_long(0, object_id).is_ok() && stmt.step().unwrap_or(false) {
@@ -144,7 +144,7 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
                                 self.all_collections,
                             );
                             let after_json = reader.to_json();
-                            
+
                             // Generate insert change detail (no before state, only after)
                             if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
                                 &self.collection.name,
@@ -161,7 +161,7 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
                 }
             }
         }
-        
+
         Ok(txn)
     }
 }

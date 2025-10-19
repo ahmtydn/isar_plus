@@ -29,8 +29,6 @@ class Count {
 
 void main() async {
   if (kIsWeb) {
-    await Isar.initialize('isar.wasm');
-  } else {
     await Isar.initialize();
   }
   runApp(const CounterApp());
@@ -51,7 +49,7 @@ class _CounterAppState extends State<CounterApp> {
     // Open Isar instance
     _isar = Isar.open(
       schemas: [CountSchema],
-      directory: Isar.sqliteInMemory,
+      directory: "isar_data",
       engine: IsarEngine.sqlite,
     );
     super.initState();

@@ -397,7 +397,7 @@ pub unsafe extern "C" fn isar_delete_database(
     isar_try! {
         let name = *Box::from_raw(name);
         let path = *Box::from_raw(path);
-        
+
         if sqlite {
             #[cfg(feature = "sqlite")]
             {

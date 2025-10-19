@@ -985,6 +985,19 @@ extension IsarBindingsX on JSIsar {
     ffi.Pointer<CIsarWriter> writer,
     ffi.Pointer<CIsarWriter> list_writer,
   );
+
+  @ffi.Native<ffi.Uint32 Function(ffi.Pointer<CString>)>(
+    symbol: 'isar_web_persistence_start',
+  )
+  external int isar_web_persistence_start(ffi.Pointer<CString> directory);
+
+  @ffi.Native<ffi.Uint8 Function(ffi.Uint32)>(
+    symbol: 'isar_web_persistence_poll',
+  )
+  external int isar_web_persistence_poll(int handle);
+
+  @ffi.Native<ffi.Uint8 Function()>(symbol: 'isar_web_persistence_backend')
+  external int isar_web_persistence_backend();
 }
 
 final class CIsarCursor extends ffi.Opaque {}

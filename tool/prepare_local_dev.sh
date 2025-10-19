@@ -82,6 +82,22 @@ has_target() {
 export ISAR_VERSION="$VERSION"
 echo "Preparing local Isar Plus artifacts for targets: ${TARGETS[*]}"
 
+# Clean existing build artifacts before building
+echo "\n==> Cleaning existing build artifacts"
+rm -f "$REPO_ROOT/libisar_macos.dylib"
+rm -f "$REPO_ROOT/isar_ios.xcframework.zip"
+rm -rf "$REPO_ROOT/isar.xcframework"
+rm -f "$REPO_ROOT/isar.wasm"
+rm -f "$REPO_ROOT/isar.js"
+rm -f "$REPO_ROOT/libisar_android_arm64.so"
+rm -f "$REPO_ROOT/libisar_android_armv7.so"
+rm -f "$REPO_ROOT/libisar_android_x64.so"
+rm -f "$REPO_ROOT/libisar_linux_x64.so"
+rm -f "$REPO_ROOT/isar_windows_x64.dll"
+rm -f "$EXAMPLE_DIR/web/isar.wasm"
+rm -f "$EXAMPLE_DIR/web/isar.js"
+echo "Build artifacts cleaned"
+
 declare -a built_artifacts=()
 
 if has_target "macos"; then
@@ -106,7 +122,8 @@ if has_target "wasm"; then
   bash "$SCRIPT_DIR/build_wasm.sh"
   mkdir -p "$EXAMPLE_DIR/web"
   cp "$REPO_ROOT/isar.wasm" "$EXAMPLE_DIR/web/isar.wasm"
-  built_artifacts+=("web wasm -> isar.wasm")
+  cp "$REPO_ROOT/isar.js" "$EXAMPLE_DIR/web/isar.js"
+  built_artifacts+=("web wasm -> isar.wasm and isar.js")
 fi
 
 ANDROID_LIB_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/android/src/main/jniLibs"

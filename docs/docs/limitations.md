@@ -13,13 +13,9 @@ As you know, Isar works on mobile devices and desktops running on the VM as well
 
 ## Web Limitations
 
-Because Isar Web relies on IndexedDB, there are more limitations, but they are barely noticeable while using Isar.
+Isar Plus on the web now runs on SQLite compiled to WebAssembly. Chrome and Edge persist data inside the Origin Private File System (OPFS); Safari, Firefox, and older Chromium builds fall back to an IndexedDB-backed VFS. The OPFS backend mirrors native SQLite behaviour, while the fallback still carries a few browser-imposed constraints:
 
-- Synchronous methods are unsupported
-- Currently, `Isar.splitWords()` and `.matches()` filters are not yet implemented
-- Schema changes are not as tightly checked as in the VM so be careful to comply with the rules
-- All number types are stored as double (the only js number type) so `@Size32` has no effect
-- Indexes are represented differently so hash indexes don't use less space (they still work the same)
-- `col.delete()` and `col.deleteAll()` work correctly but the return value is not correct
-- `col.clear()` do not reset the auto-increment value
-- `NaN` is not supported as a value
+- Use the asynchronous APIs on the web; synchronous collection helpers throw `UnsupportedError`.
+- Text helpers such as `Isar.splitWords()` and `.matches()` remain unimplemented for the web engine.
+- Schema migrations are not validated as strictly as on the VM, so double-check breaking changes during releases.
+- When the IndexedDB fallback is active, some return values (for example `delete()` counts) may differ from native SQLite and auto-increment counters are not reset by `clear()`.

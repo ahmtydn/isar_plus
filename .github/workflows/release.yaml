@@ -43,7 +43,7 @@ jobs:
             script: build_windows.sh x64
           - name: "WebAssembly"
             os: ubuntu-latest
-            artifact_name: isar.wasm
+            artifact_name: wasm_files
             script: build_wasm.sh
     runs-on: ${{ matrix.os }}
     steps:
@@ -59,7 +59,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_name }}
+          path: |
+            isar.wasm
+            isar.js
           retention-days: 1
 
   publish:
@@ -90,19 +92,19 @@ jobs:
         run: |
           # Debug: Show the actual directory structure
           echo "Artifact directory structure:"
-          find ./artifacts -type f -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.zip"
+          find ./artifacts -type f -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.js" -o -name "*.zip"
           
           # Move artifacts from their subdirectories to root
           for artifact_dir in ./artifacts/*/; do
             if [ -d "$artifact_dir" ]; then
               echo "Processing directory: $artifact_dir"
-              find "$artifact_dir" -maxdepth 1 -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.zip" \) -exec mv {} ./ \;
+              find "$artifact_dir" -maxdepth 1 -type f \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" -o -name "*.wasm" -o -name "*.js" -o -name "*.zip" \) -exec mv {} ./ \;
             fi
           done
           
           # Verify files are in root
           echo "Files in root directory:"
-          ls -la *.so *.dylib *.dll *.wasm *.zip 2>/dev/null || echo "No binary files found in root"
+          ls -la *.so *.dylib *.dll *.wasm *.js *.zip 2>/dev/null || echo "No binary files found in root"
 
       - name: Create latest release
         run: |
@@ -127,6 +129,7 @@ jobs:
             libisar_macos.dylib \
             isar_windows_x64.dll \
             isar.wasm \
+            isar.js \
             --title "Isar Plus ${{ github.ref_name }}" \
             --generate-notes \
             $PRERELEASE_FLAG
