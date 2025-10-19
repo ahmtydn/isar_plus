@@ -17,6 +17,7 @@ build/
 # Rust related
 target/
 *.a
+!libsqlite3.a
 *.so
 *.dylib
 *.dll
