@@ -120,7 +120,8 @@ if has_target "wasm"; then
   bash "$SCRIPT_DIR/build_wasm.sh"
   mkdir -p "$EXAMPLE_DIR/web"
   cp "$REPO_ROOT/isar.wasm" "$EXAMPLE_DIR/web/isar.wasm"
-  built_artifacts+=("web wasm -> isar.wasm")
+  cp "$REPO_ROOT/isar.js" "$EXAMPLE_DIR/web/isar.js"
+  built_artifacts+=("web wasm -> isar.wasm and isar.js")
 fi
 
 ANDROID_LIB_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/android/src/main/jniLibs"
