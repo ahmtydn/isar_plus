@@ -2027,6 +2027,12 @@ class IsarCoreBindings {
   late final _isar_write_list_end = _isar_write_list_endPtr.asFunction<
     void Function(ffi.Pointer<CIsarWriter>, ffi.Pointer<CIsarWriter>)
   >(isLeaf: true);
+
+  int isar_web_persistence_start(ffi.Pointer<CString> directory) => 0;
+
+  int isar_web_persistence_poll(int handle) => 1;
+
+  int isar_web_persistence_backend() => 0;
 }
 
 final class CIsarCursor extends ffi.Opaque {}

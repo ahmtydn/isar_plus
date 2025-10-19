@@ -3,24 +3,100 @@ import 'dart:js_interop';
 
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus/src/web/interop.dart';
-import 'package:web/web.dart';
+import 'package:web/web.dart' as web;
 
 export 'bindings.dart';
 export 'ffi.dart';
 export 'interop.dart';
 
+@JS('wasm_bindgen')
+external JSPromise? _wasmBindgenInit([JSAny? pathOrModule]);
+
+@JS('window.wasm_bindgen')
+external JSAny? get _windowWasmBindgen;
+
+bool _scriptLoaded = false;
+
 /// Initializes the Isar WebAssembly bindings.
 FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) async {
   final url =
       library ?? 'https://unpkg.com/isar_plus@${Isar.version}/isar.wasm';
-  final w = window as JSWindow;
-  final object = {'env': <String, String>{}}.jsify();
-  if (object == null) {
-    throw Exception('Failed to create import object for WebAssembly.');
+
+  // Ensure the wasm-bindgen JavaScript glue code is loaded
+  if (!_scriptLoaded) {
+    // Check if wasm_bindgen is already available
+    final wasmBindgenExists = _windowWasmBindgen;
+    if (wasmBindgenExists == null ||
+        wasmBindgenExists.isUndefined ||
+        wasmBindgenExists.isNull) {
+      // Not loaded yet, load it dynamically
+      await _loadWasmBindgenScript(url);
+    }
+    _scriptLoaded = true;
   }
-  final promise = w.WebAssembly.instantiateStreaming(w.fetch(url), object);
-  final wasm = await promise.toDart;
-  return wasm.instance.exports;
+
+  // Call the wasm_bindgen init function directly
+  final result = await _wasmBindgenInit(url.toJS)!.toDart;
+
+  // The result should have the memory and exports we need
+  return result! as JSIsar;
+}
+
+/// Loads the wasm-bindgen JavaScript glue code
+Future<void> _loadWasmBindgenScript(String wasmUrl) async {
+  final completer = Completer<void>();
+
+  // Derive the JS file URL from the WASM URL
+  final jsUrl = wasmUrl.replaceAll('.wasm', '.js');
+
+  // Create and inject the script tag
+  final script = web.document.createElement('script') as web.HTMLScriptElement;
+  script.src = jsUrl;
+  script.type = 'text/javascript';
+
+  script.onload =
+      (web.Event event) {
+        // Schedule async work without making the callback async
+        _verifyWasmBindgenLoaded(jsUrl, completer);
+      }.toJS;
+
+  script.onerror =
+      (web.Event event) {
+        completer.completeError(
+          Exception('Failed to load isar.js from $jsUrl'),
+        );
+      }.toJS;
+
+  web.document.head!.appendChild(script);
+
+  await completer.future;
+}
+
+/// Verifies that wasm_bindgen is loaded and available
+Future<void> _verifyWasmBindgenLoaded(
+  String jsUrl,
+  Completer<void> completer,
+) async {
+  // Wait a bit for the script to execute and set the global variable
+  await Future<void>.delayed(const Duration(milliseconds: 50));
+
+  // Verify wasm_bindgen is now available
+  var attempts = 0;
+  while (attempts < 10) {
+    final wasmBindgenExists = _windowWasmBindgen;
+    if (wasmBindgenExists != null &&
+        !wasmBindgenExists.isUndefined &&
+        !wasmBindgenExists.isNull) {
+      completer.complete();
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    attempts++;
+  }
+
+  completer.completeError(
+    Exception('wasm_bindgen not available after loading $jsUrl'),
+  );
 }
 
 typedef IsarCoreBindings = JSIsar;
