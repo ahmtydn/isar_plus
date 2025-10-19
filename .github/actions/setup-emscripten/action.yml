@@ -1,4 +1,3 @@
-# .github/actions/setup-emscripten-universal/action.yml
 name: 'Setup Emscripten Universal'
 description: 'Setup Emscripten on multiple platforms'
 
