@@ -36,6 +36,7 @@ Isar Plus is an enhanced fork of the original Isar database, providing additiona
 - 🚀 **Highly scalable** The sky is the limit (pun intended)
 - 🍭 **Feature rich**. Composite & multi-entry indexes, query modifiers, JSON support etc.
 - ⏱ **Asynchronous**. Parallel query operations & multi-isolate support by default
+- 🌐 **Web persistence**. Full OPFS support for persistent storage on web platforms
 - 🦄 **Open source**. Everything is open source and free forever!
 - ✨ **Enhanced**. Additional features and improvements over the original Isar
 
@@ -68,9 +69,44 @@ When building from source, ensure you have:
 
 The build system automatically includes the necessary linker flags (`-Wl,-z,max-page-size=16384`) for all Android architectures.
 
-For detailed documentation and examples, visit the [main repository](https://github.com/ahmtydn/isar).
+## Web Persistence with OPFS
 
-Join the [Telegram group](https://t.me/isardb) for discussion and sneak peeks of new versions of the DB.
+Isar Plus now supports **persistent storage on web** using the Origin-Private File System (OPFS) API. This means your databases survive page reloads in modern browsers!
+
+### Requirements
+
+- Modern browser: Chrome 102+, Edge 102+, Firefox 111+, or Safari 16.4+
+- Server must emit COOP/COEP headers for SharedArrayBuffer support
+
+### Quick Setup
+
+```dart
+// Initialize before opening databases (required for web)
+await Isar.initialize();
+
+// Open database - will persist if OPFS is available
+final isar = await Isar.openAsync(
+  schemas: [UserSchema],
+  directory: '/databases',  // OPFS virtual path
+);
+```
+
+### Server Configuration
+
+Your web server must include these headers:
+
+```
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+```
+
+See [WEB_PERSISTENCE.md](docs/docs/WEB_PERSISTENCE.md) for detailed setup instructions including Apache, Nginx, Firebase, Netlify, and Vercel configurations.
+
+### Automatic Fallback
+
+If OPFS is unavailable, Isar automatically falls back to in-memory mode with a console warning. Your app continues to work, but data won't persist across reloads.
+
+For detailed documentation and examples, visit the [main repository](https://github.com/ahmtydn/isar).
 
 If you want to say thank you, star us on GitHub and like us on pub.dev 🙌💙
 
