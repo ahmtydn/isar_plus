@@ -101,9 +101,7 @@ When building from source, ensure you have:
 
 The build system automatically includes the necessary linker flags (`-Wl,-z,max-page-size=16384`) for all Android architectures.
 
-For detailed documentation and examples, visit the [main repository](https://github.com/ahmtydn/isar).
-
-Join the [Telegram group](https://t.me/isardb) for discussion and sneak peeks of new versions of the DB.
+Join the [Telegram group](https://t.me/isarplus) for discussion and sneak peeks of new versions of the DB.
 
 If you want to say thank you, star us on GitHub and like us on pub.dev 🙌💙
 
