@@ -36,7 +36,10 @@ impl<'a> SQLiteCursor<'a> {
 }
 
 impl<'a> IsarCursor for SQLiteCursor<'a> {
-    type Reader<'b> = SQLiteReader<'b> where Self: 'b;
+    type Reader<'b>
+        = SQLiteReader<'b>
+    where
+        Self: 'b;
 
     fn next(&mut self, id: i64) -> Option<Self::Reader<'_>> {
         self.stmt.reset().ok()?;

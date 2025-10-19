@@ -8,9 +8,9 @@ use super::sqlite_txn::SQLiteTxn;
 use crate::core::cursor::IsarQueryCursor;
 use crate::core::data_type::DataType;
 use crate::core::error::Result;
-use crate::core::reader::IsarReader;
 use crate::core::filter::JsonCondition;
 use crate::core::instance::Aggregation;
+use crate::core::reader::IsarReader;
 use crate::core::value::IsarValue;
 use crate::core::watcher::QueryMatches;
 use std::borrow::Cow;
@@ -146,7 +146,7 @@ impl SQLiteQuery {
         updates: &[(u16, Option<IsarValue>)],
     ) -> Result<u32> {
         let collection: &SQLiteCollection = &all_collections[self.collection_index as usize];
-        
+
         // Collect before states for detailed change detection
         let mut before_data: Vec<(i64, serde_json::Value)> = Vec::new();
         if collection.watchers.has_detailed_watchers() {
@@ -163,11 +163,11 @@ impl SQLiteQuery {
             } else {
                 format!("SELECT * FROM {} {}", collection.name, self.sql)
             };
-            
+
             let sqlite = txn.get_sqlite(false)?;
             let mut select_stmt = sqlite.prepare(&select_sql)?;
             Self::bind_params(&mut select_stmt, &self.params, 0)?;
-            
+
             while select_stmt.step()? {
                 let reader = SQLiteReader::new(
                     std::borrow::Cow::Borrowed(&select_stmt),
@@ -205,7 +205,7 @@ impl SQLiteQuery {
         // Generate detailed changes for each updated object
         if collection.watchers.has_detailed_watchers() && !before_data.is_empty() {
             use crate::core::change_detector::ChangeDetector;
-            
+
             for (object_id, before_json) in before_data {
                 // Read after state
                 let after_sql = format!(
@@ -215,7 +215,7 @@ impl SQLiteQuery {
                 );
                 let mut after_stmt = sqlite.prepare(&after_sql)?;
                 after_stmt.bind_long(0, object_id)?;
-                
+
                 if after_stmt.step()? {
                     let after_reader = SQLiteReader::new(
                         std::borrow::Cow::Borrowed(&after_stmt),
@@ -223,7 +223,7 @@ impl SQLiteQuery {
                         all_collections,
                     );
                     let after_json = after_reader.to_json();
-                    
+
                     // Detect field-level changes using JSON comparison
                     if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
                         &collection.name,
@@ -250,7 +250,7 @@ impl SQLiteQuery {
         limit: Option<u32>,
     ) -> Result<u32> {
         let collection = &all_collections[self.collection_index as usize];
-        
+
         // Collect before states for detailed change detection
         let mut before_data: Vec<(i64, serde_json::Value)> = Vec::new();
         if collection.watchers.has_detailed_watchers() {
@@ -267,11 +267,11 @@ impl SQLiteQuery {
             } else {
                 format!("SELECT * FROM {} {}", collection.name, self.sql)
             };
-            
+
             let sqlite = txn.get_sqlite(false)?;
             let mut select_stmt = sqlite.prepare(&select_sql)?;
             Self::bind_params(&mut select_stmt, &self.params, 0)?;
-            
+
             while select_stmt.step()? {
                 let reader = SQLiteReader::new(
                     std::borrow::Cow::Borrowed(&select_stmt),
@@ -306,7 +306,7 @@ impl SQLiteQuery {
         // Generate detailed changes for each deleted object
         if collection.watchers.has_detailed_watchers() && !before_data.is_empty() {
             use crate::core::change_detector::ChangeDetector;
-            
+
             for (object_id, before_json) in before_data {
                 // Delete operation - only have before state, no after state
                 if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
@@ -360,7 +360,10 @@ pub struct SQLiteQueryCursor<'a> {
 }
 
 impl<'a> IsarQueryCursor for SQLiteQueryCursor<'a> {
-    type Reader<'b> = SQLiteReader<'b> where Self: 'b;
+    type Reader<'b>
+        = SQLiteReader<'b>
+    where
+        Self: 'b;
 
     fn next(&mut self) -> Option<Self::Reader<'_>> {
         let has_next = self.stmt.step().ok()?;

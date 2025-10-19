@@ -27,9 +27,15 @@ impl<'a> SQLiteReader<'a> {
 }
 
 impl<'a> IsarReader for SQLiteReader<'a> {
-    type ObjectReader<'b> = SQLiteObjectReader<'b> where 'a: 'b;
+    type ObjectReader<'b>
+        = SQLiteObjectReader<'b>
+    where
+        'a: 'b;
 
-    type ListReader<'b> = SQLiteListReader<'b> where 'a: 'b;
+    type ListReader<'b>
+        = SQLiteListReader<'b>
+    where
+        'a: 'b;
 
     fn id_name(&self) -> Option<&str> {
         self.collection.id_name.as_deref()
@@ -152,9 +158,15 @@ pub struct SQLiteObjectReader<'a> {
 }
 
 impl<'a> IsarReader for SQLiteObjectReader<'a> {
-    type ObjectReader<'b> = SQLiteObjectReader<'b> where 'a: 'b;
+    type ObjectReader<'b>
+        = SQLiteObjectReader<'b>
+    where
+        'a: 'b;
 
-    type ListReader<'b> = SQLiteListReader<'b> where 'a: 'b;
+    type ListReader<'b>
+        = SQLiteListReader<'b>
+    where
+        'a: 'b;
 
     fn id_name(&self) -> Option<&str> {
         None
@@ -288,9 +300,15 @@ pub struct SQLiteListReader<'a> {
 }
 
 impl<'a> IsarReader for SQLiteListReader<'a> {
-    type ObjectReader<'b> = SQLiteObjectReader<'b> where 'a: 'b;
+    type ObjectReader<'b>
+        = SQLiteObjectReader<'b>
+    where
+        'a: 'b;
 
-    type ListReader<'b> = SQLiteListReader<'b> where 'a: 'b;
+    type ListReader<'b>
+        = SQLiteListReader<'b>
+    where
+        'a: 'b;
 
     fn id_name(&self) -> Option<&str> {
         None
@@ -388,14 +406,17 @@ impl<'a> SQLiteReader<'a> {
     /// Convert the current SQLite row to JSON
     pub(crate) fn to_json(&self) -> serde_json::Value {
         let mut result = serde_json::Map::new();
-        
+
         // Add the ID
-        result.insert("id".to_string(), serde_json::Value::Number(self.read_id().into()));
-        
+        result.insert(
+            "id".to_string(),
+            serde_json::Value::Number(self.read_id().into()),
+        );
+
         // Add all properties
         for (index, (field_name, data_type)) in self.properties().enumerate() {
             let index = index as u32 + 1; // Skip ID column
-            
+
             let value = match data_type {
                 DataType::Bool => {
                     if let Some(v) = self.read_bool(index) {
@@ -438,9 +459,15 @@ impl<'a> SQLiteReader<'a> {
                     }
                 }
                 // For complex types, use the existing JSON representation
-                DataType::Object | DataType::Json | DataType::BoolList | DataType::IntList | 
-                DataType::FloatList | DataType::LongList | DataType::DoubleList | 
-                DataType::StringList | DataType::ObjectList => {
+                DataType::Object
+                | DataType::Json
+                | DataType::BoolList
+                | DataType::IntList
+                | DataType::FloatList
+                | DataType::LongList
+                | DataType::DoubleList
+                | DataType::StringList
+                | DataType::ObjectList => {
                     if self.is_null(index) {
                         serde_json::Value::Null
                     } else {
@@ -450,10 +477,10 @@ impl<'a> SQLiteReader<'a> {
                     }
                 }
             };
-            
+
             result.insert(field_name.to_string(), value);
         }
-        
+
         serde_json::Value::Object(result)
     }
 }

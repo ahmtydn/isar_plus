@@ -55,11 +55,15 @@ impl SQLiteTxn {
         result
     }
 
-    pub(crate) fn monitor_changes(&self, watchers: &Arc<CollectionWatchers<SQLiteQuery>>, _collection_name: &str) {
+    pub(crate) fn monitor_changes(
+        &self,
+        watchers: &Arc<CollectionWatchers<SQLiteQuery>>,
+        _collection_name: &str,
+    ) {
         if watchers.has_watchers() {
             let change_set = self.change_set.clone();
             let watchers = watchers.clone();
-            
+
             // For basic watchers only, use update hook for simple notifications
             // Detailed change detection is now handled in individual operations (update, delete, insert)
             self.sqlite.set_update_hook(move |id| {
