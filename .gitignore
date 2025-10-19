@@ -24,6 +24,7 @@ target/
 *.zip
 *.xcframework/
 isar-dart.h
+isar.js
 
 # Android related
 gradle-wrapper.jar
