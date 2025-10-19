@@ -29,8 +29,6 @@ class Count {
 
 void main() async {
   if (kIsWeb) {
-    await Isar.initialize('isar.wasm');
-  } else {
     await Isar.initialize();
   }
   runApp(const CounterApp());

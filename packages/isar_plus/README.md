@@ -38,6 +38,7 @@ Isar Plus is an enhanced fork of the original Isar database, providing additiona
 - ⏱ **Asynchronous**. Parallel query operations & multi-isolate support by default
 - 🦄 **Open source**. Everything is open source and free forever!
 - ✨ **Enhanced**. Additional features and improvements over the original Isar
+- 🌐 **Persistent web storage**. Automatic OPFS + IndexedDB fallback for Flutter Web.
 
 ## Installation
 
@@ -51,6 +52,38 @@ dependencies:
 dev_dependencies:
   build_runner: any
 ```
+
+## Flutter Web Persistence
+
+Isar Plus now ships a SQLite/WebAssembly stack backed by [`sqlite-wasm-rs`](https://github.com/ahmtydn/sqlite-wasm-rs). Chrome and Edge store your database inside the Origin Private File System (OPFS), while Safari, Firefox, and other browsers fall back to an IndexedDB-backed VFS. The database schema and APIs match the native SQLite engine, so your collections remain portable across platforms.
+
+### Bundle the WASM artifacts
+
+- Every release uploads both `isar.wasm` and the generated `isar.js` glue file.
+- For local development run `./tool/prepare_local_dev.sh --targets wasm` (or `./tool/build_wasm.sh`) to regenerate both files in the repository root.
+- Copy the pair into your Flutter project's `web/` directory or configure your web server/CDN to serve them side-by-side. The loader expects `isar.js` to live next to `isar.wasm`.
+
+### Initialize Isar on the web
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    await Isar.initialize();
+  }
+
+  final isar = await Isar.open(
+    [UserSchema],
+    engine: IsarEngine.sqlite,
+    directory: 'isar_data',
+  );
+
+  runApp(MyApp(isar: isar));
+}
+```
+
+`directory` becomes a logical folder inside OPFS/IndexedDB (the default value is `isar`). Use `Isar.sqliteInMemory` when you intentionally want a transient database.
 
 ## Android 16KB Page Size Support
 

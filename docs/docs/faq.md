@@ -34,7 +34,7 @@ Isar is among the fastest databases for mobile, so it should be fast enough for 
 
 ### Does Isar increase the size of my app?
 
-A little bit, yes. Isar will increase the download size of your app by about 1 - 1.5 MB. Isar Web adds only a few KB.
+A little bit, yes. Isar will increase the download size of your native app by about 1 - 1.5 MB. The Flutter Web bundle also needs `isar.wasm` (roughly 1 MB optimised) and the lightweight `isar.js` loader (~50 KB), so make sure you host both files next to your app shell.
 
 ### The docs are incorrect / there is a typo.
 

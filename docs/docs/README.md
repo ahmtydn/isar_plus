@@ -20,7 +20,7 @@ features:
   - title: 💃 Static typing
     details: Isar's queries are statically typed and compile-time checked. No need to worry about runtime errors.
   - title: 📱 Multiplatform
-    details: iOS, Android and Desktop support!
+    details: iOS, Android, Desktop, and persistent Flutter Web storage via OPFS/IndexedDB.
   - title: ⏱ Asynchronous
     details: Parallel query operations & multi-isolate support out-of-the-box
   - title: 🦄 Open Source
