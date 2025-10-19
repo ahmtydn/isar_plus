@@ -50,4 +50,4 @@ jobs:
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: |
-          sqlite-wasm-rs/sqlite3/libsqlite3.a
+          packages/sqlite-wasm-rs/sqlite3/libsqlite3.a
