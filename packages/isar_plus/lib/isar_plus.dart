@@ -10,6 +10,7 @@ import 'dart:developer';
 import 'package:isar_plus/src/isar_connect_api.dart';
 import 'package:isar_plus/src/native/native.dart'
     if (dart.library.js) 'src/web/web.dart';
+import 'package:logger/logger.dart';
 import 'package:meta/meta.dart';
 import 'package:meta/meta_meta.dart';
 

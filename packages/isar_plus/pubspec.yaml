@@ -22,6 +22,7 @@ dependencies:
   build: ^3.0.0
   ffi: ">=2.0.0 <3.0.0"
   js: any
+  logger: ^2.6.2
   meta: ^1.16.0
   source_gen: ^3.0.0
   web: ^1.1.0

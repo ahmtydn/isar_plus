@@ -1,6 +1,14 @@
 part of isar_plus;
 
 abstract class _IsarConnect {
+  static final _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 0,
+      printEmojis: false,
+    ),
+  );
+
   static const Map<
     ConnectAction,
     Future<dynamic> Function(Map<String, dynamic> _)
@@ -77,14 +85,16 @@ abstract class _IsarConnect {
         return left.join() + text + right.join();
       }
 
-      log('╔${line('', '═')}╗');
-      log('║${line('ISAR CONNECT STARTED', ' ')}║');
-      log('╟${line('', '─')}╢');
-      log('║${line('Open the link to connect to the Isar', ' ')}║');
-      log('║${line('Inspector while this build is running.', ' ')}║');
-      log('╟${line('', '─')}╢');
-      log('║$url║');
-      log('╚${line('', '═')}╝');
+      final message = '''
+      ╔${line('', '═')}╗
+      ║${line('ISAR CONNECT STARTED', ' ')}║
+      ╟${line('', '─')}╢
+      ║${line('Open the link to connect to the Isar', ' ')}║
+      ║${line('Inspector while this build is running.', ' ')}║
+      ╟${line('', '─')}╢
+      ║$url║
+      ╚${line('', '═')}╝''';
+      _logger.w(message);
     });
   }
 
