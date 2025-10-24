@@ -55,7 +55,7 @@ dev_dependencies:
 
 ## Flutter Web Persistence
 
-Isar Plus now ships a SQLite/WebAssembly stack backed by [`sqlite-wasm-rs`](https://github.com/ahmtydn/sqlite-wasm-rs). Chrome and Edge store your database inside the Origin Private File System (OPFS), while Safari, Firefox, and other browsers fall back to an IndexedDB-backed VFS. The database schema and APIs match the native SQLite engine, so your collections remain portable across platforms.
+Isar Plus now ships a SQLite/WebAssembly stack backed by [`sqlite-wasm-rs`](https://github.com/ahmtydn/isar_plus/tree/main/packages/sqlite-wasm-rs). Chrome and Edge store your database inside the Origin Private File System (OPFS), while Safari, Firefox, and other browsers fall back to an IndexedDB-backed VFS. The database schema and APIs match the native SQLite engine, so your collections remain portable across platforms.
 
 ### Bundle the WASM artifacts
 
@@ -101,9 +101,7 @@ When building from source, ensure you have:
 
 The build system automatically includes the necessary linker flags (`-Wl,-z,max-page-size=16384`) for all Android architectures.
 
-For detailed documentation and examples, visit the [main repository](https://github.com/ahmtydn/isar).
-
-Join the [Telegram group](https://t.me/isardb) for discussion and sneak peeks of new versions of the DB.
+Join the [Telegram group](https://t.me/isarplus) for discussion and sneak peeks of new versions of the DB.
 
 If you want to say thank you, star us on GitHub and like us on pub.dev 🙌💙
 

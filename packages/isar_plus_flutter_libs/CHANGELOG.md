@@ -1,4 +1,18 @@
+## 1.1.1 (2025-10-19)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.1 -->
+
+## What's Changed
+### Other Changes
+* feat: Implement OPFS support for Isar Plus on web by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/39
+* feat(web): implement persistent storage for web using sqlite-wasm-rs by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/40
+* refactor: remove obsolete Emscripten setup and precompile workflows by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/43
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.28...1.1.1
+
 ## 1.0.28 (2025-10-18)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.28 -->
 
