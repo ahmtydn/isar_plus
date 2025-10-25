@@ -7,12 +7,12 @@ DateTime? convertTwitterDateTime(String? twitterDateString) {
 
   try {
     return DateTime.parse(twitterDateString);
-  } catch (e) {
+  } on Exception {
     try {
       final dateString = formatTwitterDateString(twitterDateString);
       return DateFormat('E MMM dd HH:mm:ss yyyy', 'en_US')
           .parse(dateString, true);
-    } catch (e) {
+    } on Exception {
       return null;
     }
   }

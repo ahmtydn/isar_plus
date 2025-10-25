@@ -4,6 +4,8 @@ import 'package:test/test.dart';
 
 part 'inheritance_test.g.dart';
 
+// ignore_for_file: unreachable_from_main
+
 abstract class BaseModel {
   BaseModel({
     required this.identifier,

@@ -46,7 +46,7 @@ class _ConnectedLayoutState extends State<ConnectedLayout> {
 
   @override
   void dispose() {
-    infoSubscription.cancel();
+    unawaited(infoSubscription.cancel());
     super.dispose();
   }
 
@@ -60,16 +60,18 @@ class _ConnectedLayoutState extends State<ConnectedLayout> {
     schemas.clear();
 
     if (instance != null) {
-      widget.client.watchInstance(instance);
-      widget.client.getSchemas(instance).then((newSchemas) {
-        if (mounted && selectedInstance == instance) {
-          setState(() {
-            schemas.addAll(newSchemas);
-            selectedCollection =
-                schemas.where((e) => !e.embedded).firstOrNull?.name;
-          });
-        }
-      });
+      unawaited(widget.client.watchInstance(instance));
+      unawaited(
+        widget.client.getSchemas(instance).then((newSchemas) {
+          if (mounted && selectedInstance == instance) {
+            setState(() {
+              schemas.addAll(newSchemas);
+              selectedCollection =
+                  schemas.where((e) => !e.embedded).firstOrNull?.name;
+            });
+          }
+        }),
+      );
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -64,7 +65,9 @@ class ObjectsListSliver extends StatelessWidget {
                           visualDensity: VisualDensity.standard,
                           onPressed: () {
                             final json = jsonEncode(object.data);
-                            Clipboard.setData(ClipboardData(text: json));
+                            unawaited(
+                              Clipboard.setData(ClipboardData(text: json)),
+                            );
                           },
                         ),
                         IconButton(
