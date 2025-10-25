@@ -40,14 +40,14 @@ String _generateSerialize(ObjectInfo object) {
 }
 
 String _writeProperty({
-  String writer = 'writer',
   required String index,
   required IsarType type,
   required bool nullable,
-  bool? elementNullable,
   required String typeClassName,
   required String value,
   required String? enumProperty,
+  String writer = 'writer',
+  bool? elementNullable,
 }) {
   final enumGetter =
       enumProperty != null

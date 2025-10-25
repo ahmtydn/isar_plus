@@ -186,8 +186,9 @@ abstract class _IsarConnect {
     final isar = _instances[cQuery.instance]!;
     final query = cQuery.toQuery(isar);
     await isar.writeAsync((isar) {
-      query.deleteAll();
-      query.close();
+      query
+        ..deleteAll()
+        ..close();
     });
   }
 

@@ -69,31 +69,34 @@ class _QueryBuilder<OBJ> {
 
   /// @nodoc
   _QueryBuilder<OBJ> addFilterCondition(Filter cond) {
+    final Filter conditionToAdd;
     if (filterNot) {
-      cond = NotGroup(cond);
+      conditionToAdd = NotGroup(cond);
+    } else {
+      conditionToAdd = cond;
     }
 
     late Filter newFilter;
 
     final filter = this.filter;
     if (filter == null) {
-      newFilter = cond;
+      newFilter = conditionToAdd;
     } else if (filterGroupAnd) {
       if (filter is AndGroup) {
-        newFilter = AndGroup([...filter.filters, cond]);
+        newFilter = AndGroup([...filter.filters, conditionToAdd]);
       } else if (filter is OrGroup) {
         newFilter = OrGroup([
           ...filter.filters.sublist(0, filter.filters.length - 1),
-          AndGroup([filter.filters.last, cond]),
+          AndGroup([filter.filters.last, conditionToAdd]),
         ]);
       } else {
-        newFilter = AndGroup([filter, cond]);
+        newFilter = AndGroup([filter, conditionToAdd]);
       }
     } else {
       if (filter is OrGroup) {
-        newFilter = OrGroup([...filter.filters, cond]);
+        newFilter = OrGroup([...filter.filters, conditionToAdd]);
       } else {
-        newFilter = OrGroup([filter, cond]);
+        newFilter = OrGroup([filter, conditionToAdd]);
       }
     }
 

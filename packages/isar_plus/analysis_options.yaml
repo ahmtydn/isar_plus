@@ -5,8 +5,5 @@ analyzer:
     - "lib/src/native/bindings.dart"
 
   errors:
-    cascade_invocations: ignore
     avoid_positional_boolean_parameters: ignore
-    parameter_assignments: ignore
-    always_put_required_named_parameters_first: ignore
     public_member_api_docs: ignore

@@ -115,8 +115,7 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
 
   @override
   List<Map<String, dynamic>> exportJson({int? offset, int? limit}) {
-    final bufferPtrPtr = malloc<Pointer<Uint8>>();
-    bufferPtrPtr.ptrValue = nullptr;
+    final bufferPtrPtr = malloc<Pointer<Uint8>>()..ptrValue = nullptr;
     final bufferSizePtr = malloc<Uint32>();
 
     Map<String, dynamic> deserialize(IsarReader reader) {

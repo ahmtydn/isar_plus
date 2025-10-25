@@ -197,8 +197,8 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   @override
   int importJsonString(String json) {
     return isar.getWriteTxn(consume: true, (isarPtr, txnPtr) {
-      final txnPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarTxn>>();
-      txnPtrPtr.ptrValue = txnPtr;
+      final txnPtrPtr =
+          IsarCore.ptrPtr.cast<Pointer<CIsarTxn>>()..ptrValue = txnPtr;
       final nativeString = IsarCore._toNativeString(json);
       IsarCore.b
           .isar_import_json(

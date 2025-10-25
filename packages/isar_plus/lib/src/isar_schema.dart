@@ -8,10 +8,10 @@ class IsarSchema {
   /// @nodoc
   const IsarSchema({
     required this.name,
-    this.idName,
     required this.embedded,
     required this.properties,
     required this.indexes,
+    this.idName,
   });
 
   /// @nodoc
