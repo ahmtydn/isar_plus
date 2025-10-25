@@ -1,10 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart' as ffi;
-
-/// ignored to avoid "unused import" warnings
-// ignore: implementation_imports
-import 'package:ffi/src/allocation.dart';
 import 'package:isar_plus/src/native/native.dart';
 
 export 'dart:ffi';
@@ -48,5 +44,5 @@ extension PointerUint32X on Pointer<Uint32> {
   int get u32Value => value;
 }
 
-const MallocAllocator malloc = ffi.malloc;
+const Allocator malloc = ffi.malloc;
 final void Function(Pointer<NativeType> pointer) free = ffi.malloc.free;
