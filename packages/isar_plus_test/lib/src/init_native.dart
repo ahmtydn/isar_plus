@@ -16,7 +16,9 @@ Future<void> prepareTest() async {
           testTempPath = path.join(dartToolDir, 'test', 'tmp');
           Directory(testTempPath!).createSync(recursive: true);
         }
-      } catch (_) {}
+      } on Exception {
+        // Ignore initialization errors in test environment
+      }
     }
     _setUp = true;
   }

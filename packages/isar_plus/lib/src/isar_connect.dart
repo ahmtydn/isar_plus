@@ -63,29 +63,30 @@ abstract class _IsarConnect {
   }
 
   static void _printConnection() {
-    Service.getInfo().then((ServiceProtocolInfo info) {
-      final serviceUri = info.serverUri;
-      if (serviceUri == null) {
-        return;
-      }
-      final port = serviceUri.port;
-      var path = serviceUri.path;
-      if (path.endsWith('/')) {
-        path = path.substring(0, path.length - 1);
-      }
-      if (path.endsWith('=')) {
-        path = path.substring(0, path.length - 1);
-      }
-      final url =
-          ' https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path ';
-      String line(String text, String fill) {
-        final fillCount = url.length - text.length;
-        final left = List.filled(fillCount ~/ 2, fill);
-        final right = List.filled(fillCount - left.length, fill);
-        return left.join() + text + right.join();
-      }
+    unawaited(
+      Service.getInfo().then((ServiceProtocolInfo info) {
+        final serviceUri = info.serverUri;
+        if (serviceUri == null) {
+          return;
+        }
+        final port = serviceUri.port;
+        var path = serviceUri.path;
+        if (path.endsWith('/')) {
+          path = path.substring(0, path.length - 1);
+        }
+        if (path.endsWith('=')) {
+          path = path.substring(0, path.length - 1);
+        }
+        final url =
+            ' https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path ';
+        String line(String text, String fill) {
+          final fillCount = url.length - text.length;
+          final left = List.filled(fillCount ~/ 2, fill);
+          final right = List.filled(fillCount - left.length, fill);
+          return left.join() + text + right.join();
+        }
 
-      final message = '''
+        final message = '''
       ╔${line('', '═')}╗
       ║${line('ISAR CONNECT STARTED', ' ')}║
       ╟${line('', '─')}╢
@@ -94,8 +95,9 @@ abstract class _IsarConnect {
       ╟${line('', '─')}╢
       ║$url║
       ╚${line('', '═')}╝''';
-      _logger.w(message);
-    });
+        _logger.w(message);
+      }),
+    );
   }
 
   static Future<dynamic> _getSchemas(Map<String, dynamic> params) async {

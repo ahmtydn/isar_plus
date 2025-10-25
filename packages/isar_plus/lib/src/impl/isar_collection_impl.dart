@@ -251,7 +251,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
       controller.add(null);
     }
 
-    controller.addStream(port);
+    unawaited(controller.addStream(port));
     return controller.stream;
   }
 
@@ -339,7 +339,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
       controller.add(null);
     }
 
-    controller.addStream(port);
+    unawaited(controller.addStream(port));
     return controller.stream;
   }
 
@@ -366,9 +366,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
         final filterPtr = _buildFilter(filter, pointers);
         IsarCore.b.isar_query_set_filter(builderPtr, filterPtr);
       } finally {
-        for (final ptr in pointers) {
-          free(ptr);
-        }
+        pointers.forEach(free);
       }
     }
 

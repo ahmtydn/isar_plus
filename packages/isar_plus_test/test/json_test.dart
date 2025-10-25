@@ -1,5 +1,7 @@
 import 'package:test/test.dart';
 
+// ignore_for_file: unreachable_from_main
+
 void main() {
   group('JSON', () {
     //late Isar isar;
@@ -42,7 +44,7 @@ void main() {
   });
 }
 
-const tweetJson = {
+const Map<String, Object?> tweetJson = {
   'coordinates': {
     'coordinates': [14.48532271, 40.63070878],
     'type': 'Point',

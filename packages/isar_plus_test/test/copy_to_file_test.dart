@@ -39,7 +39,7 @@ void main() {
       isar.write((isar) => isar.models.putAll(List.generate(100, Model.new)));
     });
 
-    isarTest('.copyToFile() should create a new file', () {
+    isarTest('.copyToFile() should create a new file', () async {
       final copiedDbFile = File(path.join(isar.directory, getRandomName()));
       expect(copiedDbFile.existsSync(), false);
 
@@ -47,7 +47,7 @@ void main() {
 
       expect(copiedDbFile.existsSync(), true);
       expect(copiedDbFile.lengthSync(), greaterThan(0));
-      copiedDbFile.delete();
+      await copiedDbFile.delete();
     });
 
     isarTest('.copyToFile() should keep the same content', () async {

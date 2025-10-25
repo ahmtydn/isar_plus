@@ -4,6 +4,8 @@ import 'package:test/test.dart';
 
 part 'enum_test.g.dart';
 
+// ignore_for_file: unreachable_from_main
+
 enum IndexEnum { option1, option2, option3 }
 
 enum ByteEnum {

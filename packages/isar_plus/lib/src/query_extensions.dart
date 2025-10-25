@@ -244,7 +244,7 @@ extension QueryExecute<OBJ, R> on QueryBuilder<OBJ, R, QOperations> {
           controller.add,
           onError: controller.addError,
           onDone: () {
-            controller.close();
+            unawaited(controller.close());
             q.close();
           },
         );
