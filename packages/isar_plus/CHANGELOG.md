@@ -1,4 +1,16 @@
+## 1.1.2 (2025-10-25)
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.2 -->
+
+## What's Changed
+### Other Changes
+* chore: update dependencies for compatibility with latest packages by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/47
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.1...1.1.2
+
 ## 1.1.1 (2025-10-19)
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.1 -->
 
