@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Annotate the property or accessor in an Isar collection that should be used
 /// as the primary key.

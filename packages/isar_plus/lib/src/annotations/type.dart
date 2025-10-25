@@ -1,7 +1,7 @@
 // Type definitions use lowercase for consistency with Dart's primitive types
 // ignore_for_file: camel_case_types
 
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Type to mark an [int] property or List as 8-bit sized.
 ///

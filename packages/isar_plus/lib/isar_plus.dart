@@ -1,6 +1,4 @@
-/// Extremely fast, easy to use, and fully async NoSQL database for Flutter.
-// ignore: unnecessary_library_name
-library isar_plus;
+library;
 
 import 'dart:async';
 import 'dart:collection';

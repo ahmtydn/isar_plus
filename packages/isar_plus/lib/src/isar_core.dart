@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// @nodoc
 abstract final class IsarCore {

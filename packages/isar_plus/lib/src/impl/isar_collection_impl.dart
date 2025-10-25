@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   _IsarCollectionImpl(

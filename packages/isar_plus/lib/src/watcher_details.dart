@@ -1,7 +1,7 @@
 // Single-method abstracts are acceptable for defining contracts
 // ignore_for_file: one_member_abstracts
 
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Contract for objects that can be serialized to/from JSON.
 ///

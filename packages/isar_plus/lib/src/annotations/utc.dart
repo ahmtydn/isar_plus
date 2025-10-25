@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// By default Isar returns [DateTime] values in the local timezone. If you want
 /// to receive UTC [DateTime] values instead, annotate the property or accessor
