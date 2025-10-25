@@ -22,8 +22,9 @@ class PubAppBar extends ConsumerWidget implements PreferredSizeWidget {
         child: AnimatedCrossFade(
           firstChild: SvgPicture.asset('assets/pub_logo_dark.svg', width: 150),
           secondChild: SvgPicture.asset('assets/pub_logo.svg', width: 150),
-          crossFadeState:
-              darkMode ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          crossFadeState: darkMode
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
           duration: kThemeChangeDuration,
         ),
       ),
@@ -48,7 +49,7 @@ class PubAppBar extends ConsumerWidget implements PreferredSizeWidget {
             darkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
           ),
           onPressed: () {
-            ref.read(darkModePod.notifier).state = !darkMode;
+            ref.read(darkModePod.notifier).toggle();
           },
         ),
       ],

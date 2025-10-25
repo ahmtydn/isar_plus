@@ -12,7 +12,7 @@ class PackageVersions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final versions = ref.watch(packageVersionsPod(name)).valueOrNull ?? [];
+    final versions = ref.watch(packageVersionsPod(name)).value ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,14 +36,14 @@ class PackageVersions extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(timeago.format(version.published))
+                    Text(timeago.format(version.published)),
                   ],
                 ),
               ),
             ),
           ),
           const Divider(),
-        ]
+        ],
       ],
     );
   }

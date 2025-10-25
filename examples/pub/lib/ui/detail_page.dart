@@ -9,23 +9,18 @@ import 'package:pub_app/ui/package_metadata.dart';
 import 'package:pub_app/ui/package_versions.dart';
 
 class DetailPage extends ConsumerWidget {
-  const DetailPage({
-    super.key,
-    required this.name,
-    this.version,
-  });
+  const DetailPage({super.key, required this.name, this.version});
 
   final String name;
   final String? version;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final package =
-        ref.watch(freshPackagePod(PackageNameVersion(name, version)));
+    final package = ref.watch(
+      freshPackagePod(PackageNameVersion(name, version)),
+    );
     return Scaffold(
-      appBar: PubAppBar(
-        favorite: package.valueOrNull?.flutterFavorite ?? false,
-      ),
+      appBar: PubAppBar(favorite: package.value?.flutterFavorite ?? false),
       body: SingleChildScrollView(
         child: package.map(
           data: (data) {
@@ -45,9 +40,8 @@ class DetailPage extends ConsumerWidget {
           error: (err) {
             return Center(child: Text('Error: $err'));
           },
-          loading: (loading) => const Center(
-            child: CircularProgressIndicator(),
-          ),
+          loading: (loading) =>
+              const Center(child: CircularProgressIndicator()),
         ),
       ),
     );
@@ -137,7 +131,7 @@ enum _BodyPage {
   readme,
   changelog,
   //example,
-  versions;
+  versions,
 }
 
 class PackageAsset extends ConsumerWidget {
@@ -161,9 +155,7 @@ class PackageAsset extends ConsumerWidget {
         if (md != null) {
           return MarkdownViewer(markdown: md);
         } else {
-          return const Center(
-            child: Text('This file is empty.'),
-          );
+          return const Center(child: Text('This file is empty.'));
         }
       },
       error: (err) => Center(child: Text('Error: $err')),

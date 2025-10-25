@@ -9,22 +9,29 @@ void main() {
   runApp(ProviderScope(child: PubApp()));
 }
 
-final darkModePod = StateProvider((ref) => false);
+final darkModePod = NotifierProvider<DarkModeNotifier, bool>(
+  DarkModeNotifier.new,
+);
+
+class DarkModeNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+
+  void set(bool value) => state = value;
+}
 
 class PubApp extends ConsumerWidget {
   PubApp({super.key});
 
   final _router = GoRouter(
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomePage(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const HomePage()),
       GoRoute(
         path: '/packages/:package',
-        builder: (context, state) => DetailPage(
-          name: state.pathParameters['package']!,
-        ),
+        builder: (context, state) =>
+            DetailPage(name: state.pathParameters['package']!),
       ),
       GoRoute(
         path: '/packages/:package/versions/:version',
@@ -35,9 +42,8 @@ class PubApp extends ConsumerWidget {
       ),
       GoRoute(
         path: '/search/:query',
-        builder: (context, state) => SearchPage(
-          query: state.pathParameters['query']!,
-        ),
+        builder: (context, state) =>
+            SearchPage(query: state.pathParameters['query']!),
       ),
     ],
   );

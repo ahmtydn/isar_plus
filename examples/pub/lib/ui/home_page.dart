@@ -75,7 +75,7 @@ class Favorites extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final favoriteNames = ref.watch(randomFavoriteNamesPod).valueOrNull;
+    final favoriteNames = ref.watch(randomFavoriteNamesPod).value;
 
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 25),
@@ -115,7 +115,7 @@ class PackageCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final package = ref.watch(packagePod(PackageNameVersion(name))).valueOrNull;
+    final package = ref.watch(packagePod(PackageNameVersion(name))).value;
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
