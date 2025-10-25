@@ -73,9 +73,9 @@ Count deserializeCount(IsarReader reader) {
     }
   }
   final object = Count(
-    _id,
-    _step,
-    _metadata,
+    id: _id,
+    step: _step,
+    metadata: _metadata,
   );
   return object;
 }

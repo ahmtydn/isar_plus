@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:isar_plus/isar_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 part 'main.g.dart';
 
+/// Metadata for a counter step, stored as an embedded object.
 @embedded
 class StepMetadata {
   const StepMetadata({
@@ -12,101 +14,226 @@ class StepMetadata {
   });
 
   final DateTime recordedAt;
-
   final String note;
 }
 
+/// Represents a single counter increment with metadata.
 @collection
 class Count {
+  Count({
+    required this.id,
+    required this.step,
+    required this.metadata,
+  });
+
   final int id;
-
   final int step;
-
   final StepMetadata metadata;
-
-  Count(this.id, this.step, this.metadata);
 }
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (kIsWeb) {
     await Isar.initialize();
   }
+
   runApp(const CounterApp());
 }
 
-class CounterApp extends StatefulWidget {
+class CounterApp extends StatelessWidget {
   const CounterApp({super.key});
 
   @override
-  State<CounterApp> createState() => _CounterAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Isar Counter',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
+        useMaterial3: true,
+      ),
+      home: const CounterScreen(),
+    );
+  }
 }
 
-class _CounterAppState extends State<CounterApp> {
-  late Isar _isar;
+class CounterScreen extends StatefulWidget {
+  const CounterScreen({super.key});
+
+  @override
+  State<CounterScreen> createState() => _CounterScreenState();
+}
+
+class _CounterScreenState extends State<CounterScreen> {
+  Isar? _isar;
+  String? _errorMessage;
 
   @override
   void initState() {
-    // Open Isar instance
-    _isar = Isar.open(
-      schemas: [CountSchema],
-      directory: "isar_data",
-      engine: IsarEngine.sqlite,
-    );
     super.initState();
+    _initializeDatabase();
   }
 
-  void _incrementCounter() {
-    // Persist counter value to database
-    _isar.write((isar) async {
-      isar.counts.put(
-        Count(
-          isar.counts.autoIncrement(),
-          1,
-          StepMetadata(
-            recordedAt: DateTime.now(),
-            note: 'Manual increment',
-          ),
-        ),
+  Future<void> _initializeDatabase() async {
+    try {
+      final directory =
+          kIsWeb ? null : await getApplicationDocumentsDirectory();
+      final isar = Isar.open(
+        schemas: [CountSchema],
+        directory: directory?.path ?? 'isar_data',
+        engine: kIsWeb ? IsarEngine.sqlite : IsarEngine.isar,
       );
-    });
 
-    setState(() {});
+      if (mounted) {
+        setState(() {
+          _isar = isar;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to initialize database: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _incrementCounter() async {
+    final isar = _isar;
+    if (isar == null) return;
+
+    try {
+      isar.write((isarInstance) {
+        final nextId = isarInstance.counts.where().idProperty().max() ?? 0;
+        isarInstance.counts.put(
+          Count(
+            id: nextId + 1,
+            step: 1,
+            metadata: StepMetadata(
+              recordedAt: DateTime.now(),
+              note: 'Manual increment',
+            ),
+          ),
+        );
+      });
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving count: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _isar?.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This is just for demo purposes. You shouldn't perform database queries
-    // in the build method.
-    final count = _isar.counts.where().stepProperty().sum();
-    final latest = _isar.counts.where().sortByIdDesc().findFirst();
-    final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
-      useMaterial3: true,
-    );
-    return MaterialApp(
-      title: 'Isar Counter',
-      theme: theme,
-      home: Scaffold(
+    if (_errorMessage != null) {
+      return Scaffold(
         appBar: AppBar(title: const Text('Isar Counter')),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text('You have pushed the button this many times:'),
-              Text('$count', style: theme.textTheme.headlineMedium),
-              if (latest != null)
-                Text(
-                  'Last step recorded at ${latest.metadata.recordedAt}',
-                  style: theme.textTheme.bodySmall,
-                ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              _errorMessage!,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _incrementCounter,
-          child: const Icon(Icons.add),
+      );
+    }
+
+    if (_isar == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Isar Counter')),
+        body: const Center(
+          child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Isar Counter'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: StreamBuilder<void>(
+        stream: _isar!.counts.watchLazy(),
+        builder: (context, snapshot) {
+          final count = _isar!.counts.where().stepProperty().sum();
+          final latest = _isar!.counts.where().sortByIdDesc().findFirst();
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'You have pushed the button this many times:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                  ),
+                  if (latest != null) ...[
+                    const SizedBox(height: 24),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Last Recorded',
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _formatDateTime(latest.metadata.recordedAt),
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-'
+        '${dateTime.day.toString().padLeft(2, '0')} '
+        '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
   }
 }
