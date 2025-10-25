@@ -5,5 +5,4 @@ analyzer:
     - "lib/src/native/bindings.dart"
 
   errors:
-    avoid_positional_boolean_parameters: ignore
     public_member_api_docs: ignore

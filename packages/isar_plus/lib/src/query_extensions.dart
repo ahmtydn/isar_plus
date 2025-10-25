@@ -84,9 +84,9 @@ typedef QueryOption<OBJ, S, RS> =
 extension QueryModifier<OBJ, S> on QueryBuilder<OBJ, OBJ, S> {
   /// Only apply a part of the query if `enabled` is true.
   QueryBuilder<OBJ, OBJ, RS> optional<RS>(
-    bool enabled,
-    QueryOption<OBJ, S, RS> option,
-  ) {
+    QueryOption<OBJ, S, RS> option, {
+    required bool enabled,
+  }) {
     if (enabled) {
       return option(this);
     } else {

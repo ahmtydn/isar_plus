@@ -170,7 +170,11 @@ abstract final class IsarCore {
   }
 
   @tryInline
-  static void writeBool(Pointer<CIsarWriter> writer, int index, bool value) {
+  static void writeBool(
+    Pointer<CIsarWriter> writer,
+    int index, {
+    required bool value,
+  }) {
     b.isar_write_bool(writer, index, value);
   }
 

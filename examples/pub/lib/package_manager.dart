@@ -15,8 +15,8 @@ class PackageManager {
     final query = isar.packages
         .where()
         .nameEqualTo(name)
-        .optional(version == null, (q) => q.isLatestEqualTo(true))
-        .optional(version != null, (q) => q.versionEqualTo(version!))
+        .optional(enabled: version == null, (q) => q.isLatestEqualTo(true))
+        .optional(enabled: version != null, (q) => q.versionEqualTo(version!))
         .build();
 
     await for (final results in query.watch(fireImmediately: true)) {
@@ -27,8 +27,11 @@ class PackageManager {
   }
 
   Stream<List<Package>> watchPackageVersions(String name) async* {
-    final query =
-        isar.packages.where().nameEqualTo(name).sortByPublishedDesc().build();
+    final query = isar.packages
+        .where()
+        .nameEqualTo(name)
+        .sortByPublishedDesc()
+        .build();
 
     await for (final results in query.watch(fireImmediately: true)) {
       if (results.isNotEmpty) {
@@ -79,8 +82,11 @@ class PackageManager {
     String? version,
   }) async {
     final newPackageVersions = await repository.getPackageVersions(name);
-    final latestExistingDate =
-        isar.packages.where().nameEqualTo(name).publishedProperty().max();
+    final latestExistingDate = isar.packages
+        .where()
+        .nameEqualTo(name)
+        .publishedProperty()
+        .max();
     final versionsToAdd = newPackageVersions
         .where(
           (e) =>
@@ -94,8 +100,9 @@ class PackageManager {
         .nameEqualTo(name)
         .isLatestEqualTo(true)
         .findFirst();
-    final newLatestVersion =
-        newPackageVersions.firstWhere((e) => e.isLatest).version;
+    final newLatestVersion = newPackageVersions
+        .firstWhere((e) => e.isLatest)
+        .version;
     if (currentLatest != null && currentLatest.version != newLatestVersion) {
       versionsToAdd.add(currentLatest.copyWith(isLatest: false));
     }
@@ -125,9 +132,7 @@ class PackageManager {
 
     final existing = await query.findAllAsync();
     if (existing.isNotEmpty) {
-      yield {
-        for (final asset in existing) asset.kind: asset.content,
-      };
+      yield {for (final asset in existing) asset.kind: asset.content};
     } else {
       final existingAnyVersion = await isar.assets
           .where()
@@ -147,9 +152,7 @@ class PackageManager {
 
     await for (final results in query.watch()) {
       if (results.isNotEmpty) {
-        yield {
-          for (final asset in results) asset.kind: asset.content,
-        };
+        yield {for (final asset in results) asset.kind: asset.content};
       }
     }
   }

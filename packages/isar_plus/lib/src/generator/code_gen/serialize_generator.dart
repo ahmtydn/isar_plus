@@ -64,11 +64,11 @@ String _writeProperty({
           if (value == null) {
             IsarCore.writeNull($writer, $index);
           } else {
-            IsarCore.writeBool($writer, $index, value);
+            IsarCore.writeBool($writer, $index,value: value);
           }
         }''';
       } else {
-        return 'IsarCore.writeBool($writer, $index, $value$enumGetter);';
+        return 'IsarCore.writeBool($writer, $index,value:$value$enumGetter);';
       }
     case IsarType.byte:
       return 'IsarCore.writeByte($writer, $index, $value$enumGetter);';
