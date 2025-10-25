@@ -18,13 +18,13 @@ environment:
   sdk: ">=3.7.0 <4.0.0"
 
 dependencies:
-  analyzer: ">=7.0.0 <9.0.0"
-  build: ^3.0.0
+  analyzer: ">=8.0.0 <9.0.0"
+  build: ^4.0.0
   ffi: ">=2.0.0 <3.0.0"
   js: any
   logger: ^2.6.2
   meta: ^1.16.0
-  source_gen: ^3.0.0
+  source_gen: ^4.0.0
   web: ^1.1.0
 
 dev_dependencies:
