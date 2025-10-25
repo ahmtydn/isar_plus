@@ -53,15 +53,15 @@ class _CollectionAreaState extends State<CollectionArea> {
   @override
   void initState() {
     querySubscription = widget.client.queryChanged.listen((_) {
-      _runQuery();
+      unawaited(_runQuery());
     });
-    _runQuery();
+    unawaited(_runQuery());
     super.initState();
   }
 
   @override
   void dispose() {
-    querySubscription.cancel();
+    unawaited(querySubscription.cancel());
     super.dispose();
   }
 
@@ -109,7 +109,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                         setState(() {
                           filter = group;
                         });
-                        _runQuery();
+                        unawaited(_runQuery());
                       },
                     ),
                   ),
@@ -138,7 +138,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                     setState(() {
                       page = newPage;
                     });
-                    _runQuery();
+                    unawaited(_runQuery());
                   },
                 ),
               ),
@@ -157,7 +157,7 @@ class _CollectionAreaState extends State<CollectionArea> {
                       sortProperty = property;
                       sortAsc = asc;
                     });
-                    _runQuery();
+                    unawaited(_runQuery());
                   },
                 ),
                 const Spacer(),
@@ -218,7 +218,7 @@ class _CollectionAreaState extends State<CollectionArea> {
       path: path,
       value: value,
     );
-    widget.client.editProperty(edit);
+    unawaited(widget.client.editProperty(edit));
   }
 
   void _onDelete(dynamic id) {
@@ -230,7 +230,7 @@ class _CollectionAreaState extends State<CollectionArea> {
         value: id,
       ),
     );
-    widget.client.deleteQuery(query);
+    unawaited(widget.client.deleteQuery(query));
   }
 
   Future<void> _onCreate() async {
@@ -290,7 +290,7 @@ class _CollectionAreaState extends State<CollectionArea> {
       collection: widget.collection,
       filter: filter.toIsarFilter(),
     );
-    widget.client.deleteQuery(query);
+    unawaited(widget.client.deleteQuery(query));
   }
 
   Future<void> _onDownload() async {
@@ -310,6 +310,6 @@ class _CollectionAreaState extends State<CollectionArea> {
       web.document.body?.appendChild(anchor);
       anchor.click();
       anchor.remove();
-    } catch (_) {}
+    } on Exception catch (_) {}
   }
 }

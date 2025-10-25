@@ -244,7 +244,7 @@ class ConnectQueryPayload {
         if (sortProperty != null)
           SortProperty(
             property: sortProperty!,
-            sort: sortAsc == true ? Sort.asc : Sort.desc,
+            sort: sortAsc ? Sort.asc : Sort.desc,
           ),
       ],
     );

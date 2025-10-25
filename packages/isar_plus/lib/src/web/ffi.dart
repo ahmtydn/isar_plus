@@ -11,7 +11,6 @@ class NativeType {}
 Pointer<T> ptrFromAddress<T>(int addr) => addr;
 
 // Late is required for lazy initialization after IsarCore is ready
-// ignore: unnecessary_late
 // ignore: invalid_runtime_check_with_js_interop_types, unnecessary_late
 late final JSIsar b = IsarCore.b as JSIsar;
 

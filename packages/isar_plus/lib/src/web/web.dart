@@ -57,7 +57,7 @@ Future<void> _loadWasmBindgenScript(String wasmUrl) async {
   script.onload =
       (web.Event event) {
         // Schedule async work without making the callback async
-        _verifyWasmBindgenLoaded(jsUrl, completer);
+        unawaited(_verifyWasmBindgenLoaded(jsUrl, completer));
       }.toJS;
 
   script.onerror =
