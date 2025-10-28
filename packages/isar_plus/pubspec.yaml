@@ -4,7 +4,7 @@ version: 0.0.0-placeholder
 repository: https://github.com/ahmtydn/isar_plus/tree/main/packages/isar_plus
 homepage: https://github.com/ahmtydn/isar_plus
 issue_tracker: https://github.com/ahmtydn/isar_plus/issues
-documentation: https://isar.dev
+documentation: https://isarplus.ahmetaydin.dev
 funding:
   - https://github.com/sponsors/ahmtydn/
 topics:
