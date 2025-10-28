@@ -26,5 +26,5 @@ features:
   - title: 🦄 Open Source
     details: Everything is open source and free forever!
 
-footer: Apache Licensed | Copyright © 2023 Simon Choi
+footer: Apache Licensed | Original project © 2023 Simon Choi | Isar Plus © 2024-2025 Ahmet Aydın
 ---

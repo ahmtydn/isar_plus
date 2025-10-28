@@ -1,0 +1,45 @@
+Isar Plus Database
+Copyright 2024-2025 Ahmet Aydın
+
+This product is a fork and derivative work of Isar Database, which was
+originally created by Simon Choi and contributors.
+
+Original Isar Database:
+Copyright 2023 Simon Choi
+https://github.com/isar/isar
+
+This software contains code from the following projects:
+
+1. Isar Database (Apache License 2.0)
+   - Original database engine and core functionality
+   - Copyright 2023 Simon Choi and contributors
+   - https://github.com/isar/isar
+
+2. MDBX (OpenLDAP Public License)
+   - Embedded database engine
+   - Copyright 2015-2024 Леонид Юрьев aka Leonid Yuriev
+   - https://gitflic.ru/project/erthink/libmdbx
+
+3. SQLite (Public Domain)
+   - Database engine for web platform
+   - https://www.sqlite.org/
+
+Isar Plus includes enhancements and additional features developed and 
+maintained by Ahmet Aydın, including but not limited to:
+- Enhanced web support with SQLite/WASM
+- Additional query capabilities
+- Performance improvements
+- Bug fixes and stability enhancements
+- Turkish documentation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
