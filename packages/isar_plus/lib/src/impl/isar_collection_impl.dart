@@ -39,7 +39,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
           .checkNoError();
 
       final cursorPtr = cursorPtrPtr.ptrValue;
-      Pointer<CIsarReader> readerPtr = nullptr;
+      var readerPtr = nullptr;
       for (var i = 0; i < ids.length; i++) {
         final id = _idToInt(ids[i]);
         readerPtr = IsarCore.b.isar_cursor_next(cursorPtr, id, readerPtr);

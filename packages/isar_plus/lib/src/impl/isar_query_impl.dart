@@ -46,7 +46,7 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
           .checkNoError();
       final cursorPtr = cursorPtrPtr.ptrValue;
 
-      Pointer<CIsarReader> readerPtr = nullptr;
+      var readerPtr = nullptr;
       final values = <E>[];
       while (true) {
         readerPtr = IsarCore.b.isar_query_cursor_next(cursorPtr, readerPtr);

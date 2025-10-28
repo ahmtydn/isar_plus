@@ -52,26 +52,14 @@ abstract final class IsarCore {
     }
 
     final result = initializePlatformBindings(library);
-    if (result is Future<IsarCoreBindings>) {
-      return result.then((bindings) async {
-        b = bindings;
-        _library = library;
-        if (kIsWeb) {
-          await _ensureWebPersistence();
-        }
-        _initialized = true;
-      });
-    } else {
-      b = result;
+    return Future.value(result).then((bindings) async {
+      b = bindings;
       _library = library;
       if (kIsWeb) {
-        return _ensureWebPersistence().then((_) {
-          _initialized = true;
-        });
+        await _ensureWebPersistence();
       }
       _initialized = true;
-      return null;
-    }
+    });
   }
 
   static void _free() {
