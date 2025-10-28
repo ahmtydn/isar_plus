@@ -8,8 +8,8 @@ dependencies:
   flutter:
     sdk: flutter
   hive_plus_secure: ^1.1.14
-  isar_plus: ^1.1.4
-  isar_plus_flutter_libs: ^1.1.4
+  isar_plus: ^1.1.5
+  isar_plus_flutter_libs: ^1.1.5
   path_provider: ^2.1.5
   
 dev_dependencies:
