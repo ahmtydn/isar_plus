@@ -12,6 +12,10 @@ enum IsarEngine {
 /// An Isar database instance.
 @pragma('vm:isolate-unsendable')
 abstract class Isar {
+  /// @nodoc
+  @protected
+  Isar();
+
   /// The default Isar instance name.
   static const String defaultName = 'default';
 

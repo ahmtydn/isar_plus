@@ -59,6 +59,9 @@ class ObjectLimitReachedError extends IsarError {
 
 /// Invalid Isar instance.
 class InstanceMismatchError extends IsarError {
+  /// Creates an instance mismatch error.
+  InstanceMismatchError();
+
   @override
   String get name => 'InstanceMismatchError';
 
@@ -72,6 +75,9 @@ class InstanceMismatchError extends IsarError {
 /// Something went wrong during encryption/decryption. Most likely the
 /// encryption key is wrong.
 class EncryptionError extends IsarError {
+  /// Creates an encryption error.
+  EncryptionError();
+
   @override
   String get name => 'EncryptionError';
 
@@ -84,6 +90,9 @@ class EncryptionError extends IsarError {
 
 /// The database is full.
 class DatabaseFullError extends IsarError {
+  /// Creates a database full error.
+  DatabaseFullError();
+
   @override
   final name = 'DatabaseFullError';
 

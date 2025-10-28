@@ -1,3 +1,8 @@
+/// Fast, easy to use, and fully async NoSQL database for Flutter and Dart.
+///
+/// Isar Plus is a high-performance embedded database that offers rich
+/// features like transactions, queries, watchers, and synchronous/asynchronous
+/// operations out of the box.
 library;
 
 import 'dart:async';
