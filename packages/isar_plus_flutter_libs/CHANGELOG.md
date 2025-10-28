@@ -1,4 +1,13 @@
+## 1.1.4
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.4 -->
+
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.3...1.1.4
+
 ## 1.1.3
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.3 -->
 
