@@ -83,7 +83,7 @@ final recipe = await isar.recipes.get(123);
 `get()` 은 객체를 `Future` 로 반환하고, 해당 객체가 존재하지 않는 경우에는 `null` 을 반환합니다. 모든 Isar 작업들은 기본적으로 비동기적으로 작동합니다. 대부분의 경우는 동기적인 방법도 가지고 있습니다.
 
 ```dart
-final recipe = isar.recipes.getSync(123);
+final recipe = isar.recipes.get(123);
 ```
 
 :::warning

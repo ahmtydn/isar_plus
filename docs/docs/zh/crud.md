@@ -82,7 +82,7 @@ final recipe = await isar.recipes.get(123);
 `get()` 返回一个包含对象的 `Future`，如果对象不存在，则返回 `null`。 默认情况下 Isar 所有的操作均为异步，而大部分操作也有其对应的同步处理方法，如：
 
 ```dart
-final recipe = isar.recipes.getSync(123);
+final recipe = isar.recipes.get(123);
 ```
 
 :::tip

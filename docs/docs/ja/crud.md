@@ -82,7 +82,7 @@ final recipe = await recipes.get(123);
 `get()` はオブジェクトを含む `Future` を返しますが、オブジェクトが存在しない場合は `null` を返します。 Isar のすべての操作はデフォルトでは非同期ですが、ほとんどの操作には同期処理も対応しています:
 
 ```dart
-final recipe = recipes.getSync(123);
+final recipe = recipes.get(123);
 ```
 
 :::warning

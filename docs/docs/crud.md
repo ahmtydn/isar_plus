@@ -83,7 +83,7 @@ final recipe = await isar.recipes.get(123);
 `get()` returns a `Future` with either the object or `null` if it does not exist. All Isar operations are asynchronous by default, and most of them have a synchronous counterpart:
 
 ```dart
-final recipe = isar.recipes.getSync(123);
+final recipe = isar.recipes.get(123);
 ```
 
 :::warning
