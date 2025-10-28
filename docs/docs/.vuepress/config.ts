@@ -24,7 +24,7 @@ const themeLocales: LocaleConfig<DefaultThemeLocaleData> = {};
 for (const locale of locales) {
   themeLocales[getLocalePath(locale.code)] = {
     selectLanguageName: locale.language,
-    selectLanguageText: locale.selectLanguage,
+    selectLanguageText: locale.language,
     editLinkText: locale.editPage,
     lastUpdatedText: locale.lastUpdated,
     contributorsText: locale.contributors,
