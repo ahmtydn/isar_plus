@@ -44,12 +44,9 @@ update_changelog() {
     # Create temporary file
     temp_file=$(mktemp)
     
-    # Get current date
-    current_date=$(date '+%Y-%m-%d')
-    
-    # Create new changelog entry
+    # Create new changelog entry without date
     cat > "$temp_file" << EOF
-## $TAG_NAME ($current_date)
+## $TAG_NAME
 
 $RELEASE_NOTES
 
@@ -69,7 +66,7 @@ EOF
     # Replace original file
     mv "$temp_file" "$changelog_file"
     
-    echo "✅ Updated $changelog_file"
+    echo "✅ Updated $changelog_file with release $TAG_NAME"
 }
 
 # Update both CHANGELOG files
