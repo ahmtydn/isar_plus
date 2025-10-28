@@ -16,6 +16,9 @@ sealed class IsarError extends Error {
 
 /// Invalid or protected path error.
 class PathError extends IsarError {
+  /// Creates a path error.
+  PathError();
+
   @override
   final name = 'PathError';
 
@@ -36,6 +39,9 @@ class WriteTxnRequiredError extends IsarError {
 
 /// Database file is incompatible with this version of Isar.
 class VersionError extends IsarError {
+  /// Creates a version error.
+  VersionError();
+
   @override
   String get name => 'VersionError';
 
@@ -47,6 +53,9 @@ class VersionError extends IsarError {
 
 /// The object is too large to be stored in Isar.
 class ObjectLimitReachedError extends IsarError {
+  /// Creates an object limit reached error.
+  ObjectLimitReachedError();
+
   @override
   String get name => 'ObjectLimitReachedError';
 

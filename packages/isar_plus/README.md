@@ -5,7 +5,6 @@
   <h1 align="center">Isar Plus Database</h1>
 </p>
 
-<!-- Version 1.0.3 - Test release for PR-based release notes -->
 
 <p align="center">
   <a href="https://pub.dev/packages/isar_plus">

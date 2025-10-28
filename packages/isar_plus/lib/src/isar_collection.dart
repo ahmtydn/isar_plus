@@ -7,6 +7,10 @@ part of 'package:isar_plus/isar_plus.dart';
 /// by using the generated `isar.yourCollections` getter.
 @pragma('vm:isolate-unsendable')
 abstract class IsarCollection<ID, OBJ> {
+  /// @nodoc
+  @protected
+  IsarCollection();
+
   /// The corresponding Isar instance.
   Isar get isar;
 
