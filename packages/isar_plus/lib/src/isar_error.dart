@@ -30,6 +30,9 @@ class PathError extends IsarError {
 
 /// An active write transaction is required for this operation.
 class WriteTxnRequiredError extends IsarError {
+  /// Creates a write transaction required error.
+  WriteTxnRequiredError();
+
   @override
   String get name => 'WriteTxnRequiredError';
 
