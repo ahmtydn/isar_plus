@@ -53,8 +53,6 @@ abstract final class IsarCore {
 
     final result = initializePlatformBindings(library);
 
-    ///
-    // ignore: invalid_runtime_check_with_js_interop_types
     if (result is Future<IsarCoreBindings>) {
       return result.then((bindings) async {
         b = bindings;
