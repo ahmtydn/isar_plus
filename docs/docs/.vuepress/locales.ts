@@ -1,7 +1,6 @@
 export interface LocalConfig {
   code: string;
   language: string;
-  selectLanguage: string;
   editPage: string;
   lastUpdated: string;
   tip: string;
@@ -34,7 +33,6 @@ export const locales: LocalConfig[] = [
   {
     code: "en",
     language: "English",
-    selectLanguage: "Select Language",
     editPage: "Edit Page",
     lastUpdated: "Last Updated",
     tip: "Tip",
@@ -60,7 +58,6 @@ export const locales: LocalConfig[] = [
   {
     code: "tr",
     language: "Türkçe",
-    selectLanguage: "Dil Seçin",
     editPage: "Sayfayı Düzenle",
     lastUpdated: "Son Güncelleme",
     tip: "İpucu",
@@ -87,7 +84,6 @@ export const locales: LocalConfig[] = [
   {
     code: "de",
     language: "Deutsch",
-    selectLanguage: "Sprache wählen",
     editPage: "Seite bearbeiten",
     lastUpdated: "Zuletzt aktualisiert",
     tip: "Tipp",
@@ -114,7 +110,6 @@ export const locales: LocalConfig[] = [
   {
     code: "ja",
     language: "日本語",
-    selectLanguage: "言語の選択",
     editPage: "編集ページ",
     lastUpdated: "最終更新日",
     tip: "ヒント",
@@ -141,7 +136,6 @@ export const locales: LocalConfig[] = [
   {
     code: "ko",
     language: "한국어",
-    selectLanguage: "언어 선택",
     editPage: "페이지 편집",
     lastUpdated: "마지막 업데이트",
     tip: "팁",
@@ -167,7 +161,6 @@ export const locales: LocalConfig[] = [
   {
     code: "es",
     language: "Español",
-    selectLanguage: "Seleccionar Idioma",
     editPage: "Editar Página",
     lastUpdated: "Última actualización",
     tip: "Consejo",
@@ -194,7 +187,6 @@ export const locales: LocalConfig[] = [
   {
     code: "it",
     language: "Italiano",
-    selectLanguage: "Seleziona Lingua",
     editPage: "Modifica Pagina",
     lastUpdated: "Ultimo aggiornamento",
     tip: "Suggerimento",
@@ -221,7 +213,6 @@ export const locales: LocalConfig[] = [
   {
     code: "pt",
     language: "Português",
-    selectLanguage: "Selecione o idioma",
     editPage: "Editar página",
     lastUpdated: "Ultima atualização",
     tip: "Dica",
@@ -248,7 +239,6 @@ export const locales: LocalConfig[] = [
   {
     code: "ur",
     language: "اردو",
-    selectLanguage: "زبان منتخب کریں",
     editPage: "صفحہ میں ترمیم کریں",
     lastUpdated: "آخری تازہ کاری",
     tip: "ٹپ",
@@ -275,7 +265,6 @@ export const locales: LocalConfig[] = [
   {
     code: "fr",
     language: "Français",
-    selectLanguage: "Sélectionner la langue",
     editPage: "Modifier la page",
     lastUpdated: "Dernière modification",
     tip: "Conseil",
@@ -301,7 +290,6 @@ export const locales: LocalConfig[] = [
   {
     code: "zh",
     language: "简体中文",
-    selectLanguage: "选择语言",
     editPage: "编辑页面",
     lastUpdated: "更新日期",
     tip: "提示",
