@@ -4,11 +4,22 @@ part of 'isar_plus_generator.dart';
 class ObjectInfo {
   /// Creates an [ObjectInfo] instance.
   const ObjectInfo({
+    /// The Dart name of the object.
     required this.dartName,
+
+    /// The Isar name of the object.
     required this.isarName,
+
+    /// The list of properties in the object.
     required this.properties,
+
+    /// The list of indexes on the object.
     this.indexes = const [],
+
+    /// The accessor for embedded objects.
     this.accessor,
+
+    /// The set of embedded Dart names.
     this.embeddedDartNames = const {},
   });
 
@@ -37,11 +48,25 @@ class ObjectInfo {
   PropertyInfo? get idProperty => properties.where((it) => it.isId).firstOrNull;
 }
 
-enum DeserializeMode { none, assign, positionalParam, namedParam }
+/// @nodoc
+enum DeserializeMode {
+  /// @nodoc
+  none,
 
-/// Represents information about a property in an Isar object for code
-/// generation.
+  /// @nodoc
+  assign,
+
+  /// Positional parameter.
+  positionalParam,
+
+  /// @nodoc
+  namedParam,
+}
+
+/// Represents information about a property in an
+/// Isar object for code generation.
 class PropertyInfo {
+  /// @nodoc
   PropertyInfo({
     /// The index of the property.
     required this.index,
@@ -212,6 +237,7 @@ class PropertyInfo {
 
 /// Represents information about an index in an Isar object for code generation.
 class IndexInfo {
+  /// @nodoc
   IndexInfo({
     /// The name of the index.
     required this.name,

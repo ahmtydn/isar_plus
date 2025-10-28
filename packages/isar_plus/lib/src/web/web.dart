@@ -107,11 +107,18 @@ Future<void> _verifyWasmBindgenLoaded(
   );
 }
 
+/// Type alias for Isar core bindings on the web platform.
 typedef IsarCoreBindings = JSIsar;
 
+/// Annotation for methods that should be inlined by dart2js compiler.
 const tryInline = pragma('dart2js:tryInline');
 
+/// A receive port implementation for web platform.
+///
+/// This is a stub implementation that throws [UnimplementedError] for web,
+/// as isolates are not fully supported in web environments.
 class ReceivePort extends Stream<dynamic> {
+  /// The send port associated with this receive port.
   final sendPort = SendPort();
 
   @override
@@ -124,19 +131,39 @@ class ReceivePort extends Stream<dynamic> {
     throw UnimplementedError();
   }
 
+  /// Closes this receive port.
+  ///
+  /// Throws [UnimplementedError] on web platform.
   void close() {
     throw UnimplementedError();
   }
 }
 
+/// A send port implementation for web platform.
+///
+/// This is a stub implementation that throws [UnimplementedError] for web,
+/// as isolates are not fully supported in web environments.
 class SendPort {
+  /// Returns the native port handle.
+  ///
+  /// Always returns 0 on web platform.
   int get nativePort => 0;
 
+  /// Sends a message through this send port.
+  ///
+  /// Throws [UnimplementedError] on web platform.
   void send(dynamic message) {
     throw UnimplementedError();
   }
 }
 
+/// Computes a fast hash for the given string using FNV-1a algorithm variant.
+///
+/// This is optimized for web platform and provides consistent hash values
+/// for string inputs. The algorithm uses multiple accumulators to compute
+/// a 64-bit hash value.
+///
+/// Returns a 64-bit integer hash of the input string.
 int platformFastHash(String str) {
   var i = 0;
   var t0 = 0;
@@ -170,6 +197,13 @@ int platformFastHash(String str) {
       (v0 ^ (v3 >> 4));
 }
 
+/// Runs a computation in an isolate-like manner on web platform.
+///
+/// On web, this simply executes the [computation] directly in the current
+/// context since true isolates are not available. The [debugName] parameter
+/// is provided for compatibility but is not used on web.
+///
+/// Returns the result of the [computation].
 @tryInline
 Future<T> runIsolate<T>(
   String debugName,

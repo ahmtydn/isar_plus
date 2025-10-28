@@ -1,13 +1,7 @@
 part of 'package:isar_plus/isar_plus.dart';
 
 abstract class _IsarConnect {
-  static final _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      errorMethodCount: 0,
-      printEmojis: false,
-    ),
-  );
+  static final _logger = Logger('Isar Plus');
 
   static const Map<
     ConnectAction,
@@ -95,7 +89,7 @@ abstract class _IsarConnect {
       ╟${line('', '─')}╢
       ║$url║
       ╚${line('', '═')}╝''';
-        _logger.w(message);
+        _logger.warning(message);
       }),
     );
   }

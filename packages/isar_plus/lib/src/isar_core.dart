@@ -2,6 +2,7 @@ part of 'package:isar_plus/isar_plus.dart';
 
 /// @nodoc
 abstract final class IsarCore {
+  /// Whether the code is running on the web platform.
   static const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
 
   static var _initialized = false;
@@ -9,18 +10,30 @@ abstract final class IsarCore {
   static var _webPersistenceReady = false;
   static Future<void>? _webPersistencePending;
 
+  /// The Isar core bindings.
   static late final IsarCoreBindings b;
 
+  /// Pointer to a pointer for native operations.
   static Pointer<Pointer<NativeType>> ptrPtr = malloc<Pointer<NativeType>>();
+
+  /// Pointer to a uint32 for count operations.
   static Pointer<Uint32> countPtr = malloc<Uint32>();
+
+  /// Pointer to a bool for boolean operations.
   static Pointer<Bool> boolPtr = malloc<Bool>();
 
+  /// Pointer to a pointer to uint8 for string operations.
   static final Pointer<Pointer<Uint8>> stringPtrPtr =
       ptrPtr.cast<Pointer<Uint8>>();
+
+  /// Gets the string pointer value.
   static Pointer<Uint8> get stringPtr => stringPtrPtr.ptrValue;
 
+  /// Pointer to a pointer to CIsarReader for reader operations.
   static final Pointer<Pointer<CIsarReader>> readerPtrPtr =
       ptrPtr.cast<Pointer<CIsarReader>>();
+
+  /// Gets the reader pointer value.
   static Pointer<CIsarReader> get readerPtr => readerPtrPtr.ptrValue;
 
   static Pointer<Uint16> _nativeStringPtr = nullptr;
@@ -88,46 +101,55 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Reads an ID value from the reader.
   static int readId(Pointer<CIsarReader> reader) {
     return b.isar_read_id(reader);
   }
 
   @tryInline
+  /// Reads a null check from the reader at the given index.
   static bool readNull(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_null(reader, index) != 0;
   }
 
   @tryInline
+  /// Reads a boolean value from the reader at the given index.
   static bool readBool(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_bool(reader, index) != 0;
   }
 
   @tryInline
+  /// Reads a byte value from the reader at the given index.
   static int readByte(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_byte(reader, index);
   }
 
   @tryInline
+  /// Reads an integer value from the reader at the given index.
   static int readInt(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_int(reader, index);
   }
 
   @tryInline
+  /// Reads a float value from the reader at the given index.
   static double readFloat(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_float(reader, index);
   }
 
   @tryInline
+  /// Reads a long value from the reader at the given index.
   static int readLong(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_long(reader, index);
   }
 
   @tryInline
+  /// Reads a double value from the reader at the given index.
   static double readDouble(Pointer<CIsarReader> reader, int index) {
     return b.isar_read_double(reader, index);
   }
 
   @tryInline
+  /// Reads a string value from the reader at the given index.
   static String? readString(Pointer<CIsarReader> reader, int index) {
     final length = b.isar_read_string(reader, index, stringPtrPtr, boolPtr);
     if (stringPtr.isNull) {
@@ -143,6 +165,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Reads an object from the reader at the given index.
   static Pointer<CIsarReader> readObject(
     Pointer<CIsarReader> reader,
     int index,
@@ -151,6 +174,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Reads a list from the reader at the given index.
   static int readList(
     Pointer<CIsarReader> reader,
     int index,
@@ -160,16 +184,19 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Frees the reader.
   static void freeReader(Pointer<CIsarReader> reader) {
     b.isar_read_free(reader);
   }
 
   @tryInline
+  /// Writes a null value to the writer at the given index.
   static void writeNull(Pointer<CIsarWriter> writer, int index) {
     b.isar_write_null(writer, index);
   }
 
   @tryInline
+  /// Writes a boolean value to the writer at the given index.
   static void writeBool(
     Pointer<CIsarWriter> writer,
     int index, {
@@ -179,26 +206,31 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Writes a byte value to the writer at the given index.
   static void writeByte(Pointer<CIsarWriter> writer, int index, int value) {
     b.isar_write_byte(writer, index, value);
   }
 
   @tryInline
+  /// Writes an integer value to the writer at the given index.
   static void writeInt(Pointer<CIsarWriter> writer, int index, int value) {
     b.isar_write_int(writer, index, value);
   }
 
   @tryInline
+  /// Writes a float value to the writer at the given index.
   static void writeFloat(Pointer<CIsarWriter> writer, int index, double value) {
     b.isar_write_float(writer, index, value);
   }
 
   @tryInline
+  /// Writes a long value to the writer at the given index.
   static void writeLong(Pointer<CIsarWriter> writer, int index, int value) {
     b.isar_write_long(writer, index, value);
   }
 
   @tryInline
+  /// Writes a double value to the writer at the given index.
   static void writeDouble(
     Pointer<CIsarWriter> writer,
     int index,
@@ -208,6 +240,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Writes a string value to the writer at the given index.
   static void writeString(
     Pointer<CIsarWriter> writer,
     int index,
@@ -218,6 +251,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Begins writing an object to the writer at the given index.
   static Pointer<CIsarWriter> beginObject(
     Pointer<CIsarWriter> writer,
     int index,
@@ -226,6 +260,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Ends writing an object to the writer.
   static void endObject(
     Pointer<CIsarWriter> writer,
     Pointer<CIsarWriter> objectWriter,
@@ -286,6 +321,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Begins writing a list to the writer at the given index.
   static Pointer<CIsarWriter> beginList(
     Pointer<CIsarWriter> writer,
     int index,
@@ -295,6 +331,7 @@ abstract final class IsarCore {
   }
 
   @tryInline
+  /// Ends writing a list to the writer.
   static void endList(
     Pointer<CIsarWriter> writer,
     Pointer<CIsarWriter> listWriter,
@@ -306,5 +343,6 @@ abstract final class IsarCore {
 /// @nodoc
 extension PointerX on Pointer<void> {
   @tryInline
+  /// Returns true if the pointer is null.
   bool get isNull => address == 0;
 }

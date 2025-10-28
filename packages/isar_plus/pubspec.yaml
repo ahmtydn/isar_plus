@@ -21,8 +21,8 @@ dependencies:
   analyzer: ^8.4.0
   build: ^4.0.0
   ffi: ^2.1.4
-  logger: ^2.6.2
-  meta: ^1.17.0
+  logging: ^1.3.0
+  meta: ^1.16.0
   source_gen: ^4.0.2
   web: ^1.1.0
 

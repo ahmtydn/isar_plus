@@ -2,13 +2,28 @@ import 'package:isar_plus/isar_plus.dart';
 
 /// Actions for Isar Connect communication.
 enum ConnectAction {
+  /// List all instances.
   listInstances('ext.isar.listInstances'),
+
+  /// Get schemas.
   getSchemas('ext.isar.getSchemas'),
+
+  /// Watch an instance.
   watchInstance('ext.isar.watchInstance'),
+
+  /// Execute a query.
   executeQuery('ext.isar.executeQuery'),
+
+  /// Delete a query.
   deleteQuery('ext.isar.deleteQuery'),
+
+  /// Import JSON.
   importJson('ext.isar.importJson'),
+
+  /// Export JSON.
   exportJson('ext.isar.exportJson'),
+
+  /// Edit a property.
   editProperty('ext.isar.editProperty');
 
   const ConnectAction(this.method);
@@ -19,8 +34,13 @@ enum ConnectAction {
 
 /// Events for Isar Connect communication.
 enum ConnectEvent {
+  /// Instances changed.
   instancesChanged('isar.instancesChanged'),
+
+  /// Query changed.
   queryChanged('isar.queryChanged'),
+
+  /// Collection info changed.
   collectionInfoChanged('isar.collectionInfoChanged');
 
   const ConnectEvent(this.event);
@@ -31,8 +51,10 @@ enum ConnectEvent {
 
 /// Payload for connect instance.
 class ConnectInstancePayload {
+  /// Creates a [ConnectInstancePayload].
   ConnectInstancePayload(this.instance);
 
+  /// Creates a [ConnectInstancePayload] from JSON.
   factory ConnectInstancePayload.fromJson(Map<String, dynamic> json) {
     return ConnectInstancePayload(json['instance'] as String);
   }
@@ -40,31 +62,40 @@ class ConnectInstancePayload {
   /// The instance name.
   final String instance;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {'instance': instance};
   }
 }
 
 /// Payload for connect instance names.
+/// Payload for connect instance names.
 class ConnectInstanceNamesPayload {
+  /// Creates a [ConnectInstanceNamesPayload].
   ConnectInstanceNamesPayload(this.instances);
 
+  /// Creates a [ConnectInstanceNamesPayload] from JSON.
   factory ConnectInstanceNamesPayload.fromJson(Map<String, dynamic> json) {
     return ConnectInstanceNamesPayload(
       (json['instances'] as List).cast<String>(),
     );
   }
 
+  /// The list of instance names.
   final List<String> instances;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {'instances': instances};
   }
 }
 
+/// Payload for schemas.
 class ConnectSchemasPayload {
+  /// Creates a [ConnectSchemasPayload].
   ConnectSchemasPayload(this.schemas);
 
+  /// Creates a [ConnectSchemasPayload] from JSON.
   factory ConnectSchemasPayload.fromJson(Map<String, dynamic> json) {
     return ConnectSchemasPayload(
       (json['schemas'] as List)
@@ -76,12 +107,15 @@ class ConnectSchemasPayload {
   /// The list of schemas.
   final List<IsarSchema> schemas;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {'schemas': schemas.map((e) => e.toJson()).toList()};
   }
 }
 
+/// Payload for executing a query.
 class ConnectQueryPayload {
+  /// Creates a [ConnectQueryPayload].
   ConnectQueryPayload({
     required this.instance,
     required this.collection,
@@ -92,6 +126,7 @@ class ConnectQueryPayload {
     this.sortAsc = true,
   });
 
+  /// Creates a [ConnectQueryPayload] from JSON.
   factory ConnectQueryPayload.fromJson(Map<String, dynamic> json) {
     return ConnectQueryPayload(
       instance: json['instance'] as String,
@@ -128,6 +163,7 @@ class ConnectQueryPayload {
   /// Whether to sort ascending.
   final bool sortAsc;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {
       'instance': instance,
@@ -140,6 +176,7 @@ class ConnectQueryPayload {
     };
   }
 
+  /// Converts a JSON map to a Filter.
   static Filter _filterFromJson(Map<String, dynamic> json) {
     final property = json['property'] as int?;
     final value = json['value'] ?? json['wildcard'];
@@ -191,6 +228,7 @@ class ConnectQueryPayload {
     }
   }
 
+  /// Converts a Filter to a JSON map.
   static Map<String, dynamic> _filterToJson(Filter filter) {
     switch (filter) {
       case EqualCondition(:final property, :final value):
@@ -235,6 +273,7 @@ class ConnectQueryPayload {
     }
   }
 
+  /// Converts this payload to an Isar query.
   IsarQuery<dynamic> toQuery(Isar isar) {
     final colIndex = isar.schemas.indexWhere((e) => e.name == this.collection);
     final collection = isar.collectionByIndex<dynamic, dynamic>(colIndex);
@@ -251,7 +290,9 @@ class ConnectQueryPayload {
   }
 }
 
+/// Payload for editing a property.
 class ConnectEditPayload {
+  /// Creates a [ConnectEditPayload].
   ConnectEditPayload({
     required this.instance,
     required this.collection,
@@ -260,6 +301,7 @@ class ConnectEditPayload {
     required this.value,
   });
 
+  /// Creates a [ConnectEditPayload] from JSON.
   factory ConnectEditPayload.fromJson(Map<String, dynamic> json) {
     return ConnectEditPayload(
       instance: json['instance'] as String,
@@ -270,12 +312,22 @@ class ConnectEditPayload {
     );
   }
 
+  /// The instance name.
   final String instance;
+
+  /// The collection name.
   final String collection;
+
+  /// The object ID.
   final dynamic id;
+
+  /// The property path.
   final String path;
+
+  /// The new value.
   final dynamic value;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {
       'instance': instance,
@@ -287,7 +339,9 @@ class ConnectEditPayload {
   }
 }
 
+/// Payload for collection info.
 class ConnectCollectionInfoPayload {
+  /// Creates a [ConnectCollectionInfoPayload].
   ConnectCollectionInfoPayload({
     required this.instance,
     required this.collection,
@@ -295,6 +349,7 @@ class ConnectCollectionInfoPayload {
     required this.count,
   });
 
+  /// Creates a [ConnectCollectionInfoPayload] from JSON.
   factory ConnectCollectionInfoPayload.fromJson(Map<String, dynamic> json) {
     return ConnectCollectionInfoPayload(
       instance: json['instance'] as String,
@@ -303,11 +358,20 @@ class ConnectCollectionInfoPayload {
       count: json['count'] as int,
     );
   }
+
+  /// The instance name.
   final String instance;
+
+  /// The collection name.
   final String collection;
+
+  /// The size in bytes.
   final int size;
+
+  /// The number of objects.
   final int count;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {
       'instance': instance,
@@ -318,7 +382,9 @@ class ConnectCollectionInfoPayload {
   }
 }
 
+/// Payload for objects.
 class ConnectObjectsPayload {
+  /// Creates a [ConnectObjectsPayload].
   ConnectObjectsPayload({
     required this.instance,
     required this.collection,
@@ -326,6 +392,7 @@ class ConnectObjectsPayload {
     int? count,
   }) : count = count ?? objects.length;
 
+  /// Creates a [ConnectObjectsPayload] from JSON.
   factory ConnectObjectsPayload.fromJson(Map<String, dynamic> json) {
     return ConnectObjectsPayload(
       instance: json['instance'] as String,
@@ -335,11 +402,19 @@ class ConnectObjectsPayload {
     );
   }
 
+  /// The instance name.
   final String instance;
+
+  /// The collection name.
   final String collection;
+
+  /// The list of objects.
   final List<Map<String, dynamic>> objects;
+
+  /// The total count.
   final int count;
 
+  /// Converts this payload to JSON.
   Map<String, dynamic> toJson() {
     return {
       'instance': instance,
