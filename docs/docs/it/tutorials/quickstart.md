@@ -71,13 +71,13 @@ Tutte le operazioni CRUD di base sono disponibili tramite "IsarCollection".
 ```dart
 final newUser = User()..name = 'Jane Doe'..age = 36;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.put(newUser); // insert & update
 });
 
 final existingUser = await isar.users.get(newUser.id); // get
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.delete(existingUser.id!); // delete
 });
 ```

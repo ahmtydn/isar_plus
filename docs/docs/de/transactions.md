@@ -16,8 +16,8 @@ Transaktionen können entweder synchron oder asynchron sein. In synchronen Trans
 
 |           | Lesen        | Lesen & Schreiben |
 | --------- | ------------ | ----------------- |
-| Synchron  | `.txnSync()` | `.writeTxnSync()` |
-| Asynchron | `.txn()`     | `.writeTxn()`     |
+| Synchron  | `.read()` | `.write()` |
+| Asynchron | `.readAsync()`     | `.writeAsync()`     |
 
 ### Lese-Transaktionen
 
@@ -46,7 +46,7 @@ class Contact {
 }
 
 // GUT
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   for (var contact in getContacts()) {
     await isar.contacts.put(contact);
   }
@@ -54,7 +54,7 @@ await isar.writeTxn(() async {
 
 // SCHLECHT: Bewege die Schleife in die Transaktion
 for (var contact in getContacts()) {
-  await isar.writeTxn(() async {
+  await isar.writeAsync((isar) async {
     await isar.contacts.put(contact);
   });
 }

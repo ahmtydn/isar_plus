@@ -49,7 +49,7 @@ final linda = Student()
   ..name = 'Linda'
   ..teacher.value = mathTeacher;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.students.put(linda);
   await isar.teachers.put(mathTeacher);
   await linda.teachers.save();
@@ -64,7 +64,7 @@ final linda = await isar.students.where().nameEqualTo('Linda').findFirst();
 final teacher = linda.teacher.value; // > Teacher(subject: 'Math')
 ```
 
-동기 코드로 똑같이 해보겠습니다. `.putSync()` 는 모든 링크를 자동으로 저장하므로 수동으로 링크를 저장할 필요가 없습니다. 심지어 우리를 위해서 선생님을 만듭니다.
+동기 코드로 똑같이 해보겠습니다. `.put()` 는 모든 링크를 자동으로 저장하므로 수동으로 링크를 저장할 필요가 없습니다. 심지어 우리를 위해서 선생님을 만듭니다.
 
 ```dart
 final englishTeacher = Teacher()..subject = 'English';
@@ -73,8 +73,8 @@ final david = Student()
   ..name = 'David'
   ..teacher.value = englishTeacher;
 
-isar.writeTxnSync(() {
-  isar.students.putSync(david);
+isar.write((isar) {
+  isar.students.put(david);
 });
 ```
 
@@ -113,7 +113,7 @@ print(linda.teachers); // {Teacher('Math')}
 
 linda.teachers.add(biologyTeacher);
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await linda.teachers.save();
 });
 

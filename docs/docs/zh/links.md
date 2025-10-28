@@ -49,7 +49,7 @@ final linda = Student()
   ..name = 'Linda'
   ..teacher.value = mathTeacher;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.students.put(linda);
   await isar.teachers.put(mathTeacher);
   await linda.teacher.save();
@@ -64,7 +64,7 @@ final linda = await isar.students.where().nameEqualTo('Linda').findFirst();
 final teacher = linda.teacher.value; // > Teacher(subject: 'Math')
 ```
 
-让我们用同步方法复现一次。我们不需要手动保存关联，因为 `.putSync()` 方法自动会存储所有关联，它甚至帮我们写入了被关联教师的数据。
+让我们用同步方法复现一次。我们不需要手动保存关联，因为 `.put()` 方法自动会存储所有关联，它甚至帮我们写入了被关联教师的数据。
 
 ```dart
 final englishTeacher = Teacher()..subject = 'English';
@@ -73,8 +73,8 @@ final david = Student()
   ..name = 'David'
   ..teacher.value = englishTeacher;
 
-isar.writeTxnSync(() {
-  isar.students.putSync(david);
+isar.write((isar) {
+  isar.students.put(david);
 });
 ```
 
@@ -113,7 +113,7 @@ print(linda.teachers); // {Teacher('Math')}
 
 linda.teachers.add(biologyTeacher);
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await linda.teachers.save();
 });
 

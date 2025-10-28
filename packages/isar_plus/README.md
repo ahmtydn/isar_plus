@@ -46,8 +46,8 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  isar_plus: ^4.0.0
-  isar_plus_flutter_libs: ^4.0.0 # contains Isar Plus Core
+  isar_plus: latest
+  isar_plus_flutter_libs: latest
 
 dev_dependencies:
   build_runner: any

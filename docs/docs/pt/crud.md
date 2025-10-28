@@ -114,7 +114,7 @@ final favouires = await isar.recipes.filter()
 Finalmente chegou a hora de modificar nossa coleção! Para criar, atualizar ou excluir objetos, use as respectivas operações envolvidas em uma transação de gravação:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final recipe = await isar.recipes.get(123)
 
   recipe.isFavorite = false;
@@ -138,7 +138,7 @@ final pancakes = Recipe()
   ..lastCooked = DateTime.now()
   ..isFavorite = true;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.put(pancakes);
 })
 ```
@@ -148,7 +148,7 @@ Isar atribuirá automaticamente o id ao objeto se o campo `id` não for final.
 Inserir vários objetos de uma só vez é extremamente fácil:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.putAll([pancakes, pizza]);
 })
 ```
@@ -160,7 +160,7 @@ Tanto a criação quanto a atualização funcionam com `collection.put(object)`.
 Então, se quisermos desfavoritar nossas panquecas, podemos fazer o seguinte:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   pancakes.isFavorite = false;
   await isar.recipes.put(recipe);
 });
@@ -171,7 +171,7 @@ await isar.writeTxn(() async {
 Quer se livrar de um objeto em Isar? Use `collection.delete(id)`. O método delete retorna se um objeto com o id especificado foi encontrado e excluído. Se você quiser excluir o objeto com id `123`, por exemplo, você pode fazer:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final success = await isar.recipes.delete(123);
   print('Receita apagada: $success');
 });
@@ -180,7 +180,7 @@ await isar.writeTxn(() async {
 Da mesma forma para obter e colocar, também há uma operação de exclusão em massa que retorna o número de objetos excluídos:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.deleteAll([1, 2, 3]);
   print('Apagamos $count receitas');
 });
@@ -189,7 +189,7 @@ await isar.writeTxn(() async {
 Se você não souber os ids dos objetos que deseja excluir, poderá usar uma consulta:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.filter()
     .isFavoriteEqualTo(false)
     .deleteAll();

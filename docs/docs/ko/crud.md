@@ -115,7 +115,7 @@ final favouires = await isar.recipes.filter()
 드디어 컬렉션을 수정할 때가 됐습니다! 객체를 생성, 갱신, 삭제하려면 쓰기 트랜잭션 안에서 각각의 작업들을 수행하세요.
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final recipe = await isar.recipes.get(123)
 
   recipe.isFavorite = false;
@@ -139,7 +139,7 @@ final pancakes = Recipe()
   ..lastCooked = DateTime.now()
   ..isFavorite = true;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.put(pancakes);
 })
 ```
@@ -149,7 +149,7 @@ await isar.writeTxn(() async {
 여러 객체를 한 번에 삽입하는 것도 쉽습니다:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.putAll([pancakes, pizza]);
 })
 ```
@@ -161,7 +161,7 @@ await isar.writeTxn(() async {
 만약 팬케익에 즐겨찾기를 해제하는 경우, 이렇게 할 수 있습니다.
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   pancakes.isFavorite = false;
   await isar.recipes.put(pancakes);
 });
@@ -172,7 +172,7 @@ await isar.writeTxn(() async {
 Isar 에 있는 것을 없애고 싶나요? `collection.delete(id)` 를 사용하세요. delete 메소드는 주어진 id 를 가진 객체를 찾아서 삭제합니다. id `123` 을 가지는 객체를 삭제하는 예시 입니다:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final success = await isar.recipes.delete(123);
   print('Recipe deleted: $success');
 });
@@ -181,7 +181,7 @@ await isar.writeTxn(() async {
 get 과 put 과 마찬가지로 delete 에도 여러개를 한꺼번에 삭제하는 방법이 있습니다. 삭제된 객체의 수를 반환합니다.
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.deleteAll([1, 2, 3]);
   print('We deleted $count recipes');
 });
@@ -190,7 +190,7 @@ await isar.writeTxn(() async {
 만약 삭제할 객체의 id 를 모른다면 query 를 사용할 수 있습니다.
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.filter()
     .isFavoriteEqualTo(false)
     .deleteAll();

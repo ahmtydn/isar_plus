@@ -71,13 +71,13 @@ final isar = await Isar.open(
 ```dart
 final newUser = User()..name = 'Jane Doe'..age = 36;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.put(newUser); // 将新用户数据写入到 Isar
 });
 
 final existingUser = await isar.users.get(newUser.id); // 通过 Id 读取用户数据
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.delete(existingUser.id!); // 通过 Id 删除指定用户
 });
 ```

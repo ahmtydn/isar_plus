@@ -72,13 +72,13 @@ Isarインスタンスを開いたら, コレクションを利用すること�
 ```dart
 final newUser = User()..name = 'Jane Doe'..age = 36;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.put(newUser); // 挿入と更新
 });
 
 final existingUser = await isar.users.get(newUser.id); // 取得
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.users.delete(existingUser.id!); // 削除
 });
 ```
