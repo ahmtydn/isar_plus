@@ -12,13 +12,13 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.cargo/bin/wasm-bindgen
-        key: ${{ runner.os }}-wasm-bindgen-0.2.104
+        key: ${{ runner.os }}-wasm-bindgen-0.2.105
     
     - name: Install wasm-bindgen-cli
       shell: bash
       run: |
         if ! command -v wasm-bindgen &> /dev/null; then
-          cargo install wasm-bindgen-cli --version 0.2.104
+          cargo install wasm-bindgen-cli --version 0.2.105
         else
           echo "wasm-bindgen already installed"
         fi
