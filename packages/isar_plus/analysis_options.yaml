@@ -4,5 +4,3 @@ analyzer:
   exclude:
     - "lib/src/native/bindings.dart"
 
-  errors:
-    public_member_api_docs: ignore
