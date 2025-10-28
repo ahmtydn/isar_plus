@@ -45,12 +45,12 @@ void main() {
       isar.read((isar) {
         expect(() => isar.readAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.readAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.readAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
         expect(() => isar.writeAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.writeAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.writeAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
       });
@@ -58,12 +58,12 @@ void main() {
       isar.write((isar) {
         expect(() => isar.readAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.readAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.readAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
         expect(() => isar.writeAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.writeAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.writeAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
       });
