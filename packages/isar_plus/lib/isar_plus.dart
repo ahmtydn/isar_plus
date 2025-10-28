@@ -1,8 +1,3 @@
-/// Fast, easy to use, and fully async NoSQL database for Flutter and Dart.
-///
-/// Isar Plus is a high-performance embedded database that offers rich
-/// features like transactions, queries, watchers, and synchronous/asynchronous
-/// operations out of the box.
 library;
 
 import 'dart:async';
@@ -11,9 +6,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:isar_plus/src/isar_connect_api.dart';
-import 'package:isar_plus/src/web/web.dart'
-    if (dart.library.io) 'src/native/native.dart';
-import 'package:logging/logging.dart';
+import 'package:isar_plus/src/native/native.dart'
+    if (dart.library.js) 'src/web/web.dart';
+import 'package:logger/web.dart';
 import 'package:meta/meta.dart';
 import 'package:meta/meta_meta.dart';
 

@@ -8,10 +8,7 @@ part 'main.g.dart';
 /// Metadata for a counter step, stored as an embedded object.
 @embedded
 class StepMetadata {
-  const StepMetadata({
-    required this.recordedAt,
-    this.note = '',
-  });
+  const StepMetadata({required this.recordedAt, this.note = ''});
 
   final DateTime recordedAt;
   final String note;
@@ -20,11 +17,7 @@ class StepMetadata {
 /// Represents a single counter increment with metadata.
 @collection
 class Count {
-  Count({
-    required this.id,
-    required this.step,
-    required this.metadata,
-  });
+  Count({required this.id, required this.step, required this.metadata});
 
   final int id;
   final int step;
@@ -98,6 +91,18 @@ class _CounterScreenState extends State<CounterScreen> {
     }
   }
 
+  int _getCurrentCount() {
+    final isar = _isar;
+    if (isar == null) return 0;
+    return isar.counts.where().stepProperty().sum();
+  }
+
+  Count? _getLatestCount() {
+    final isar = _isar;
+    if (isar == null) return null;
+    return isar.counts.where().sortByIdDesc().findFirst();
+  }
+
   Future<void> _incrementCounter() async {
     final isar = _isar;
     if (isar == null) return;
@@ -122,9 +127,9 @@ class _CounterScreenState extends State<CounterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving count: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving count: $e')));
       }
     }
   }
@@ -146,8 +151,8 @@ class _CounterScreenState extends State<CounterScreen> {
             child: Text(
               _errorMessage!,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -158,68 +163,61 @@ class _CounterScreenState extends State<CounterScreen> {
     if (_isar == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Isar Counter')),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
+
+    final count = _getCurrentCount();
+    final latest = _getLatestCount();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Isar Counter'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: StreamBuilder<void>(
-        stream: _isar!.counts.watchLazy(),
-        builder: (context, snapshot) {
-          final count = _isar!.counts.where().stepProperty().sum();
-          final latest = _isar!.counts.where().sortByIdDesc().findFirst();
-
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'You have pushed the button this many times:',
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '$count',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                  if (latest != null) ...[
-                    const SizedBox(height: 24),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Last Recorded',
-                              style: Theme.of(context).textTheme.labelMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _formatDateTime(latest.metadata.recordedAt),
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'You have pushed the button this many times:',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
               ),
-            ),
-          );
-        },
+              const SizedBox(height: 16),
+              Text(
+                '$count',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              if (latest != null) ...[
+                const SizedBox(height: 24),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Last Recorded',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatDateTime(latest.metadata.recordedAt),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
