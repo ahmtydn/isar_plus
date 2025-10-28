@@ -5,19 +5,11 @@
   <h1 align="center">Isar Plus Database</h1>
 </p>
 
-
-<p align="center" style="background: transparent;">
-  <a href="https://pub.dev/packages/isar_plus" style="background: transparent; text-decoration: none;">
-    <img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart">
-  </a>
-  <a href="https://pub.dev/packages/isar_plus/score" style="background: transparent; text-decoration: none;">
-    <img src="https://img.shields.io/pub/points/isar_plus?label=score&labelColor=333940&logo=dart">
-  </a>
-  <a href="https://github.com/ahmtydn/isar_plus" style="background: transparent; text-decoration: none;">
-    <img src="https://img.shields.io/github/stars/ahmtydn/isar_plus?style=social">
-  </a>
+<p align="center">
+  <a href="https://pub.dev/packages/isar_plus"><img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart"></a>
+  <a href="https://pub.dev/packages/isar_plus/score"><img src="https://img.shields.io/pub/points/isar_plus?label=score&labelColor=333940&logo=dart"></a>
+  <a href="https://github.com/ahmtydn/isar_plus"><img src="https://img.shields.io/github/stars/ahmtydn/isar_plus?style=social"></a>
 </p>
-
 
 ## About Isar Plus
 
