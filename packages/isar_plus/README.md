@@ -105,6 +105,77 @@ Join the [Telegram group](https://t.me/isarplus) for discussion and sneak peeks 
 
 If you want to say thank you, star us on GitHub and like us on pub.dev 🙌💙
 
+## API Migration Guide
+
+Isar Plus v4 introduces a new transaction API that's more intuitive and consistent. Here's what you need to know:
+
+### Transaction API Changes
+
+| **Isar v3**      | **Isar Plus v4**     | **Description**                          |
+|------------------|----------------------|------------------------------------------|
+| `writeTxn()`     | `writeAsync()`       | Asynchronous write transaction           |
+| `writeTxnSync()` | `write()`            | Synchronous write transaction            |
+| `txn()`          | `readAsync()`        | Asynchronous read transaction            |
+| `txnSync()`      | `read()`             | Synchronous read transaction             |
+
+### Example: Write Operations
+
+**Old API (v3):**
+```dart
+await isar.writeTxn(() async {
+  await isar.users.put(user);
+});
+```
+
+**New API (v4):**
+```dart
+await isar.writeAsync((isar) async {
+  await isar.users.put(user);
+});
+```
+
+### Example: Read Operations
+
+**Old API (v3):**
+```dart
+final user = await isar.txn(() async {
+  return await isar.users.get(1);
+});
+```
+
+**New API (v4):**
+```dart
+final user = await isar.readAsync((isar) async {
+  return await isar.users.get(1);
+});
+```
+
+### Example: Synchronous Operations
+
+**Old API (v3):**
+```dart
+isar.writeTxnSync(() {
+  isar.users.putSync(user);
+});
+```
+
+**New API (v4):**
+```dart
+isar.write((isar) {
+  isar.users.put(user);
+});
+```
+
+### Other Notable Changes
+
+- **ID Requirements**: IDs must be named `id` or annotated with `@id`
+- **Auto-increment IDs**: Use `Isar.autoIncrement` instead of `null` for auto-generated IDs
+- **Enums**: Use `@enumValue` annotation instead of `@enumerated`
+- **Embedded Objects**: Replace Isar links with embedded objects using `@embedded`
+- **Minimum Android SDK**: Now requires Android SDK 23+
+
+For more details, see the [CHANGELOG.md](packages/isar_plus/CHANGELOG.md).
+
 ## Quickstart
 
 Holy smokes you're here! Let's get started on using the coolest Flutter database out there...
@@ -113,8 +184,8 @@ Holy smokes you're here! Let's get started on using the coolest Flutter database
 
 ```yaml
 dependencies:
-  isar_plus: 4.0.0
-  isar_plus_flutter_libs: 4.0.0 # contains Isar Plus Core
+  isar_plus: latest
+  isar_plus_flutter_libs: latest
 
 dev_dependencies:
   build_runner: any
@@ -193,13 +264,13 @@ All basic crud operations are available via the `IsarCollection`.
 ```dart
 final newEmail = Email()..title = 'Amazing new database';
 
-await isar.writeAsync(() {
+await isar.writeAsync((isar) {
   isar.emails.put(newEmail); // insert & update
 });
 
 final existingEmail = isar.emails.get(newEmail.id!); // get
 
-await isar.writeAsync(() {
+await isar.writeAsync((isar) {
   isar.emails.delete(existingEmail.id!); // delete
 });
 ```
@@ -302,29 +373,3 @@ Big thanks go to these wonderful people:
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-### License
-
-```
-## 📝 Changelog
-
-Isar Plus uses automated changelog generation powered by GitHub's release notes feature. Release notes are automatically categorized based on pull request labels and synchronized with local CHANGELOG files.
-
-For more information about our release process, see [Automatic Changelog Documentation](.github/AUTOMATIC_CHANGELOG.md).
-
-## License
-
-Copyright 2023 Simon Choi
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
