@@ -1,4 +1,16 @@
+## 1.1.3
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.3 -->
+
+## What's Changed
+### Other Changes
+* Update README and documentation to use v4 API  by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/49
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.2...1.1.3
+
 ## 1.1.2
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.2 -->
 
