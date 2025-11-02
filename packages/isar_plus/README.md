@@ -9,8 +9,11 @@
   <a href="https://pub.dev/packages/isar_plus"><img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart"></a>
   <a href="https://pub.dev/packages/isar_plus/score"><img src="https://img.shields.io/pub/points/isar_plus?label=score&labelColor=333940&logo=dart"></a>
   <a href="https://github.com/ahmtydn/isar_plus"><img src="https://img.shields.io/github/stars/ahmtydn/isar_plus?style=social"></a>
+</p>
+
+<p align="center">
   <a href="https://buymeacoffee.com/ahmtydn">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" style="display: block; margin: 0 auto; padding: 0;">
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee">
   </a>
 </p>
 
