@@ -17,6 +17,17 @@
   </a>
 </p>
 
+---
+
+## 🎉 Production-Ready for Flutter Apps!
+
+**Isar Plus v4 is now stable and ready for production use!** Deploy with confidence on iOS, Android, macOS, Windows, and Linux. Web support is functional for basic use cases and actively improving.
+
+✅ **Native Platforms:** Fully production-ready with comprehensive testing  
+✅ **Core Features:** CRUD, queries, indexes, transactions, encryption, watchers  
+⚠️ **Web Platform:** Functional for basic operations, OPFS optimization ongoing  
+---
+
 ## About Isar Plus
 
 Isar Plus is an enhanced fork of the original [Isar database](https://github.com/isar/isar) created by Simon Choi. This project builds upon the solid foundation of the original Isar, adding new features, improvements, and ongoing maintenance.
