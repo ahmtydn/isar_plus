@@ -19,13 +19,13 @@
 
 ---
 
-## 🎉 Production-Ready for Flutter Apps!
+## Production-Ready for Flutter Apps
 
-**Isar Plus v4 is now stable and ready for production use!** Deploy with confidence on iOS, Android, macOS, Windows, and Linux. Web support is functional for basic use cases and actively improving.
+Isar Plus v4 is now stable and ready for production use! Deploy with confidence on iOS, Android, macOS, Windows, and Linux. Web support is functional for basic use cases and actively improving.
 
-✅ **Native Platforms:** Fully production-ready with comprehensive testing  
-✅ **Core Features:** CRUD, queries, indexes, transactions, encryption, watchers  
-⚠️ **Web Platform:** Functional for basic operations, OPFS optimization ongoing  
+- **Native Platforms:** Fully production-ready with comprehensive testing  
+- **Core Features:** CRUD, queries, indexes, transactions, encryption, watchers  
+- **Web Platform:** Functional for basic operations, OPFS optimization ongoing  
 ---
 
 ## About Isar Plus
