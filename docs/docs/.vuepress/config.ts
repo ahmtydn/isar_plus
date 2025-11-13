@@ -181,6 +181,7 @@ function getSidebar({
         "recipes/multi_isolate.md",
         "recipes/string_ids.md",
         "recipes/data_migration.md",
+        "recipes/migrate_from_isar3.md",
       ]),
     },
     {
