@@ -46,7 +46,7 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::{
     FileSystemDirectoryHandle, FileSystemFileHandle, FileSystemGetDirectoryOptions,
     FileSystemGetFileOptions, FileSystemReadWriteOptions, FileSystemSyncAccessHandle,
-    WorkerGlobalScope,
+    StorageManager, WorkerGlobalScope,
 };
 
 const SECTOR_SIZE: usize = 4096;
@@ -104,17 +104,11 @@ impl OpfsSAHPool {
         let create_option = FileSystemGetDirectoryOptions::new();
         create_option.set_create(true);
 
-        let mut handle: FileSystemDirectoryHandle = JsFuture::from(
-            js_sys::global()
-                .dyn_into::<WorkerGlobalScope>()
-                .map_err(|_| OpfsSAHError::NotSuported)?
-                .navigator()
-                .storage()
-                .get_directory(),
-        )
-        .await
-        .map_err(OpfsSAHError::GetDirHandle)?
-        .into();
+        let storage = resolve_storage_manager()?;
+        let mut handle: FileSystemDirectoryHandle = JsFuture::from(storage.get_directory())
+            .await
+            .map_err(OpfsSAHError::GetDirHandle)?
+            .into();
 
         for dir in vfs_dir.split('/').filter(|x| !x.is_empty()) {
             let next =
@@ -435,6 +429,21 @@ impl OpfsSAHPool {
     }
 }
 
+fn resolve_storage_manager() -> Result<StorageManager, OpfsSAHError> {
+    if let Ok(worker_scope) = js_sys::global().dyn_into::<WorkerGlobalScope>() {
+        return Ok(worker_scope.navigator().storage());
+    }
+
+    if let Some(window) = web_sys::window() {
+        return window
+            .navigator()
+            .storage()
+            .ok_or(OpfsSAHError::StorageUnavailable);
+    }
+
+    Err(OpfsSAHError::NotSuported)
+}
+
 impl VfsFile for FileSystemSyncAccessHandle {
     fn read(&self, buf: &mut [u8], offset: usize) -> VfsResult<bool> {
         let n_read = self
@@ -691,6 +700,8 @@ pub enum OpfsSAHError {
     Truncate(JsValue),
     #[error("An error occurred while getting data using reflect")]
     Reflect(JsValue),
+    #[error("navigator.storage API is not available in this context")]
+    StorageUnavailable,
     #[error("Generic error: {0}")]
     Generic(String),
 }

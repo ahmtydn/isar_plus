@@ -8,6 +8,13 @@
 * Added `sqlite3_os_end` C interface.
   [#117](https://github.com/Spxg/sqlite-wasm-rs/pull/117)
 
+### Changed
+
+* Allow the OPFS SyncAccessHandle VFS to initialize when running inside a
+  window context (e.g., Flutter/Dart web), falling back to IndexedDB only when
+  `navigator.storage` is unavailable. This enables Isar Plus web builds to use
+  OPFS storage without moving the entire runtime into a dedicated worker.
+
 --------------------------------------------------------------------------------
 
 ## [0.4.5](https://github.com/Spxg/sqlite-wasm-rs/compare/0.4.4...0.4.5)
