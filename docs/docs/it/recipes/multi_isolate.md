@@ -65,8 +65,8 @@ Future createDummyMessages(int count) async {
 
   final messages = List.generate(count, (i) => Message()..content = 'Message $i');
   // we use a synchronous transactions in isolates
-  isar.writeTxnSync(() {
-    isar.messages.insertAllSync(messages);
+  isar.write((isar) {
+    isar.messages.insertAll(messages);
   });
 }
 ```

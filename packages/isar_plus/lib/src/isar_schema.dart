@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// The schema of a collection in Isar.
 ///
@@ -8,10 +8,10 @@ class IsarSchema {
   /// @nodoc
   const IsarSchema({
     required this.name,
-    this.idName,
     required this.embedded,
     required this.properties,
     required this.indexes,
+    this.idName,
   });
 
   /// @nodoc

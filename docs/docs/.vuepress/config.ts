@@ -24,7 +24,7 @@ const themeLocales: LocaleConfig<DefaultThemeLocaleData> = {};
 for (const locale of locales) {
   themeLocales[getLocalePath(locale.code)] = {
     selectLanguageName: locale.language,
-    selectLanguageText: locale.selectLanguage,
+    selectLanguageText: locale.language,
     editLinkText: locale.editPage,
     lastUpdatedText: locale.lastUpdated,
     contributorsText: locale.contributors,
@@ -50,8 +50,8 @@ export default defineUserConfig({
   bundler: viteBundler({}),
   theme: defaultTheme({
     logo: "/isar.svg",
-    repo: "isar_plus/isar_plus",
-    docsRepo: "isar_plus/isar_plus",
+    repo: "ahmtydn/isar_plus",
+    docsRepo: "ahmtydn/isar_plus",
     docsDir: "docs/docs",
     contributors: true,
     locales: themeLocales,
@@ -62,11 +62,11 @@ export default defineUserConfig({
       },
       {
         text: "API",
-        link: "https://pub.dev/documentation/isar_plus/latest/isar_plus/isar-library.html",
+        link: "https://pub.dev/documentation/isar_plus/latest/isar_plus",
       },
       {
         text: "Telegram",
-        link: "https://t.me/isardb",
+        link: "https://t.me/isarplus",
       },
     ],
     sidebarDepth: 1,
@@ -181,6 +181,7 @@ function getSidebar({
         "recipes/multi_isolate.md",
         "recipes/string_ids.md",
         "recipes/data_migration.md",
+        "recipes/migrate_from_isar3.md",
       ]),
     },
     {

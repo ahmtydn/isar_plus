@@ -16,8 +16,8 @@ title: لین دین
 
 |              | Read         | Read & Write       |
 |--------------|--------------|--------------------|
-| Synchronous  | `.txnSync()` | `.writeTxnSync()`  |
-| Asynchronous | `.txn()`     | `.writeTxn()`      |
+| Synchronous  | `.read()` | `.write()`  |
+| Asynchronous | `.readAsync()`     | `.writeAsync()`      |
 
 
 ### لین دین پڑھیں
@@ -47,7 +47,7 @@ class Contact {
 }
 
 // GOOD
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   for (var contact in getContacts()) {
     await isar.contacts.put(contact);
   }
@@ -55,7 +55,7 @@ await isar.writeTxn(() async {
 
 // BAD: move loop inside transaction
 for (var contact in getContacts()) {
-  await isar.writeTxn(() async {
+  await isar.writeAsync((isar) async {
     await isar.contacts.put(contact);
   });
 }

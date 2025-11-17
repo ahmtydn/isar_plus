@@ -40,14 +40,14 @@ String _generateSerialize(ObjectInfo object) {
 }
 
 String _writeProperty({
-  String writer = 'writer',
   required String index,
   required IsarType type,
   required bool nullable,
-  bool? elementNullable,
   required String typeClassName,
   required String value,
   required String? enumProperty,
+  String writer = 'writer',
+  bool? elementNullable,
 }) {
   final enumGetter =
       enumProperty != null
@@ -64,11 +64,11 @@ String _writeProperty({
           if (value == null) {
             IsarCore.writeNull($writer, $index);
           } else {
-            IsarCore.writeBool($writer, $index, value);
+            IsarCore.writeBool($writer, $index,value: value);
           }
         }''';
       } else {
-        return 'IsarCore.writeBool($writer, $index, $value$enumGetter);';
+        return 'IsarCore.writeBool($writer, $index,value:$value$enumGetter);';
       }
     case IsarType.byte:
       return 'IsarCore.writeByte($writer, $index, $value$enumGetter);';

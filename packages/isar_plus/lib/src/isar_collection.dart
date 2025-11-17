@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Use `IsarCollection` instances to find, query, and create new objects of a
 /// given type in Isar.
@@ -7,6 +7,10 @@ part of isar_plus;
 /// by using the generated `isar.yourCollections` getter.
 @pragma('vm:isolate-unsendable')
 abstract class IsarCollection<ID, OBJ> {
+  /// @nodoc
+  @protected
+  IsarCollection();
+
   /// The corresponding Isar instance.
   Isar get isar;
 

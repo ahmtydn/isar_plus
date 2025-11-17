@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Superclass of all Isar errors.
 sealed class IsarError extends Error {
@@ -16,6 +16,9 @@ sealed class IsarError extends Error {
 
 /// Invalid or protected path error.
 class PathError extends IsarError {
+  /// Creates a path error.
+  PathError();
+
   @override
   final name = 'PathError';
 
@@ -27,6 +30,9 @@ class PathError extends IsarError {
 
 /// An active write transaction is required for this operation.
 class WriteTxnRequiredError extends IsarError {
+  /// Creates a write transaction required error.
+  WriteTxnRequiredError();
+
   @override
   String get name => 'WriteTxnRequiredError';
 
@@ -36,6 +42,9 @@ class WriteTxnRequiredError extends IsarError {
 
 /// Database file is incompatible with this version of Isar.
 class VersionError extends IsarError {
+  /// Creates a version error.
+  VersionError();
+
   @override
   String get name => 'VersionError';
 
@@ -47,6 +56,9 @@ class VersionError extends IsarError {
 
 /// The object is too large to be stored in Isar.
 class ObjectLimitReachedError extends IsarError {
+  /// Creates an object limit reached error.
+  ObjectLimitReachedError();
+
   @override
   String get name => 'ObjectLimitReachedError';
 
@@ -59,6 +71,9 @@ class ObjectLimitReachedError extends IsarError {
 
 /// Invalid Isar instance.
 class InstanceMismatchError extends IsarError {
+  /// Creates an instance mismatch error.
+  InstanceMismatchError();
+
   @override
   String get name => 'InstanceMismatchError';
 
@@ -72,6 +87,9 @@ class InstanceMismatchError extends IsarError {
 /// Something went wrong during encryption/decryption. Most likely the
 /// encryption key is wrong.
 class EncryptionError extends IsarError {
+  /// Creates an encryption error.
+  EncryptionError();
+
   @override
   String get name => 'EncryptionError';
 
@@ -84,6 +102,9 @@ class EncryptionError extends IsarError {
 
 /// The database is full.
 class DatabaseFullError extends IsarError {
+  /// Creates a database full error.
+  DatabaseFullError();
+
   @override
   final name = 'DatabaseFullError';
 

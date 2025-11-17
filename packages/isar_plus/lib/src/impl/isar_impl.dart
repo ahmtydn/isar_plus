@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 class _IsarImpl extends Isar {
   factory _IsarImpl.open({
@@ -11,6 +11,8 @@ class _IsarImpl extends Isar {
     required CompactCondition? compactOnLaunch,
     String? library,
   }) {
+    // IsarCore._initialize can return FutureOr<void> which may complete async
+    // ignore: discarded_futures
     IsarCore._initialize(library: library);
 
     if (engine == IsarEngine.isar) {
@@ -38,7 +40,6 @@ class _IsarImpl extends Isar {
 
     final instanceId = Isar.fastHash(name);
     // Check if instance already exists to avoid creating duplicates
-    // ignore: prefer_asserts_with_message
     final instance = _IsarImpl._instances[instanceId];
     if (instance != null) {
       return instance;
@@ -76,6 +77,8 @@ class _IsarImpl extends Isar {
     required List<IsarGeneratedSchema> schemas,
     String? library,
   }) {
+    // IsarCore._initialize can return FutureOr<void> which may complete async
+    // ignore: discarded_futures
     IsarCore._initialize(library: library);
     var ptr = IsarCore.b.isar_get_instance(instanceId, false);
     if (ptr.isNull) {
@@ -112,7 +115,6 @@ class _IsarImpl extends Isar {
         continue;
       }
       // Type parameters need to match the schema's generic types
-      // ignore: prefer_asserts_with_message
       collections[schema.converter.type] = schema.converter.withType(<ID, OBJ>(
         converter,
       ) {
@@ -133,7 +135,6 @@ class _IsarImpl extends Isar {
   final int instanceId;
   final List<IsarGeneratedSchema> generatedSchemas;
   // Dynamic types needed for storing mixed collection types
-  // ignore: prefer_asserts_with_message
   final collections = <Type, _IsarCollectionImpl<dynamic, dynamic>>{};
 
   Pointer<CIsarInstance>? _ptr;
@@ -179,7 +180,7 @@ class _IsarImpl extends Isar {
     if (response is SendPort) {
       final isar = Isar.get(schemas: schemas, name: name);
       response.send(null);
-      await isolate;
+      unawaited(isolate);
       return isar;
     } else {
       throw Exception(response);
@@ -188,7 +189,6 @@ class _IsarImpl extends Isar {
 
   static _IsarImpl instance(int instanceId) {
     // Getter for existing Isar instance
-    // ignore: prefer_asserts_with_message
     final instance = _instances[instanceId];
     if (instance == null) {
       throw IsarNotReadyError(

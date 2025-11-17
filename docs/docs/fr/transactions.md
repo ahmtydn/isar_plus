@@ -16,8 +16,8 @@ Les transactions peuvent être soit synchrones ou asynchrones. Dans les transact
 
 |             | Lecture      | Lecture et écriture |
 |-------------|--------------|---------------------|
-| Synchrones  | `.txnSync()` | `.writeTxnSync()`   |
-| Asynchrones | `.txn()`     | `.writeTxn()`       |
+| Synchrones  | `.read()` | `.write()`   |
+| Asynchrones | `.readAsync()`     | `.writeAsync()`       |
 
 
 ### Transactions de lecture
@@ -47,7 +47,7 @@ class Contact {
 }
 
 // BON
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   for (var contact in getContacts()) {
     await isar.contacts.put(contact);
   }
@@ -55,7 +55,7 @@ await isar.writeTxn(() async {
 
 // MAUVAIS : déplacer la boucle à l'intérieur de la transaction
 for (var contact in getContacts()) {
-  await isar.writeTxn(() async {
+  await isar.writeAsync((isar) async {
     await isar.contacts.put(contact);
   });
 }

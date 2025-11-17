@@ -10,7 +10,7 @@ class Model {
 
   final int id;
 
-  final value = '123456789' * 1000;
+  final String value = '123456789' * 1000;
 }
 
 void main() {

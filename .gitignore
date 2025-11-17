@@ -17,6 +17,7 @@ build/
 # Rust related
 target/
 *.a
+!libsqlite3.a
 *.so
 *.dylib
 *.dll
@@ -76,4 +77,4 @@ local.properties
 
 packages/hive_plus
 
-*s.md
+co*.md

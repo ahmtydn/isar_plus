@@ -85,7 +85,7 @@ Future<void> migrateV1ToV2(Isar isar) async {
   // 我们对用户数据进行分页读写，避免同时将所有数据存放到内存
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users.where().offset(i).limit(50).findAll();
-    await isar.writeTxn((isar) async {
+    await isar.writeAsync((isar) async {
       // 我们不需要更新任何信息，因为 birthYear 的 getter 已经被使用
       await isar.users.putAll(users);
     });

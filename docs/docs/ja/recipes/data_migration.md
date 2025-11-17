@@ -83,7 +83,7 @@ Future<void> migrateV1ToV2(Isar isar) async {
   // すべてのユーザーを一度にメモリにロードするのを避けるため、ユーザーをページ分割する
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users.where().offset(i).limit(50).findAll();
-    await isar.writeTxn((isar) async {
+    await isar.writeAsync((isar) async {
       // birthYear ゲッターを使用しているため、何も更新する必要はありません
       await isar.users.putAll(users);
     });

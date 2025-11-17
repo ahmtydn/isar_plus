@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
+import 'dart:async';
+
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
@@ -43,12 +45,12 @@ void main() {
       isar.read((isar) {
         expect(() => isar.readAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.readAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.readAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
         expect(() => isar.writeAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.writeAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.writeAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
       });
@@ -56,12 +58,12 @@ void main() {
       isar.write((isar) {
         expect(() => isar.readAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.readAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.readAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
         expect(() => isar.writeAsync((_) {}), throwsUnsupportedError);
         expect(
-          () => isar.writeAsyncWith<void, void>(null, (_, __) {}),
+          () => isar.writeAsyncWith<void, void>(null, (_, _) {}),
           throwsUnsupportedError,
         );
       });
@@ -82,7 +84,7 @@ void main() {
       expect(errorTxn, throwsUnsupportedError);
       expect(isar.models.where().findAll(), [Model(1)]);
 
-      expectLater(errorTxn, throwsUnsupportedError);
+      unawaited(expectLater(errorTxn, throwsUnsupportedError));
       expect(isar.models.where().findAll(), [Model(1)]);
 
       isar.write((isar) => isar.models.put(Model(5)));

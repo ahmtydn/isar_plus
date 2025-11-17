@@ -1,3 +1,4 @@
+// Ignore implementation imports as we need internal Isar APIs
 // ignore_for_file: implementation_imports
 
 import 'dart:async';
@@ -34,6 +35,7 @@ class ConnectClient {
     final wsUrl = Uri.parse('ws://127.0.0.1:$port/$secret=/ws');
     final channel = WebSocketChannel.connect(wsUrl);
 
+    // Async error handler for WebSocket stream errors
     // ignore: avoid_print
     final stream = channel.stream.handleError(print);
 

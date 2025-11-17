@@ -2,6 +2,8 @@ import 'package:isar_plus/isar_plus.dart';
 
 part 'add_remove_index_test.g.dart';
 
+// ignore_for_file: unreachable_from_main
+
 @collection
 @Name('Col')
 class Col1 {

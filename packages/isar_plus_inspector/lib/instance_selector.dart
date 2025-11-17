@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -69,7 +71,7 @@ class _InstanceSelectorState extends State<InstanceSelector>
                           instance: instance,
                           onTap: () {
                             widget.onSelected(instance);
-                            _controller.reverse();
+                            unawaited(_controller.reverse());
                           },
                         ),
                     const SizedBox(height: 75),
@@ -86,9 +88,9 @@ class _InstanceSelectorState extends State<InstanceSelector>
                     : null,
                 onTap: () {
                   if (_controller.status == AnimationStatus.completed) {
-                    _controller.reverse();
+                    unawaited(_controller.reverse());
                   } else {
-                    _controller.forward();
+                    unawaited(_controller.forward());
                   }
                 },
               ),

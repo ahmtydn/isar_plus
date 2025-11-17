@@ -26,5 +26,5 @@ features:
   - title: 🦄 Código abierto
     details: Completamente de código abierto y libre para siempre!
 
-footer: Apache Licensed | Copyright © 2023 Simon Choi
+footer: Apache Licensed | Proyecto original © 2023 Simon Choi | Isar Plus © 2024-2025 Ahmet Aydın
 ---

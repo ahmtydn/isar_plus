@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 class _IsarQueryImpl<T> extends IsarQuery<T> {
   _IsarQueryImpl({
@@ -6,10 +6,10 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
     required int ptrAddress,
     required Deserialize<T> deserialize,
     List<int>? properties,
-  })  : _instanceId = instanceId,
-        _ptrAddress = ptrAddress,
-        _properties = properties,
-        _deserialize = deserialize;
+  }) : _instanceId = instanceId,
+       _ptrAddress = ptrAddress,
+       _properties = properties,
+       _deserialize = deserialize;
 
   final int _instanceId;
   final List<int>? _properties;
@@ -115,13 +115,15 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
 
   @override
   List<Map<String, dynamic>> exportJson({int? offset, int? limit}) {
-    final bufferPtrPtr = malloc<Pointer<Uint8>>();
-    bufferPtrPtr.ptrValue = nullptr;
+    final bufferPtrPtr = malloc<Pointer<Uint8>>()..ptrValue = nullptr;
     final bufferSizePtr = malloc<Uint32>();
 
     Map<String, dynamic> deserialize(IsarReader reader) {
-      final jsonSize =
-          IsarCore.b.isar_read_to_json(reader, bufferPtrPtr, bufferSizePtr);
+      final jsonSize = IsarCore.b.isar_read_to_json(
+        reader,
+        bufferPtrPtr,
+        bufferSizePtr,
+      );
       final bufferPtr = bufferPtrPtr.ptrValue;
       if (bufferPtr == nullptr) {
         throw StateError('Error while exporting JSON.');
@@ -175,12 +177,15 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
           return IsarCore.b.isar_value_get_integer(valuePtr) as R;
         } else if (DateTime.now() is R) {
           return DateTime.fromMillisecondsSinceEpoch(
-            IsarCore.b.isar_value_get_integer(valuePtr),
-            isUtc: true,
-          ).toLocal() as R;
+                IsarCore.b.isar_value_get_integer(valuePtr),
+                isUtc: true,
+              ).toLocal()
+              as R;
         } else if ('' is R) {
-          final length =
-              IsarCore.b.isar_value_get_string(valuePtr, IsarCore.stringPtrPtr);
+          final length = IsarCore.b.isar_value_get_string(
+            valuePtr,
+            IsarCore.stringPtrPtr,
+          );
           if (IsarCore.stringPtr.isNull) {
             return null;
           } else {
@@ -201,8 +206,9 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
     int? offset,
     int? limit,
   }) {
-    return watchLazy(fireImmediately: fireImmediately)
-        .asyncMap((event) => findAllAsync(offset: offset, limit: limit));
+    return watchLazy(
+      fireImmediately: fireImmediately,
+    ).asyncMap((event) => findAllAsync(offset: offset, limit: limit));
   }
 
   @override
@@ -236,7 +242,7 @@ class _IsarQueryImpl<T> extends IsarQuery<T> {
       controller.add(null);
     }
 
-    controller.addStream(port);
+    unawaited(controller.addStream(port));
     return controller.stream;
   }
 

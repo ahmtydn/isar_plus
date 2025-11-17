@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Isar databases can contain unused space that will be reused for later
 /// operations. You can specify conditions to trigger manual compaction where

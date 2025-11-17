@@ -85,7 +85,7 @@ Future<void> migrateV1ToV2(Isar isar) async {
   // We paginate through the users to avoid loading all users into memory at once
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users.where().offset(i).limit(50).findAll();
-    await isar.writeTxn((isar) async {
+    await isar.writeAsync((isar) async {
       // We don't need to update anything since the birthYear getter is used
       await isar.users.putAll(users);
     });

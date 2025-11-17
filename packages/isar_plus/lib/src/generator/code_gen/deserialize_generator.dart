@@ -15,19 +15,20 @@ String _generateDeserialize(ObjectInfo object) {
     propertiesByMode[property.mode]!.add(property);
   }
 
-  final positional = propertiesByMode[DeserializeMode.positionalParam]!;
-  positional.sort(
-    (p1, p2) => p1.constructorPosition!.compareTo(p2.constructorPosition!),
-  );
+  final positional =
+      propertiesByMode[DeserializeMode.positionalParam]!..sort(
+        (p1, p2) => p1.constructorPosition!.compareTo(p2.constructorPosition!),
+      );
   final named = propertiesByMode[DeserializeMode.namedParam]!;
 
   for (final p in [...positional, ...named]) {
-    buffer.write('final ${p.dartType} _${p.dartName};');
-    buffer.write(
-      _deserializeProperty(object, p, (value) {
-        return '_${p.dartName} = $value;';
-      }),
-    );
+    buffer
+      ..write('final ${p.dartType} _${p.dartName};')
+      ..write(
+        _deserializeProperty(object, p, (value) {
+          return '_${p.dartName} = $value;';
+        }),
+      );
   }
 
   buffer.write('final object = ${object.dartName}(');
@@ -114,11 +115,11 @@ String _deserialize({
   required bool isId,
   required String typeClassName,
   required IsarType type,
-  String? elementDartType,
   required String defaultValue,
-  String? elementDefaultValue,
   required bool utc,
   required String Function(String value) transform,
+  String? elementDartType,
+  String? elementDefaultValue,
   String Function(String value)? transformElement,
 }) {
   switch (type) {

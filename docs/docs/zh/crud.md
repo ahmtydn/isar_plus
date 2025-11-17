@@ -82,7 +82,7 @@ final recipe = await isar.recipes.get(123);
 `get()` 返回一个包含对象的 `Future`，如果对象不存在，则返回 `null`。 默认情况下 Isar 所有的操作均为异步，而大部分操作也有其对应的同步处理方法，如：
 
 ```dart
-final recipe = isar.recipes.getSync(123);
+final recipe = isar.recipes.get(123);
 ```
 
 :::tip
@@ -114,7 +114,7 @@ final favouires = await isar.recipes.filter()
 终于到了修改数据的时候了！ 在一个写入事务（Write Transaction）中使用对应的操作序列来创建、修改和删除对象：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final recipe = await isar.recipes.get(123)
 
   recipe.isFavorite = false;
@@ -138,7 +138,7 @@ final pancakes = Recipe()
   ..lastCooked = DateTime.now()
   ..isFavorite = true;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.put(pancakes);
 })
 ```
@@ -148,7 +148,7 @@ await isar.writeTxn(() async {
 同时插入多个对象也很简单：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.recipes.putAll([pancakes, pizza]);
 })
 ```
@@ -160,7 +160,7 @@ await isar.writeTxn(() async {
 所以如果我们想要取消喜欢煎饼的话，可以做以下操作：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   pancakes.isFavorite = false;
   await isar.recipes.put(recipe);
 });
@@ -171,7 +171,7 @@ await isar.writeTxn(() async {
 想要从 Isar 数据库中删除一个对象？用 `collection.delete(id)` 方法。这个方法会返回指定对象是否被删除（即返回布尔值）。如果你想通过 Id 来删除指定菜单，比如其 Id 为 `123`，你可以用下方代码：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final success = await isar.recipes.delete(123);
   print('Recipe deleted: $success');
 });
@@ -180,7 +180,7 @@ await isar.writeTxn(() async {
 相似地，也有对应的批量删除方法，其返回结果是被删除对象的数量：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.deleteAll([1, 2, 3]);
   print('We deleted $count recipes');
 });
@@ -189,7 +189,7 @@ await isar.writeTxn(() async {
 如果你不知道你想删除对象的 Id，你可以先通过指定条件来查询：
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.recipes.filter()
     .isFavoriteEqualTo(false)
     .deleteAll();

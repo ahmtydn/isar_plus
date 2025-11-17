@@ -58,6 +58,8 @@ fn main() {
 
 #[cfg(all(not(feature = "bundled"), feature = "precompiled"))]
 fn main() {
+    use std::path::PathBuf;
+
     const CUSTOM_LD_LIB_PATH: &str = "SQLITE_WASM_RS_PREBUILD_LD_LIB_PATH";
 
     println!("cargo::rerun-if-env-changed={CUSTOM_LD_LIB_PATH}");
@@ -65,15 +67,36 @@ fn main() {
     #[cfg(feature = "buildtime-bindgen")]
     bindgen(&std::env::var("OUT_DIR").expect("OUT_DIR env not set"));
 
-    let ld_path = std::env::var(CUSTOM_LD_LIB_PATH).unwrap_or_else(|_| {
-        std::path::Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap())
-            .join("sqlite3")
-            .to_string_lossy()
-            .to_string()
-    });
+    let manifest_dir =
+        PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR env not set"));
+    let default_ld_path = manifest_dir.join("sqlite3");
 
-    println!("cargo::rerun-if-changed={ld_path}");
-    println!("cargo:rustc-link-search=native={ld_path}");
+    let ld_path = std::env::var(CUSTOM_LD_LIB_PATH)
+        .ok()
+        .map(PathBuf::from)
+        .and_then(|candidate| {
+            if candidate.join("libsqlite3.a").exists() {
+                Some(candidate)
+            } else {
+                println!(
+                    "cargo:warning=Ignoring {CUSTOM_LD_LIB_PATH} because libsqlite3.a was not found in {}. Falling back to bundled precompiled sqlite.",
+                    candidate.display()
+                );
+                None
+            }
+        })
+        .unwrap_or(default_ld_path);
+
+    let static_lib = ld_path.join("libsqlite3.a");
+    if !static_lib.exists() {
+        panic!(
+            "libsqlite3.a not found at {}. Ensure the precompiled binary is present or set {CUSTOM_LD_LIB_PATH} to a valid directory.",
+            static_lib.display()
+        );
+    }
+
+    println!("cargo::rerun-if-changed={}", ld_path.display());
+    println!("cargo:rustc-link-search=native={}", ld_path.display());
     println!("cargo:rustc-link-lib=static=sqlite3")
 }
 

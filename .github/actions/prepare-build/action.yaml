@@ -7,30 +7,50 @@ runs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         components: rustfmt, clippy
+    
+    - name: Cache wasm-bindgen-cli
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/bin/wasm-bindgen
+        key: ${{ runner.os }}-wasm-bindgen-0.2.105
+    
+    - name: Install wasm-bindgen-cli
+      shell: bash
+      run: |
+        if ! command -v wasm-bindgen &> /dev/null; then
+          cargo install wasm-bindgen-cli --version 0.2.105
+        else
+          echo "wasm-bindgen already installed"
+        fi
+    
     - name: Install LLVM and Clang
       if: runner.os == 'Windows'
       uses: KyleMayes/install-llvm-action@v2
       with:
         version: "11.0"
         directory: ${{ runner.temp }}/llvm
+    
     - name: Install Perl
       if: runner.os == 'Windows'
       uses: shogo82148/actions-setup-perl@v1.31.1
       with:
         distribution: strawberry
         perl-version: "5.32"
+    
     - name: Install Make for Windows
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
         # Install make via chocolatey
         choco install make -y
+    
     - name: Set Windows environment variables
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
         echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
         echo "OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl" >> $env:GITHUB_ENV
+    
     - name: Set up Android NDK environment
       if: runner.os == 'Linux'
       shell: bash
@@ -41,6 +61,7 @@ runs:
           NDK_VERSION=$(ls $ANDROID_SDK_ROOT/ndk | grep -E '^[0-9]+\.' | sort -V | tail -n 1)
           echo "ANDROID_NDK_VERSION=$NDK_VERSION" >> $GITHUB_ENV
         fi
+    
     - name: Set up iOS environment
       if: runner.os == 'macOS'
       shell: bash
@@ -49,6 +70,7 @@ runs:
         echo "IPHONEOS_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
         # Ensure Xcode command line tools are properly configured
         sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+    
     # See https://github.com/godot-rust/godot-rust/pull/920
     - name: "Workaround Android NDK due to Rust bug"
       if: runner.os == 'Linux' || runner.os == 'macOS'

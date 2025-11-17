@@ -2,9 +2,9 @@ Pod::Spec.new do |s|
   s.name             = 'isar_plus_flutter_libs'
   s.version          = '1.0.0'
   s.summary          = 'Flutter binaries for the Isar Database. Needs to be included for Flutter apps.'
-  s.homepage         = 'https://isar.dev'
+  s.homepage         = 'https://isarplus.ahmetaydin.dev'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Isar' => 'hello@isar.dev' }
+  s.author           = { 'Isar Plus' => 'hello@isarplus.ahmetaydin.dev' }
 
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'

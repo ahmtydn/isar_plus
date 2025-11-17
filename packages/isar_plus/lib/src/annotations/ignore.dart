@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// Annotate a property or accessor in an Isar collection to ignore it.
 const ignore = Ignore();

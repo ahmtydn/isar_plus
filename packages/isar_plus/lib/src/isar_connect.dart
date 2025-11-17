@@ -1,6 +1,14 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 abstract class _IsarConnect {
+  static final _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 0,
+      printEmojis: false,
+    ),
+  );
+
   static const Map<
     ConnectAction,
     Future<dynamic> Function(Map<String, dynamic> _)
@@ -55,37 +63,41 @@ abstract class _IsarConnect {
   }
 
   static void _printConnection() {
-    Service.getInfo().then((ServiceProtocolInfo info) {
-      final serviceUri = info.serverUri;
-      if (serviceUri == null) {
-        return;
-      }
-      final port = serviceUri.port;
-      var path = serviceUri.path;
-      if (path.endsWith('/')) {
-        path = path.substring(0, path.length - 1);
-      }
-      if (path.endsWith('=')) {
-        path = path.substring(0, path.length - 1);
-      }
-      final url =
-          ' https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path ';
-      String line(String text, String fill) {
-        final fillCount = url.length - text.length;
-        final left = List.filled(fillCount ~/ 2, fill);
-        final right = List.filled(fillCount - left.length, fill);
-        return left.join() + text + right.join();
-      }
+    unawaited(
+      Service.getInfo().then((ServiceProtocolInfo info) {
+        final serviceUri = info.serverUri;
+        if (serviceUri == null) {
+          return;
+        }
+        final port = serviceUri.port;
+        var path = serviceUri.path;
+        if (path.endsWith('/')) {
+          path = path.substring(0, path.length - 1);
+        }
+        if (path.endsWith('=')) {
+          path = path.substring(0, path.length - 1);
+        }
+        final url =
+            ' https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path ';
+        String line(String text, String fill) {
+          final fillCount = url.length - text.length;
+          final left = List.filled(fillCount ~/ 2, fill);
+          final right = List.filled(fillCount - left.length, fill);
+          return left.join() + text + right.join();
+        }
 
-      log('╔${line('', '═')}╗');
-      log('║${line('ISAR CONNECT STARTED', ' ')}║');
-      log('╟${line('', '─')}╢');
-      log('║${line('Open the link to connect to the Isar', ' ')}║');
-      log('║${line('Inspector while this build is running.', ' ')}║');
-      log('╟${line('', '─')}╢');
-      log('║$url║');
-      log('╚${line('', '═')}╝');
-    });
+        final message = '''
+      ╔${line('', '═')}╗
+      ║${line('ISAR CONNECT STARTED', ' ')}║
+      ╟${line('', '─')}╢
+      ║${line('Open the link to connect to the Isar', ' ')}║
+      ║${line('Inspector while this build is running.', ' ')}║
+      ╟${line('', '─')}╢
+      ║$url║
+      ╚${line('', '═')}╝''';
+        _logger.w(message);
+      }),
+    );
   }
 
   static Future<dynamic> _getSchemas(Map<String, dynamic> params) async {
@@ -174,8 +186,9 @@ abstract class _IsarConnect {
     final isar = _instances[cQuery.instance]!;
     final query = cQuery.toQuery(isar);
     await isar.writeAsync((isar) {
-      query.deleteAll();
-      query.close();
+      query
+        ..deleteAll()
+        ..close();
     });
   }
 

@@ -53,7 +53,7 @@ class _FilterGenerator {
   }''';
   }
 
-  String mPrefix(PropertyInfo p, [bool listElement = true]) {
+  String mPrefix(PropertyInfo p, {bool listElement = true}) {
     final any = listElement && p.type.isList ? 'Element' : '';
     return 'QueryBuilder<$objName, $objName, QAfterFilterCondition> '
         '${p.dartName.decapitalize()}$any';
@@ -186,7 +186,7 @@ class _FilterGenerator {
 
   String generateIsNull(PropertyInfo p) {
     return '''
-      ${mPrefix(p, false)}IsNull() {
+      ${mPrefix(p, listElement: false)}IsNull() {
         return QueryBuilder.apply(this, (query) {
           return query.addFilterCondition(const IsNullCondition(property: ${p.index}));
         });
@@ -209,7 +209,7 @@ class _FilterGenerator {
 
   String generateIsNotNull(PropertyInfo p) {
     return '''
-      ${mPrefix(p, false)}IsNotNull() {
+      ${mPrefix(p, listElement: false)}IsNotNull() {
         return QueryBuilder.apply(not(), (query) {
           return query.addFilterCondition(const IsNullCondition(property: ${p.index}));
         });
@@ -322,7 +322,7 @@ class _FilterGenerator {
     final name = p.dartName.decapitalize();
     if (p.nullable) {
       return '''
-      ${mPrefix(p, false)}IsEmpty() {
+      ${mPrefix(p, listElement: false)}IsEmpty() {
         return not().group((q) => q
           .${name}IsNull()
           .or()
@@ -331,7 +331,7 @@ class _FilterGenerator {
       }''';
     } else {
       return '''
-      ${mPrefix(p, false)}IsEmpty() {
+      ${mPrefix(p, listElement: false)}IsEmpty() {
         return not().${name}IsNotEmpty();
       }''';
     }
@@ -339,7 +339,7 @@ class _FilterGenerator {
 
   String generateListIsNotEmpty(PropertyInfo p) {
     return '''
-    ${mPrefix(p, false)}IsNotEmpty() {
+    ${mPrefix(p, listElement: false)}IsNotEmpty() {
       return QueryBuilder.apply(this, (query) {
         return query.addFilterCondition(
           const GreaterOrEqualCondition(property: ${p.index}, value: null),

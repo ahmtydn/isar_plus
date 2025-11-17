@@ -1,4 +1,60 @@
-## 1.0.28 (2025-10-18)
+## 1.1.5
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.5 -->
+
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.4...1.1.5
+
+## 1.1.4
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.4 -->
+
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.3...1.1.4
+
+## 1.1.3
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.3 -->
+
+## What's Changed
+### Other Changes
+* Update README and documentation to use v4 API  by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/49
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.2...1.1.3
+
+## 1.1.2
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.2 -->
+
+## What's Changed
+### Other Changes
+* chore: update dependencies for compatibility with latest packages by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/47
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.1...1.1.2
+
+## 1.1.1
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.1 -->
+
+## What's Changed
+### Other Changes
+* feat: Implement OPFS support for Isar Plus on web by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/39
+* feat(web): implement persistent storage for web using sqlite-wasm-rs by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/40
+* refactor: remove obsolete Emscripten setup and precompile workflows by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/43
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.28...1.1.1
+
+## 1.0.28
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.28 -->
 
@@ -9,7 +65,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.27...1.0.28
 
-## 1.0.27 (2025-10-14)
+## 1.0.27
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.27 -->
@@ -21,7 +77,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.26...1.0.27
 
-## 1.0.26 (2025-10-14)
+## 1.0.26
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.26 -->
@@ -34,7 +90,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.25...1.0.26
 
-## 1.0.25 (2025-10-14)
+## 1.0.25
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.25 -->
@@ -46,7 +102,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.24...1.0.25
 
-## 1.0.24 (2025-10-12)
+## 1.0.24
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.24 -->
@@ -58,7 +114,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.23...1.0.24
 
-## 1.0.23 (2025-10-06)
+## 1.0.23
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.23 -->
@@ -70,7 +126,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.22...1.0.23
 
-## 1.0.22 (2025-10-06)
+## 1.0.22
 
 
 
@@ -84,7 +140,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.21...1.0.22
 
-## 1.0.21 (2025-09-26)
+## 1.0.21
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.21 -->
@@ -96,7 +152,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.20...1.0.21
 
-## 1.0.20 (2025-09-25)
+## 1.0.20
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.20 -->
@@ -108,7 +164,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.19...1.0.20
 
-## 1.0.19 (2025-09-25)
+## 1.0.19
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.19 -->
@@ -120,7 +176,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.18...1.0.19
 
-## 1.0.18 (2025-09-25)
+## 1.0.18
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.18 -->
@@ -132,7 +188,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.17...1.0.18
 
-## 1.0.17 (2025-09-25)
+## 1.0.17
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.17 -->
@@ -144,7 +200,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.16...1.0.17
 
-## 1.0.16 (2025-09-25)
+## 1.0.16
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.16 -->
@@ -157,7 +213,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.15...1.0.16
 
-## 1.0.15 (2025-09-25)
+## 1.0.15
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.15 -->
@@ -169,7 +225,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.14...1.0.15
 
-## 1.0.14 (2025-09-25)
+## 1.0.14
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.14 -->
@@ -181,7 +237,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.13...1.0.14
 
-## 1.0.13 (2025-09-25)
+## 1.0.13
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.13 -->
@@ -193,7 +249,7 @@
 
 **Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.0.12...1.0.13
 
-## 1.0.12 (2025-09-25)
+## 1.0.12
 
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.0.12 -->

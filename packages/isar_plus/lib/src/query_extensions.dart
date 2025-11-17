@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 /// @nodoc
 @protected
@@ -84,9 +84,9 @@ typedef QueryOption<OBJ, S, RS> =
 extension QueryModifier<OBJ, S> on QueryBuilder<OBJ, OBJ, S> {
   /// Only apply a part of the query if `enabled` is true.
   QueryBuilder<OBJ, OBJ, RS> optional<RS>(
-    bool enabled,
-    QueryOption<OBJ, S, RS> option,
-  ) {
+    QueryOption<OBJ, S, RS> option, {
+    required bool enabled,
+  }) {
     if (enabled) {
       return option(this);
     } else {
@@ -244,7 +244,7 @@ extension QueryExecute<OBJ, R> on QueryBuilder<OBJ, R, QOperations> {
           controller.add,
           onError: controller.addError,
           onDone: () {
-            controller.close();
+            unawaited(controller.close());
             q.close();
           },
         );

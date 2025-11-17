@@ -48,7 +48,7 @@ final linda = Student()
   ..name = 'Linda'
   ..teacher.value = mathTeacher;
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await isar.students.put(linda);
   await isar.teachers.put(mathTeacher);
   await linda.teacher.save();
@@ -63,7 +63,7 @@ final linda = await isar.students.where().nameEqualTo('Linda').findFirst();
 final teacher = linda.teacher.value; // > Teacher(subject: 'Math')
 ```
 
-Vamos tentar a mesma coisa com código síncrono. Não precisamos salvar o link manualmente porque `.putSync()` salva automaticamente todos os links. Até cria o professor para nós.
+Vamos tentar a mesma coisa com código síncrono. Não precisamos salvar o link manualmente porque `.put()` salva automaticamente todos os links. Até cria o professor para nós.
 
 ```dart
 final englishTeacher = Teacher()..subject = 'English';
@@ -72,8 +72,8 @@ final david = Student()
   ..name = 'David'
   ..teacher.value = englishTeacher;
 
-isar.writeTxnSync(() {
-  isar.students.putSync(david);
+isar.write((isar) {
+  isar.students.put(david);
 });
 ```
 
@@ -112,7 +112,7 @@ print(linda.teachers); // {Teacher('Math')}
 
 linda.teachers.add(biologyTeacher);
 
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   await linda.teachers.save();
 });
 

@@ -85,7 +85,7 @@ class _InstancesLoaderState extends State<_InstancesLoader> {
 
   @override
   void dispose() {
-    _instancesSubscription.cancel();
+    unawaited(_instancesSubscription.cancel());
     super.dispose();
   }
 

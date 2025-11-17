@@ -1,4 +1,4 @@
-part of isar_plus;
+part of 'package:isar_plus/isar_plus.dart';
 
 class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   _IsarCollectionImpl(
@@ -197,8 +197,8 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
   @override
   int importJsonString(String json) {
     return isar.getWriteTxn(consume: true, (isarPtr, txnPtr) {
-      final txnPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarTxn>>();
-      txnPtrPtr.ptrValue = txnPtr;
+      final txnPtrPtr =
+          IsarCore.ptrPtr.cast<Pointer<CIsarTxn>>()..ptrValue = txnPtr;
       final nativeString = IsarCore._toNativeString(json);
       IsarCore.b
           .isar_import_json(
@@ -251,7 +251,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
       controller.add(null);
     }
 
-    controller.addStream(port);
+    unawaited(controller.addStream(port));
     return controller.stream;
   }
 
@@ -339,7 +339,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
       controller.add(null);
     }
 
-    controller.addStream(port);
+    unawaited(controller.addStream(port));
     return controller.stream;
   }
 
@@ -366,9 +366,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
         final filterPtr = _buildFilter(filter, pointers);
         IsarCore.b.isar_query_set_filter(builderPtr, filterPtr);
       } finally {
-        for (final ptr in pointers) {
-          free(ptr);
-        }
+        pointers.forEach(free);
       }
     }
 

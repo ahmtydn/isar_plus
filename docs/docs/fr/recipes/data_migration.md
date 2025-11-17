@@ -83,7 +83,7 @@ Future<void> migrateV1ToV2(Isar isar) async {
   // Nous paginons à travers les utilisateurs pour éviter de tous les charger en mémoire en même temps
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users.where().offset(i).limit(50).findAll();
-    await isar.writeTxn((isar) async {
+    await isar.writeAsync((isar) async {
       // Nous n'avons pas besoin de mettre à jour quoi que ce soit puisque le `getter` `birthYear` est utilisé.
       await isar.users.putAll(users);
     });

@@ -89,6 +89,8 @@ class DarkModeNotifier extends ChangeNotifier {
 
   bool get darkMode => _darkMode;
 
+  // Used by UI components to toggle dark mode
+  // ignore: unreachable_from_main
   void toggle() {
     _darkMode = !_darkMode;
     notifyListeners();
