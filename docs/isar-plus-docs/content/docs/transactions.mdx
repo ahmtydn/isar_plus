@@ -1,0 +1,522 @@
+---
+title: Transactions
+description: Ensure data consistency with ACID-compliant transactions
+icon: Shield
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Transactions
+
+Transactions combine multiple database operations in a single atomic unit of work. Isar provides ACID-compliant transactions with automatic rollback.
+
+<Callout type="success">
+  All Isar transactions are ACID compliant - Atomic, Consistent, Isolated, Durable.
+</Callout>
+
+## Overview
+
+Transactions ensure data consistency:
+
+- **Atomic** - All operations succeed or none do
+- **Consistent** - Data remains valid
+- **Isolated** - Concurrent transactions don't interfere
+- **Durable** - Committed changes persist
+
+## Transaction Types
+
+| Type | Sync Method | Async Method | Use Case |
+| --- | --- | --- | --- |
+| Read | `.txn()` | `.txnSync()` | Consistent reads |
+| Write | `.writeTxn()` | `.writeTxnSync()` | Data modifications |
+
+<Callout type="info">
+  Most read operations use implicit transactions automatically.
+</Callout>
+
+## Read Transactions
+
+Read transactions provide a consistent snapshot of the database:
+
+```dart
+@collection
+class Contact {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+<Tabs items={['Async', 'Sync', 'Implicit']}>
+  <Tab value="Async">
+    ```dart
+    // Explicit async read transaction
+    final result = await isar.txn(() async {
+      final contacts = await isar.contacts.where().findAll();
+      final count = await isar.contacts.count();
+      
+      return {
+        'contacts': contacts,
+        'count': count,
+      };
+    });
+    ```
+  </Tab>
+  <Tab value="Sync">
+    ```dart
+    // Synchronous read transaction
+    final result = isar.txnSync(() {
+      final contacts = isar.contacts.where().findAllSync();
+      final count = isar.contacts.countSync();
+      
+      return {
+        'contacts': contacts,
+        'count': count,
+      };
+    });
+    ```
+  </Tab>
+  <Tab value="Implicit">
+    ```dart
+    // Implicit transaction (automatic)
+    final contacts = await isar.contacts.where().findAll();
+    // Isar wraps this in a transaction automatically
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="success">
+  Async read transactions run in parallel with other transactions!
+</Callout>
+
+## Write Transactions
+
+All write operations must be wrapped in an explicit transaction:
+
+```dart
+await isar.writeTxn(() async {
+  final contact = Contact()
+    ..name = 'John Doe'
+    ..age = 25;
+  
+  await isar.contacts.put(contact);
+});
+```
+
+### Auto Commit
+
+Transactions auto-commit on success:
+
+```dart
+await isar.writeTxn(() async {
+  await isar.contacts.put(contact1);
+  await isar.contacts.put(contact2);
+  await isar.contacts.put(contact3);
+  // All changes committed together ✅
+});
+```
+
+### Auto Rollback
+
+Transactions auto-rollback on error:
+
+```dart
+try {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact1); // ✅ Executed
+    await isar.contacts.put(contact2); // ✅ Executed
+    throw Exception('Error!');
+    await isar.contacts.put(contact3); // ❌ Not executed
+  });
+} catch (e) {
+  // All changes rolled back ↩️
+  print('Transaction failed: $e');
+}
+```
+
+<Callout type="error">
+  When a transaction fails, it must not be used again, even if you catch the error.
+</Callout>
+
+## Best Practices
+
+### ✅ DO: Batch Operations
+
+```dart
+// ✅ Good - Single transaction
+await isar.writeTxn(() async {
+  for (var contact in contacts) {
+    await isar.contacts.put(contact);
+  }
+});
+
+// ✅ Even better - Bulk operation
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(contacts);
+});
+```
+
+### ❌ DON'T: Multiple Transactions
+
+```dart
+// ❌ Bad - Many transactions (slow!)
+for (var contact in contacts) {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact);
+  });
+}
+```
+
+### ✅ DO: Minimize Transaction Scope
+
+```dart
+// ✅ Good - Prepare data outside transaction
+final processedContacts = contacts.map((c) => 
+  Contact()
+    ..name = c.name.toUpperCase()
+    ..age = c.age
+).toList();
+
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(processedContacts);
+});
+```
+
+### ❌ DON'T: Heavy Operations Inside
+
+```dart
+// ❌ Bad - Heavy processing in transaction
+await isar.writeTxn(() async {
+  final processedContacts = contacts.map((c) => 
+    Contact()
+      ..name = c.name.toUpperCase()
+      ..age = c.age
+  ).toList();
+  
+  await isar.contacts.putAll(processedContacts);
+});
+```
+
+### ❌ DON'T: Network Calls
+
+```dart
+// ❌ Very Bad - Network call in transaction
+await isar.writeTxn(() async {
+  final response = await http.get('https://api.example.com/data');
+  final contacts = parseContacts(response.body);
+  await isar.contacts.putAll(contacts);
+});
+
+// ✅ Good - Network call outside
+final response = await http.get('https://api.example.com/data');
+final contacts = parseContacts(response.body);
+
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(contacts);
+});
+```
+
+<Callout type="warning">
+  Never perform network calls, file I/O, or other long-running operations inside transactions!
+</Callout>
+
+## Complex Transactions
+
+### Multiple Collections
+
+```dart
+await isar.writeTxn(() async {
+  // Create user
+  final user = User()..name = 'John';
+  await isar.users.put(user);
+  
+  // Create profile linked to user
+  final profile = Profile()
+    ..userId = user.id
+    ..bio = 'Developer';
+  await isar.profiles.put(profile);
+  
+  // Create posts
+  final posts = [
+    Post()..userId = user.id..title = 'First Post',
+    Post()..userId = user.id..title = 'Second Post',
+  ];
+  await isar.posts.putAll(posts);
+  
+  // All operations committed together ✅
+});
+```
+
+### Conditional Operations
+
+```dart
+await isar.writeTxn(() async {
+  final user = await isar.users.get(userId);
+  
+  if (user != null && user.age >= 18) {
+    user.verified = true;
+    await isar.users.put(user);
+  } else {
+    throw Exception('User not eligible');
+  }
+});
+```
+
+### Update with Validation
+
+```dart
+await isar.writeTxn(() async {
+  final users = await isar.users
+    .filter()
+    .ageGreaterThan(18)
+    .findAll();
+  
+  for (var user in users) {
+    if (!user.verified) {
+      user.verified = true;
+      user.verifiedAt = DateTime.now();
+      await isar.users.put(user);
+    }
+  }
+});
+```
+
+## Transaction Isolation
+
+<Tabs items={['Concurrent Reads', 'Read During Write', 'Write Blocking']}>
+  <Tab value="Concurrent Reads">
+    ```dart
+    // Multiple read transactions run in parallel
+    final future1 = isar.txn(() async {
+      return await isar.contacts.where().findAll();
+    });
+    
+    final future2 = isar.txn(() async {
+      return await isar.contacts.count();
+    });
+    
+    // Both execute simultaneously ⚡
+    final results = await Future.wait([future1, future2]);
+    ```
+  </Tab>
+  <Tab value="Read During Write">
+    ```dart
+    // Readers get consistent snapshot
+    unawaited(isar.writeTxn(() async {
+      await Future.delayed(Duration(seconds: 2));
+      await isar.contacts.put(newContact);
+    }));
+    
+    // This read sees old data (consistent snapshot)
+    final contacts = await isar.contacts.where().findAll();
+    // newContact is NOT included
+    ```
+  </Tab>
+  <Tab value="Write Blocking">
+    ```dart
+    // Write transactions execute serially
+    final future1 = isar.writeTxn(() async {
+      await Future.delayed(Duration(seconds: 1));
+      await isar.contacts.put(contact1);
+    });
+    
+    final future2 = isar.writeTxn(() async {
+      await isar.contacts.put(contact2);
+    });
+    
+    // future2 waits for future1 to complete
+    ```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+### Basic Error Handling
+
+```dart
+try {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact);
+  });
+  print('Transaction succeeded');
+} catch (e) {
+  print('Transaction failed: $e');
+  // Changes automatically rolled back
+}
+```
+
+### Custom Validation
+
+```dart
+class ValidationException implements Exception {
+  final String message;
+  ValidationException(this.message);
+}
+
+try {
+  await isar.writeTxn(() async {
+    if (contact.age < 0) {
+      throw ValidationException('Age cannot be negative');
+    }
+    await isar.contacts.put(contact);
+  });
+} on ValidationException catch (e) {
+  print('Validation error: ${e.message}');
+} catch (e) {
+  print('Unexpected error: $e');
+}
+```
+
+### Retry Logic
+
+```dart
+Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
+  for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await isar.writeTxn(() async {
+        await isar.contacts.put(contact);
+      });
+      return; // Success
+    } catch (e) {
+      if (attempt == maxAttempts) rethrow;
+      await Future.delayed(Duration(milliseconds: 100 * attempt));
+    }
+  }
+}
+```
+
+## Synchronous vs Asynchronous
+
+<Tabs items={['When to Use Async', 'When to Use Sync']}>
+  <Tab value="When to Use Async">
+    ```dart
+    // ✅ Use async in UI isolate
+    await isar.writeTxn(() async {
+      await isar.contacts.put(contact);
+    });
+    
+    // Doesn't block UI
+    ```
+  </Tab>
+  <Tab value="When to Use Sync">
+    ```dart
+    // ✅ Use sync in background isolate
+    isar.writeTxnSync(() {
+      isar.contacts.putSync(contact);
+    });
+    
+    // Faster, but blocks current isolate
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+  Default to async in UI code. Use sync only in background isolates for maximum performance.
+</Callout>
+
+## Performance Tips
+
+1. **Batch Operations**
+   ```dart
+   // ✅ Fast - 1 transaction
+   await isar.writeTxn(() => isar.contacts.putAll(list));
+   
+   // ❌ Slow - N transactions
+   for (var item in list) {
+     await isar.writeTxn(() => isar.contacts.put(item));
+   }
+   ```
+
+2. **Minimize Duration**
+   ```dart
+   // ✅ Fast
+   final data = prepareData();
+   await isar.writeTxn(() => isar.contacts.putAll(data));
+   
+   // ❌ Slow
+   await isar.writeTxn(() {
+     final data = prepareData(); // Heavy operation
+     await isar.contacts.putAll(data);
+   });
+   ```
+
+3. **Use Bulk Operations**
+   ```dart
+   // ✅ Optimized
+   await isar.writeTxn(() async {
+     await isar.contacts.putAll(contacts);
+     await isar.posts.deleteAll(postIds);
+   });
+   ```
+
+## Common Patterns
+
+### Create or Update
+
+```dart
+await isar.writeTxn(() async {
+  final existing = await isar.users
+    .filter()
+    .emailEqualTo(user.email)
+    .findFirst();
+  
+  if (existing != null) {
+    user.id = existing.id; // Reuse ID
+  }
+  
+  await isar.users.put(user);
+});
+```
+
+### Atomic Counter
+
+```dart
+Future<int> incrementCounter(String key) async {
+  return await isar.writeTxn(() async {
+    final counter = await isar.counters
+      .filter()
+      .keyEqualTo(key)
+      .findFirst() ?? Counter()..key = key..value = 0;
+    
+    counter.value++;
+    await isar.counters.put(counter);
+    return counter.value;
+  });
+}
+```
+
+### Bulk Update
+
+```dart
+await isar.writeTxn(() async {
+  final users = await isar.users
+    .filter()
+    .statusEqualTo('pending')
+    .findAll();
+  
+  for (var user in users) {
+    user.status = 'active';
+  }
+  
+  await isar.users.putAll(users);
+});
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="CRUD Operations" href="/docs/crud">
+    Learn basic database operations
+  </Card>
+  <Card title="Queries" href="/docs/queries">
+    Build efficient queries
+  </Card>
+  <Card title="Watchers" href="/docs/watchers">
+    React to data changes
+  </Card>
+  <Card title="Multi-Isolate" href="/docs/recipes/multi_isolate">
+    Use Isar across isolates
+  </Card>
+</Cards>

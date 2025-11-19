@@ -1,0 +1,144 @@
+---
+title: String IDs
+description: Learn how to use String UUIDs and maintain efficient integer IDs
+icon: Hash
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# String IDs
+
+This is one of the most frequent requests I get, so here is a tutorial on using String ids.
+
+Isar does not natively support String ids, and there is a good reason for it: integer ids are much more efficient and faster. Especially for links, the overhead of a String id is too significant.
+
+<Callout type="info" title="Best of Both Worlds">
+I understand that sometimes you have to store external data that uses UUIDs or other non-integer ids. I recommend storing the String id as a property in your object and using a fast hash implementation to generate a 64-bit int that can be used as Id.
+</Callout>
+
+## Implementation
+
+<Steps>
+### Add String ID Field
+
+Store your UUID or external ID as a regular string property.
+
+### Generate Integer ID
+
+Use a fast hash function to convert the string to a 64-bit integer.
+
+### Use for Links
+
+The integer ID will be used for efficient links and indexing.
+</Steps>
+
+```dart title="user.dart"
+@collection
+class User {
+  String? id;
+
+  Id get isarId => fastHash(id!);
+
+  String? name;
+
+  int? age;
+}
+```
+
+With this approach, you get the best of both worlds: Efficient integer ids for links and the ability to use String ids.
+
+## Fast Hash Function
+
+Ideally, your hash function should have high quality (you don't want collisions) and be fast. I recommend using the following implementation:
+
+```dart title="fast_hash.dart"
+/// FNV-1a 64bit hash algorithm optimized for Dart Strings
+int fastHash(String string) {
+  var hash = 0xcbf29ce484222325;
+
+  var i = 0;
+  while (i < string.length) {
+    final codeUnit = string.codeUnitAt(i++);
+    hash ^= codeUnit >> 8;
+    hash *= 0x100000001b3;
+    hash ^= codeUnit & 0xFF;
+    hash *= 0x100000001b3;
+  }
+
+  return hash;
+}
+```
+
+### Hash Function Requirements
+
+If you choose a different hash function, ensure it:
+
+- Returns a 64-bit integer
+- Has low collision rates
+- Is fast (avoid cryptographic hashes)
+- Is consistent across platforms
+
+<Callout type="warn" title="Platform Stability">
+Avoid using `string.hashCode` because it is not guaranteed to be stable across different platforms and versions of Dart.
+</Callout>
+
+## Usage Example
+
+```dart title="example.dart"
+void main() async {
+  final isar = await Isar.open([UserSchema]);
+
+  // Create user with UUID
+  final user = User()
+    ..id = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+    ..name = 'John Doe'
+    ..age = 30;
+
+  // The isarId getter automatically generates the integer ID
+  await isar.writeAsync((isar) async {
+    await isar.users.put(user);
+  });
+
+  // Query by string ID
+  final foundUser = await isar.users
+    .filter()
+    .idEqualTo('f47ac10b-58cc-4372-a567-0e02b2c3d479')
+    .findFirst();
+
+  // Or by integer ID for faster lookups
+  final byIntId = await isar.users.get(fastHash(user.id!));
+}
+```
+
+## Alternative Hash Functions
+
+### MurmurHash3
+
+```dart
+int murmurHash3(String string) {
+  var hash = 0x811c9dc5;
+  for (var i = 0; i < string.length; i++) {
+    hash ^= string.codeUnitAt(i);
+    hash *= 0x01000193;
+  }
+  return hash;
+}
+```
+
+### CityHash (for longer strings)
+
+For longer UUIDs or strings, consider using CityHash which has better collision resistance for longer inputs.
+
+## Performance Comparison
+
+| Hash Function | Speed | Collision Rate | Best For |
+|--------------|-------|----------------|----------|
+| FNV-1a | ⚡⚡⚡ | Low | General use |
+| MurmurHash3 | ⚡⚡ | Very Low | UUID/GUID |
+| CityHash | ⚡ | Very Low | Long strings |
+| String.hashCode | ⚡⚡⚡ | Platform dependent | ❌ Avoid |
+
+<Callout type="info" title="Recommendation">
+For most UUID/GUID scenarios, the FNV-1a implementation provided above offers the best balance of speed and collision resistance.
+</Callout>

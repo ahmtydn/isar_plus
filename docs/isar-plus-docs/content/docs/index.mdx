@@ -1,17 +1,95 @@
 ---
-title: Hello World
-description: Your first document
+title: Welcome to Isar Plus
+description: High-performance NoSQL database for Flutter applications
+icon: Home
 ---
 
-Hey there!
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Heading
+# Welcome to Isar Plus
+
+Isar Plus is a blazing fast, easy to use, and fully featured database for Flutter and Dart applications.
+
+<Callout type="info">
+  Isar Plus is a community-maintained fork of the original Isar database, with enhanced features and ongoing support.
+</Callout>
+
+## Why Isar Plus?
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="💙 Made for Flutter" href="/docs/quickstart">
+    Minimal setup, Easy to use, no config, no boilerplate. Just add a few lines of code to get started.
+  </Card>
+  <Card title="🚀 Highly Scalable" href="/docs/crud">
+    Store hundreds of thousands of records in a single NoSQL database and query them efficiently and asynchronously.
+  </Card>
+  <Card title="🍭 Feature-Rich" href="/docs/queries">
+    Composite & multi-entry indexes, query modifiers, JSON support, and more.
+  </Card>
+  <Card title="🔎 Full-Text Search" href="/docs/indexes">
+    Built-in full-text search. Create a multi-entry index and search for records easily.
+  </Card>
+  <Card title="🧪 ACID Semantics" href="/docs/transactions">
+    ACID compliant and handles transactions automatically. Rolls back changes if an error occurs.
+  </Card>
+  <Card title="💃 Static Typing" href="/docs/schema">
+    Queries are statically typed and compile-time checked. No need to worry about runtime errors.
+  </Card>
+  <Card title="📱 Multiplatform" href="/docs/limitations">
+    iOS, Android, Desktop, and persistent Flutter Web storage via OPFS/IndexedDB.
+  </Card>
+  <Card title="⏱ Asynchronous" href="/docs/watchers">
+    Parallel query operations & multi-isolate support out-of-the-box.
+  </Card>
 </Cards>
 
-### Heading
+## Quick Start
 
-#### Heading
+Get started with Isar Plus in minutes:
+
+```dart
+// 1. Add to pubspec.yaml
+dependencies:
+  isar_plus: ^4.0.0
+  isar_plus_flutter_libs: ^4.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+
+// 2. Define your schema
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+  String? name;
+  int? age;
+}
+
+// 3. Open Isar and use it
+final isar = await Isar.open([UserSchema]);
+
+final user = User()
+  ..name = 'John'
+  ..age = 25;
+
+await isar.writeTxn(() async {
+  await isar.users.put(user);
+});
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Quick Start Guide" href="/docs/quickstart">
+    Learn how to install and set up Isar Plus in your project
+  </Card>
+  <Card title="Schema Definition" href="/docs/schema">
+    Understand how to define your data models
+  </Card>
+  <Card title="CRUD Operations" href="/docs/crud">
+    Master Create, Read, Update, Delete operations
+  </Card>
+  <Card title="Queries" href="/docs/queries">
+    Learn how to query your data efficiently
+  </Card>
+</Cards>

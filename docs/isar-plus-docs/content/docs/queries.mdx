@@ -1,0 +1,576 @@
+---
+title: Queries
+description: Build powerful and efficient queries with Isar Plus
+icon: Search
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Queries
+
+Querying is how you find records that match certain conditions. Learn how to build powerful queries and optimize them with indexes.
+
+<Callout type="info">
+  Queries are executed on the database, not in Dart, making them incredibly fast!
+</Callout>
+
+## Overview
+
+There are two different methods of filtering your records:
+
+1. **Filters** - Easy to use, work on any property
+2. **Where clauses** - More powerful, require indexes
+
+## Filters
+
+Filters evaluate an expression for every object in the collection. If the expression resolves to `true`, the object is included in the results.
+
+### Example Model
+
+```dart
+@collection
+class Shoe {
+  Id? id;
+
+  int? size;
+
+  late String model;
+
+  late bool isUnisex;
+}
+```
+
+### Query Conditions
+
+<Tabs items={['Equality', 'Comparison', 'Range', 'Null Check']}>
+  <Tab value="Equality">
+    ```dart
+    // Find size 46 shoes
+    final result = await isar.shoes.filter()
+      .sizeEqualTo(46)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="Comparison">
+    ```dart
+    // Find shoes smaller than size 40
+    final result = await isar.shoes.filter()
+      .sizeLessThan(40)
+      .findAll(); // -> [39, null]
+    
+    // Include the boundary
+    final result2 = await isar.shoes.filter()
+      .sizeLessThan(40, include: true)
+      .findAll(); // -> [39, null, 40]
+    ```
+  </Tab>
+  <Tab value="Range">
+    ```dart
+    // Find shoes between size 39 and 46
+    final result = await isar.shoes.filter()
+      .sizeBetween(39, 46)
+      .findAll();
+    
+    // Exclude lower bound
+    final result2 = await isar.shoes.filter()
+      .sizeBetween(39, 46, includeLower: false)
+      .findAll(); // -> [40, 46]
+    ```
+  </Tab>
+  <Tab value="Null Check">
+    ```dart
+    // Find shoes with null size
+    final nullSizes = await isar.shoes.filter()
+      .sizeIsNull()
+      .findAll();
+    
+    // Find shoes with non-null size
+    final withSizes = await isar.shoes.filter()
+      .sizeIsNotNull()
+      .findAll();
+    ```
+  </Tab>
+</Tabs>
+
+### Available Conditions
+
+| Condition | Description |
+| --- | --- |
+| `.equalTo(value)` | Matches values equal to specified value |
+| `.between(lower, upper)` | Matches values between lower and upper |
+| `.greaterThan(bound)` | Matches values greater than bound |
+| `.lessThan(bound)` | Matches values less than bound |
+| `.isNull()` | Matches null values |
+| `.isNotNull()` | Matches non-null values |
+| `.length()` | Query based on list/string length |
+
+## Logical Operators
+
+Combine multiple conditions using logical operators:
+
+```dart
+// AND operator (implicit)
+final result = await isar.shoes.filter()
+  .sizeEqualTo(46)
+  .and() // Optional
+  .isUnisexEqualTo(true)
+  .findAll();
+// Equivalent to: size == 46 && isUnisex == true
+```
+
+<Tabs items={['AND', 'OR', 'NOT', 'GROUP']}>
+  <Tab value="AND">
+    ```dart
+    final result = await isar.shoes.filter()
+      .sizeEqualTo(46)
+      .and()
+      .isUnisexEqualTo(true)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="OR">
+    ```dart
+    final result = await isar.shoes.filter()
+      .sizeEqualTo(46)
+      .or()
+      .sizeEqualTo(40)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="NOT">
+    ```dart
+    final result = await isar.shoes.filter()
+      .not().sizeEqualTo(46)
+      .and()
+      .not().isUnisexEqualTo(true)
+      .findAll();
+    // Equivalent to: size != 46 && isUnisex != true
+    ```
+  </Tab>
+  <Tab value="GROUP">
+    ```dart
+    final result = await isar.shoes.filter()
+      .sizeBetween(43, 46)
+      .and()
+      .group((q) => q
+        .modelContains('Nike')
+        .or()
+        .isUnisexEqualTo(false)
+      )
+      .findAll();
+    // Equivalent to: size >= 43 && size <= 46 && 
+    // (model.contains('Nike') || isUnisex == false)
+    ```
+  </Tab>
+</Tabs>
+
+## String Conditions
+
+Strings have additional powerful query conditions:
+
+```dart
+@collection
+class Product {
+  Id? id;
+  late String name;
+}
+```
+
+<Tabs items={['StartsWith', 'Contains', 'EndsWith', 'Matches']}>
+  <Tab value="StartsWith">
+    ```dart
+    final products = await isar.products.filter()
+      .nameStartsWith('iPhone')
+      .findAll();
+    
+    // Case insensitive
+    final products2 = await isar.products.filter()
+      .nameStartsWith('iphone', caseSensitive: false)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="Contains">
+    ```dart
+    final products = await isar.products.filter()
+      .nameContains('Pro')
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="EndsWith">
+    ```dart
+    final products = await isar.products.filter()
+      .nameEndsWith('Max')
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="Matches">
+    ```dart
+    // Wildcard patterns: * (zero or more), ? (one char)
+    final products = await isar.products.filter()
+      .nameMatches('iPhone *Pro')
+      .findAll();
+    // Matches: "iPhone 14 Pro", "iPhone 15 Pro", etc.
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+  All string operations have an optional `caseSensitive` parameter that defaults to `true`.
+</Callout>
+
+## Query Modifiers
+
+Build dynamic queries based on conditions:
+
+### Optional Queries
+
+```dart
+Future<List<Shoe>> findShoes(int? sizeFilter) {
+  return isar.shoes.filter()
+    .optional(
+      sizeFilter != null,
+      (q) => q.sizeEqualTo(sizeFilter!),
+    )
+    .findAll();
+}
+```
+
+### AnyOf Modifier
+
+```dart
+// Find shoes with size 38, 40, or 42
+final shoes = await isar.shoes.filter()
+  .anyOf(
+    [38, 40, 42],
+    (q, int size) => q.sizeEqualTo(size)
+  )
+  .findAll();
+
+// Equivalent to:
+final shoes2 = await isar.shoes.filter()
+  .sizeEqualTo(38)
+  .or()
+  .sizeEqualTo(40)
+  .or()
+  .sizeEqualTo(42)
+  .findAll();
+```
+
+### AllOf Modifier
+
+```dart
+final shoes = await isar.shoes.filter()
+  .allOf(
+    ['Nike', 'Adidas'],
+    (q, brand) => q.modelContains(brand)
+  )
+  .findAll();
+```
+
+## List Queries
+
+Query based on list properties:
+
+```dart
+@collection
+class Tweet {
+  Id? id;
+  String? text;
+  List<String> hashtags = [];
+}
+```
+
+<Tabs items={['Length', 'Contains', 'Empty']}>
+  <Tab value="Length">
+    ```dart
+    // Tweets with many hashtags
+    final tweets = await isar.tweets.filter()
+      .hashtagsLengthGreaterThan(5)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="Contains">
+    ```dart
+    // Find tweets with specific hashtag
+    final flutterTweets = await isar.tweets.filter()
+      .hashtagsElementEqualTo('flutter')
+      .findAll();
+    // Equivalent to: tweets.where((t) => 
+    //   t.hashtags.contains('flutter'))
+    ```
+  </Tab>
+  <Tab value="Empty">
+    ```dart
+    // Find tweets without hashtags
+    final tweets = await isar.tweets.filter()
+      .hashtagsIsEmpty()
+      .findAll();
+    ```
+  </Tab>
+</Tabs>
+
+## Embedded Objects
+
+Query nested embedded objects efficiently:
+
+```dart
+@collection
+class Car {
+  Id? id;
+  Brand? brand;
+}
+
+@embedded
+class Brand {
+  String? name;
+  String? country;
+}
+```
+
+```dart
+// Find BMW cars from Germany
+final germanCars = await isar.cars.filter()
+  .brand((q) => q
+    .nameEqualTo('BMW')
+    .and()
+    .countryEqualTo('Germany')
+  )
+  .findAll();
+```
+
+<Callout type="success">
+  Always group nested queries for better performance!
+</Callout>
+
+## Link Queries
+
+Query based on linked objects:
+
+```dart
+@collection
+class Teacher {
+  Id? id;
+  late String subject;
+}
+
+@collection
+class Student {
+  Id? id;
+  late String name;
+  final teachers = IsarLinks<Teacher>();
+}
+```
+
+```dart
+// Find students with math or English teacher
+final students = await isar.students.filter()
+  .teachers((q) => q
+    .subjectEqualTo('Math')
+    .or()
+    .subjectEqualTo('English')
+  )
+  .findAll();
+
+// Query by link count
+final studentsWithManyTeachers = await isar.students.filter()
+  .teachersLengthGreaterThan(3)
+  .findAll();
+```
+
+<Callout type="warning">
+  Link queries can be expensive. Consider using embedded objects for better performance.
+</Callout>
+
+## Where Clauses
+
+Where clauses use indexes for ultra-fast queries:
+
+```dart
+@collection
+class Product {
+  Id? id;
+  
+  @Index()
+  late String name;
+  
+  @Index()
+  late int price;
+}
+```
+
+```dart
+// Use index for fast query
+final products = await isar.products
+  .where()
+  .nameEqualTo('iPhone')
+  .findAll();
+
+// Combine with filters
+final expensiveIPhones = await isar.products
+  .where()
+  .nameEqualTo('iPhone')
+  .filter()
+  .priceGreaterThan(1000)
+  .findAll();
+```
+
+<Callout type="info">
+  Where clauses are much faster than filters but require indexes.
+</Callout>
+
+## Query Operations
+
+### Find Operations
+
+<Tabs items={['findAll', 'findFirst', 'count', 'isEmpty']}>
+  <Tab value="findAll">
+    ```dart
+    final allShoes = await isar.shoes
+      .filter()
+      .sizeGreaterThan(40)
+      .findAll();
+    ```
+  </Tab>
+  <Tab value="findFirst">
+    ```dart
+    final firstShoe = await isar.shoes
+      .filter()
+      .sizeEqualTo(46)
+      .findFirst();
+    ```
+  </Tab>
+  <Tab value="count">
+    ```dart
+    final count = await isar.shoes
+      .filter()
+      .sizeGreaterThan(40)
+      .count();
+    ```
+  </Tab>
+  <Tab value="isEmpty">
+    ```dart
+    final isEmpty = await isar.shoes
+      .filter()
+      .sizeEqualTo(99)
+      .isEmpty();
+    ```
+  </Tab>
+</Tabs>
+
+### Delete Operations
+
+```dart
+// Delete matching objects
+await isar.writeTxn(() async {
+  final count = await isar.shoes
+    .filter()
+    .sizeLessThan(35)
+    .deleteAll();
+  print('Deleted $count shoes');
+});
+```
+
+## Sorting
+
+Sort results by any property:
+
+```dart
+// Ascending
+final sorted = await isar.shoes
+  .filter()
+  .sortBySize()
+  .findAll();
+
+// Descending
+final sortedDesc = await isar.shoes
+  .filter()
+  .sortBySizeDesc()
+  .findAll();
+
+// Multiple sorts
+final multiSort = await isar.shoes
+  .filter()
+  .sortBySize()
+  .thenByModel()
+  .findAll();
+```
+
+<Callout type="warning">
+  Sorting without indexes is expensive for large datasets. Use indexed where clauses for sorting when possible.
+</Callout>
+
+## Limit & Offset
+
+```dart
+// Get first 10 results
+final first10 = await isar.shoes
+  .where()
+  .limit(10)
+  .findAll();
+
+// Skip first 20, get next 10
+final paginated = await isar.shoes
+  .where()
+  .offset(20)
+  .limit(10)
+  .findAll();
+```
+
+## Distinct
+
+```dart
+// Get unique sizes
+final uniqueSizes = await isar.shoes
+  .where()
+  .distinctBySize()
+  .findAll();
+```
+
+## Best Practices
+
+1. **Use Where Clauses with Indexes**
+   ```dart
+   // ✅ Fast - uses index
+   await isar.products.where().nameEqualTo('iPhone').findAll();
+   
+   // ❌ Slow - scans all records
+   await isar.products.filter().nameEqualTo('iPhone').findAll();
+   ```
+
+2. **Combine Where and Filter**
+   ```dart
+   // ✅ Optimal - index + filter
+   await isar.products
+     .where()
+     .nameEqualTo('iPhone')
+     .filter()
+     .priceGreaterThan(500)
+     .findAll();
+   ```
+
+3. **Group Nested Queries**
+   ```dart
+   // ✅ Efficient
+   .brand((q) => q.nameEqualTo('BMW').and().countryEqualTo('Germany'))
+   
+   // ❌ Inefficient
+   .brand((q) => q.nameEqualTo('BMW'))
+   .and()
+   .brand((q) => q.countryEqualTo('Germany'))
+   ```
+
+## Next Steps
+
+<Cards>
+  <Card title="Indexes" href="/docs/indexes">
+    Learn how to create and use indexes
+  </Card>
+  <Card title="Transactions" href="/docs/transactions">
+    Understand transactions
+  </Card>
+  <Card title="Watchers" href="/docs/watchers">
+    React to query changes
+  </Card>
+</Cards>
