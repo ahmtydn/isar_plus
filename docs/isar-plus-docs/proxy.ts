@@ -7,18 +7,16 @@ const { rewrite: rewriteLLM } = rewritePath('/:lang/docs/*path', '/llms.mdx/*pat
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Handle .mdx requests directly
   if (pathname.includes('.mdx')) {
-    // Extract the path without .mdx and get the slug
     const mdxMatch = pathname.match(/\/([^/]+)\/docs\/(.+)\.mdx$/);
     if (mdxMatch) {
-      const [, lang, slug] = mdxMatch;
-      const newUrl = new URL(`/llms.mdx/${slug}`, request.url);
+      const [, lang, fullSlug] = mdxMatch;
+      const slug = fullSlug.replace(new RegExp(`\\.${lang}$`), '');
+      const newUrl = new URL(`/${lang}/llms.mdx/${slug}`, request.url);
       return NextResponse.rewrite(newUrl);
     }
   }
 
-  // Handle Accept header markdown preference
   if (isMarkdownPreferred(request)) {
     const result = rewriteLLM(pathname);
     if (result) {

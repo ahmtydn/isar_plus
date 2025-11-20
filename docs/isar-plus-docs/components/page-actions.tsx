@@ -87,9 +87,10 @@ export function ViewOptions({
   githubUrl: string;
 }) {
   const items = useMemo(() => {
+    // Only generate the full URL on client side
     const fullMarkdownUrl =
       typeof window !== 'undefined'
-        ? new URL(markdownUrl, window.location.origin).toString()
+        ? `${window.location.origin}${markdownUrl}`
         : markdownUrl;
     const q = `Read ${fullMarkdownUrl}, I want to ask questions about it.`;
 

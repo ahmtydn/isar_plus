@@ -21,6 +21,14 @@ export default async function Page(
 
   const MDX = page.data.body;
 
+  // Construct URLs based on language
+  const slugPath = params.slug?.join('/') || 'index';
+  const langSuffix = params.lang === 'en' ? '' : `.${params.lang}`;
+  const githubUrl = `https://github.com/ahmtydn/isar_plus/blob/main/docs/isar-plus-docs/content/docs/${slugPath}${langSuffix}.mdx`;
+
+  // Markdown URL should include the slug path with language suffix
+  const markdownUrl = `/${params.lang}/docs/${slugPath}${langSuffix}.mdx`;
+
   return (
     <DocsPage
       tableOfContent={{
@@ -31,10 +39,10 @@ export default async function Page(
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6">
-        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+        <LLMCopyButton markdownUrl={markdownUrl} />
         <ViewOptions
-          markdownUrl={`${page.url}.mdx`}
-          githubUrl={`https://github.com/ahmtydn/isar_plus/blob/main/docs/isar-plus-docs/content/docs${page.url.replace('/docs', '')}.mdx`}
+          markdownUrl={markdownUrl}
+          githubUrl={githubUrl}
         />
       </div>
       <DocsBody>
