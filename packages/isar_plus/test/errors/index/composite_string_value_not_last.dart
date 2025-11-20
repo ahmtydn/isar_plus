@@ -6,7 +6,7 @@ import 'package:isar_plus/isar_plus.dart';
 class Model {
   late int id;
 
-  @Index(composite: ['str2'], hash: false)
+  @Index(composite: ['str2'])
   String? str1;
 
   String? str2;
