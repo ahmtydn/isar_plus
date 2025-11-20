@@ -55,7 +55,7 @@ Isar Plus is an enhanced fork of the original [Isar database](https://github.com
 📚 **Comprehensive documentation is available at [isarplus.ahmetaydin.dev](https://isarplus.ahmetaydin.dev)**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar_docs.svg?sanitize=true" width="80%" alt="Isar Plus Documentation">
+  <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar_docs.png?sanitize=true" alt="Isar Plus Documentation">
 </p>
 
 Join the [Telegram group](https://t.me/isarplus) for discussion and sneak peeks of new versions of the DB.
