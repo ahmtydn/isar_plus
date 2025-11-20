@@ -461,8 +461,8 @@ final expensiveIPhones = await isar.products
 
 ```dart
 // Koşulu sağlayan nesneleri sil
-await isar.writeTxn(() async {
-  final count = await isar.shoes
+await isar.writeAsync((isar) async {
+  final count = isar.shoes
     .filter()
     .sizeLessThan(35)
     .deleteAll();

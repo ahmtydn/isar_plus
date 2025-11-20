@@ -118,8 +118,8 @@ final user = User()
   ..age = 25
   ..email = 'john@example.com';
 
-await isar.writeTxn(() async {
-  await isar.users.put(user);
+await isar.writeAsync((isar) async {
+  isar.users.put(user);
 });
 
 // Oku
@@ -132,14 +132,14 @@ final youngUsers = await isar.users
   .findAll();
 
 // Güncelle
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   user.age = 26;
-  await isar.users.put(user);
+  isar.users.put(user);
 });
 
 // Sil
-await isar.writeTxn(() async {
-  await isar.users.delete(user.id);
+await isar.writeAsync((isar) async {
+  isar.users.delete(user.id);
 });
 ```
 

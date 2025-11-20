@@ -29,8 +29,8 @@ import { Steps } from 'fumadocs-ui/components/steps';
 
 | Tür | Sync Metodu | Async Metodu | Kullanım |
 | --- | --- | --- | --- |
-| Okuma | `.txn()` | `.txnSync()` | Tutarlı okumalar |
-| Yazma | `.writeTxn()` | `.writeTxnSync()` | Veri değişiklikleri |
+| Okuma | `.read()` | `.readAsync()` | Tutar lı okumalar |
+| Yazma | `.write()` | `.writeAsync()` | Veri değişiklikleri |
 
 <Callout type="info">
   Çoğu okuma işlemi otomatik olarak örtük transaction kullanır.
@@ -53,9 +53,9 @@ class Contact {
   <Tab value="Async">
     ```dart
     // Açık async okuma işlemi
-    final result = await isar.txn(() async {
+    final result = await isar.readAsync((isar) async {
       final contacts = await isar.contacts.where().findAll();
-      final count = await isar.contacts.count();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,
@@ -67,9 +67,9 @@ class Contact {
   <Tab value="Sync">
     ```dart
     // Senkron okuma işlemi
-    final result = isar.txnSync(() {
-      final contacts = isar.contacts.where().findAllSync();
-      final count = isar.contacts.countSync();
+    final result = isar.read((isar) {
+      final contacts = isar.contacts.where().findAll();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,
@@ -96,12 +96,12 @@ class Contact {
 Tüm yazma operasyonları açık bir transaction içinde olmalıdır:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final contact = Contact()
     ..name = 'John Doe'
     ..age = 25;
   
-  await isar.contacts.put(contact);
+  isar.contacts.put(contact);
 });
 ```
 
@@ -110,10 +110,10 @@ await isar.writeTxn(() async {
 İşlemler başarıyla tamamlanınca otomatik commit olur:
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.contacts.put(contact1);
-  await isar.contacts.put(contact2);
-  await isar.contacts.put(contact3);
+await isar.writeAsync((isar) async {
+  isar.contacts.put(contact1);
+  isar.contacts.put(contact2);
+  isar.contacts.put(contact3);
   // Tüm değişiklikler birlikte commit edilir ✅
 });
 ```
@@ -124,11 +124,11 @@ Hata durumunda işlemler otomatik geri alınır:
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact1); // ✅ Çalıştı
-    await isar.contacts.put(contact2); // ✅ Çalıştı
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact1); // ✅ Çalıştı
+    isar.contacts.put(contact2); // ✅ Çalıştı
     throw Exception('Error!');
-    await isar.contacts.put(contact3); // ❌ Çalışmadı
+    isar.contacts.put(contact3); // ❌ Çalışmadı
   });
 } catch (e) {
   // Tüm değişiklikler geri alındı ↩️
@@ -146,15 +146,15 @@ try {
 
 ```dart
 // ✅ İyi - Tek transaction
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   for (var contact in contacts) {
-    await isar.contacts.put(contact);
+    isar.contacts.put(contact);
   }
 });
 
 // ✅ Daha iyi - Bulk
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(contacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(contacts);
 });
 ```
 
@@ -163,8 +163,8 @@ await isar.writeTxn(() async {
 ```dart
 // ❌ Kötü - Çok sayıda transaction (yavaş!)
 for (var contact in contacts) {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact);
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact);
   });
 }
 ```
@@ -179,8 +179,8 @@ final processedContacts = contacts.map((c) =>
     ..age = c.age
 ).toList();
 
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(processedContacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(processedContacts);
 });
 ```
 
@@ -188,33 +188,33 @@ await isar.writeTxn(() async {
 
 ```dart
 // ❌ Kötü - Transaction içinde ağır işlem
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final processedContacts = contacts.map((c) => 
     Contact()
       ..name = c.name.toUpperCase()
       ..age = c.age
   ).toList();
   
-  await isar.contacts.putAll(processedContacts);
+  isar.contacts.putAll(processedContacts);
 });
 ```
 
 ### ❌ Yapmayın: Ağ Çağrıları
 
 ```dart
-// ❌ Çok Kötü - Transaction içinde ağ çağrısı
-await isar.writeTxn(() async {
+// ❌ Çok Kötü - Transaction içinde network çağrısı
+await isar.writeAsync((isar) async {
   final response = await http.get('https://api.example.com/data');
   final contacts = parseContacts(response.body);
-  await isar.contacts.putAll(contacts);
+  isar.contacts.putAll(contacts);
 });
 
-// ✅ İyi - Ağ çağrısı dışarıda
+// ✅ İyi - Network çağrısı dışarıda
 final response = await http.get('https://api.example.com/data');
 final contacts = parseContacts(response.body);
 
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(contacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(contacts);
 });
 ```
 
@@ -227,23 +227,23 @@ await isar.writeTxn(() async {
 ### Çoklu Koleksiyon
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   // Kullanıcı oluştur
   final user = User()..name = 'John';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Kullanıcıya bağlı profil
   final profile = Profile()
     ..userId = user.id
     ..bio = 'Developer';
-  await isar.profiles.put(profile);
+  isar.profiles.put(profile);
   
   // Gönderiler
   final posts = [
     Post()..userId = user.id..title = 'First Post',
     Post()..userId = user.id..title = 'Second Post',
   ];
-  await isar.posts.putAll(posts);
+  isar.posts.putAll(posts);
   
   // Hepsi birlikte commit ✅
 });
@@ -252,12 +252,12 @@ await isar.writeTxn(() async {
 ### Koşullu İşlemler
 
 ```dart
-await isar.writeTxn(() async {
-  final user = await isar.users.get(userId);
+await isar.writeAsync((isar) async {
+  final user = await isar.users.getAsync(userId);
   
   if (user != null && user.age >= 18) {
     user.verified = true;
-    await isar.users.put(user);
+    isar.users.put(user);
   } else {
     throw Exception('User not eligible');
   }
@@ -267,17 +267,17 @@ await isar.writeTxn(() async {
 ### Doğrulamalı Güncelleme
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final users = await isar.users
     .filter()
     .ageGreaterThan(18)
-    .findAll();
+    .findAllAsync();
   
   for (var user in users) {
     if (!user.verified) {
       user.verified = true;
       user.verifiedAt = DateTime.now();
-      await isar.users.put(user);
+      isar.users.put(user);
     }
   }
 });
@@ -289,12 +289,12 @@ await isar.writeTxn(() async {
   <Tab value="Eşzamanlı Okumalar">
     ```dart
     // Birden fazla okuma işlemi paralel çalışır
-    final future1 = isar.txn(() async {
-      return await isar.contacts.where().findAll();
+    final future1 = isar.readAsync((isar) async {
+      return await isar.contacts.where().findAllAsync();
     });
     
-    final future2 = isar.txn(() async {
-      return await isar.contacts.count();
+    final future2 = isar.readAsync((isar) async {
+      return await isar.contacts.countAsync();
     });
     
     // İkisi de aynı anda çalışır ⚡
@@ -304,26 +304,26 @@ await isar.writeTxn(() async {
   <Tab value="Yazma Sırasında Okuma">
     ```dart
     // Okuyucular tutarlı snapshot görür
-    unawaited(isar.writeTxn(() async {
+    unawaited(isar.writeAsync((isar) async {
       await Future.delayed(Duration(seconds: 2));
-      await isar.contacts.put(newContact);
+      isar.contacts.put(newContact);
     }));
     
     // Bu okuma eski veriyi görür (tutarlı snapshot)
-    final contacts = await isar.contacts.where().findAll();
+    final contacts = await isar.contacts.where().findAllAsync();
     // newContact dahil değildir
     ```
   </Tab>
   <Tab value="Yazmaların Bloklanması">
     ```dart
     // Yazma işlemleri seri olarak çalışır
-    final future1 = isar.writeTxn(() async {
+    final future1 = isar.writeAsync((isar) async {
       await Future.delayed(Duration(seconds: 1));
-      await isar.contacts.put(contact1);
+      isar.contacts.put(contact1);
     });
     
-    final future2 = isar.writeTxn(() async {
-      await isar.contacts.put(contact2);
+    final future2 = isar.writeAsync((isar) async {
+      isar.contacts.put(contact2);
     });
     
     // future2, future1'in bitmesini bekler
@@ -337,8 +337,8 @@ await isar.writeTxn(() async {
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact);
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact);
   });
   print('Transaction succeeded');
 } catch (e) {
@@ -356,7 +356,7 @@ class ValidationException implements Exception {
 }
 
 try {
-  await isar.writeTxn(() async {
+  await isar.writeAsync((isar) async {
     if (contact.age < 0) {
       throw ValidationException('Age cannot be negative');
     }
@@ -375,8 +375,8 @@ try {
 Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   for (var attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      await isar.writeTxn(() async {
-        await isar.contacts.put(contact);
+      await isar.writeAsync((isar) async {
+        isar.contacts.put(contact);
       });
       return; // Başarılı
     } catch (e) {
@@ -393,8 +393,8 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   <Tab value="Ne Zaman Async">
     ```dart
     // ✅ UI izolatında async kullanın
-    await isar.writeTxn(() async {
-      await isar.contacts.put(contact);
+    await isar.writeAsync((isar) async {
+      isar.contacts.put(contact);
     });
     
     // UI'ı bloklamaz
@@ -403,8 +403,8 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   <Tab value="Ne Zaman Sync">
     ```dart
     // ✅ Arka plan izolatında sync kullanın
-    isar.writeTxnSync(() {
-      isar.contacts.putSync(contact);
+    isar.write((isar) {
+      isar.contacts.put(contact);
     });
     
     // Daha hızlıdır ancak mevcut izolatı bloklar
@@ -421,11 +421,11 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 1. **Toplu İşlemler**
    ```dart
    // ✅ Hızlı - 1 transaction
-   await isar.writeTxn(() => isar.contacts.putAll(list));
+   await isar.writeAsync((isar) => isar.contacts.putAll(list));
    
    // ❌ Yavaş - N transaction
    for (var item in list) {
-     await isar.writeTxn(() => isar.contacts.put(item));
+     await isar.writeAsync((isar) => isar.contacts.put(item));
    }
    ```
 
@@ -433,21 +433,21 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
    ```dart
    // ✅ Hızlı
    final data = prepareData();
-   await isar.writeTxn(() => isar.contacts.putAll(data));
+   await isar.writeAsync((isar) => isar.contacts.putAll(data));
    
    // ❌ Yavaş
-   await isar.writeTxn(() {
+   await isar.writeAsync((isar) {
      final data = prepareData(); // Ağır işlem
-     await isar.contacts.putAll(data);
+     isar.contacts.putAll(data);
    });
    ```
 
 3. **Bulk Operasyonları Kullanın**
    ```dart
    // ✅ Optimize
-   await isar.writeTxn(() async {
-     await isar.contacts.putAll(contacts);
-     await isar.posts.deleteAll(postIds);
+   await isar.writeAsync((isar) async {
+     isar.contacts.putAll(contacts);
+     isar.posts.deleteAll(postIds);
    });
    ```
 
@@ -456,17 +456,17 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 ### Oluştur veya Güncelle
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final existing = await isar.users
     .filter()
     .emailEqualTo(user.email)
-    .findFirst();
+    .findFirstAsync();
   
   if (existing != null) {
     user.id = existing.id; // ID'yi yeniden kullan
   }
   
-  await isar.users.put(user);
+  isar.users.put(user);
 });
 ```
 
@@ -474,14 +474,14 @@ await isar.writeTxn(() async {
 
 ```dart
 Future<int> incrementCounter(String key) async {
-  return await isar.writeTxn(() async {
+  return await isar.writeAsync((isar) async {
     final counter = await isar.counters
       .filter()
       .keyEqualTo(key)
-      .findFirst() ?? Counter()..key = key..value = 0;
+      .findFirstAsync() ?? Counter()..key = key..value = 0;
     
     counter.value++;
-    await isar.counters.put(counter);
+    isar.counters.put(counter);
     return counter.value;
   });
 }
@@ -490,17 +490,17 @@ Future<int> incrementCounter(String key) async {
 ### Toplu Güncelleme
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final users = await isar.users
     .filter()
     .statusEqualTo('pending')
-    .findAll();
+    .findAllAsync();
   
   for (var user in users) {
     user.status = 'active';
   }
   
-  await isar.users.putAll(users);
+  isar.users.putAll(users);
 });
 ```
 

@@ -131,26 +131,26 @@ class LargeDocument {
     isar.users.filter().nameMatches('pattern');
     
     // ❌ Bazı senkron transaction metodları
-    isar.writeTxnSync(() {
-      isar.users.putSync(user);
+    isar.write((isar) {
+      isar.users.put(user);
     });
     ```
   </Tab>
   <Tab value="Desteklenir">
     ```dart
     // ✅ Tüm async işlemler
-    await isar.users.get(1);
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.users.getAsync(1);
+    await isar.writeAsync((isar) => isar.users.put(user));
     
     // ✅ Filtreler ve sorgular
     await isar.users.filter()
       .nameContains('John')
-      .findAll();
+      .findAllAsync();
     
     // ✅ Where cümleleri
     await isar.users.where()
       .nameEqualTo('John')
-      .findAll();
+      .findAllAsync();
     
     // ✅ Watcher'lar
     isar.users.watchObject(1).listen((user) {
@@ -166,15 +166,15 @@ OPFS mevcut olmadığında IndexedDB ek kısıtlamalara sahiptir:
 
 ```dart
 // ⚠️ Dönen değerler farklı olabilir
-await isar.writeTxn(() async {
-  final count = await isar.users.deleteAll([1, 2, 3]);
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
   // OPFS: kesin sayıyı döner
   // IndexedDB: farklı değer dönebilir
 });
 
 // ⚠️ clear() auto-increment'i sıfırlamaz
-await isar.writeTxn(() async {
-  await isar.users.clear();
+await isar.writeAsync((isar) async {
+  isar.users.clear();
 });
 // OPFS: sonraki ID 1 olur
 // IndexedDB: önceki değerden devam eder
@@ -213,11 +213,11 @@ await isar.users.filter()
 // ✅ Alternatif desenler kullanın
 await isar.users.filter()
   .nameStartsWith('John')
-  .findAll();
+  .findAllAsync();
 
 await isar.users.filter()
   .nameContains('John')
-  .findAll();
+  .findAllAsync();
 ```
 
 ## Geçici Çözümler
@@ -345,10 +345,10 @@ void configureIsar() {
 1. **Platformlar Arası Kod Yazın**
    ```dart
    // ✅ Her yerde çalışır
-   await isar.writeTxn(() => isar.users.put(user));
+   await isar.writeAsync((isar) => isar.users.put(user));
    
    // ❌ Web'de çalışmaz
-   isar.writeTxnSync(() => isar.users.putSync(user));
+   isar.write((isar) => isar.users.put(user));
    ```
 
 2. **Hedef Platformlarda Test Edin**

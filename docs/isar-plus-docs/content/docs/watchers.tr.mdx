@@ -51,14 +51,14 @@ class User {
     
     // Değişiklik tetikle
     final user = User()..id = 5..name = 'David'..age = 25;
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Çıktı: User changed: David
     
     user.name = 'Mark';
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Çıktı: User changed: Mark
     
-    await isar.writeTxn(() => isar.users.delete(5));
+    await isar.writeAsync((isar) => isar.users.delete(5));
     // Çıktı: User deleted
     ```
   </Tab>
@@ -72,7 +72,7 @@ class User {
     });
     
     final user = User()..id = 5..name = 'David'..age = 25;
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Çıktı: User 5 changed
     ```
   </Tab>
@@ -112,8 +112,8 @@ Bir koleksiyondaki tüm değişiklikleri izleyin:
       print('A user changed');
     });
     
-    await isar.writeTxn(() async {
-      await isar.users.put(User()..name = 'Alice');
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
     });
     // Çıktı: A user changed
     ```
@@ -127,8 +127,8 @@ Bir koleksiyondaki tüm değişiklikleri izleyin:
       print('Users: ${users.map((u) => u.name).join(', ')}');
     });
     
-    await isar.writeTxn(() async {
-      await isar.users.put(User()..name = 'Alice');
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
     });
     // Çıktı: Users: Alice
     ```
@@ -170,20 +170,20 @@ adultsStream.listen((adults) {
 // Mevcut sonuçları hemen yazar
 
 // Çocuk ekle (bildirim yok)
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Child'..age = 10);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Child'..age = 10);
 });
 // Çıkış yok - sorguya uymuyor
 
 // Yetişkin ekle (bildirim gelir)
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Alice'..age = 25);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Alice'..age = 25);
 });
 // Çıktı: Adults: Alice
 
 // Başka yetişkin
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Bob'..age = 30);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Bob'..age = 30);
 });
 // Çıktı: Adults: Alice, Bob
 ```

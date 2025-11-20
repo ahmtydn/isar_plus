@@ -45,7 +45,7 @@ void main() async {
 <Tabs items={['Default Config', 'Custom Config', 'In-Memory']}>
   <Tab value="Default Config">
     ```dart
-    final isar = await Isar.open([UserSchema]);
+    final isar = await Isar.open(schemas: [UserSchema]);
     ```
   </Tab>
   <Tab value="Custom Config">
@@ -54,7 +54,7 @@ void main() async {
       schemas: [UserSchema],
       name: 'myInstance',
       directory: '/custom/path',
-      maxSizeMib: 512,
+      maxSizeMiB: 512,
     );
     ```
   </Tab>
@@ -84,8 +84,8 @@ final user = User()
 ### Insert with Write Transaction
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.users.put(user);
+await isar.writeAsync((isar) async {
+  isar.users.put(user);
 });
 ```
 
@@ -102,8 +102,8 @@ final users = [
   User()..name = 'Charlie'..age = 35,
 ];
 
-await isar.writeTxn(() async {
-  await isar.users.putAll(users);
+await isar.writeAsync((isar) async {
+  isar.users.putAll(users);
 });
 ```
 
@@ -163,26 +163,26 @@ print('Total users: $count');
       user.age = 30;
       
       // Save changes
-      await isar.writeTxn(() async {
-        await isar.users.put(user);
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
       });
     }
     ```
   </Tab>
   <Tab value="Update Fields">
     ```dart
-    await isar.writeTxn(() async {
+    await isar.writeAsync((isar) async {
       final user = await isar.users.get(1);
       if (user != null) {
         user.age = (user.age ?? 0) + 1;
-        await isar.users.put(user);
+        isar.users.put(user);
       }
     });
     ```
   </Tab>
   <Tab value="Conditional Update">
     ```dart
-    await isar.writeTxn(() async {
+    await isar.writeAsync((isar) async {
       final adults = await isar.users
         .filter()
         .ageGreaterThan(18)
@@ -190,7 +190,7 @@ print('Total users: $count');
       
       for (var user in adults) {
         user.verified = true;
-        await isar.users.put(user);
+        isar.users.put(user);
       }
     });
     ```
@@ -206,8 +206,8 @@ print('Total users: $count');
 ### Delete by ID
 
 ```dart
-await isar.writeTxn(() async {
-  final success = await isar.users.delete(1);
+await isar.writeAsync((isar) async {
+  final success = isar.users.delete(1);
   print('Deleted: $success');
 });
 ```
@@ -215,8 +215,8 @@ await isar.writeTxn(() async {
 ### Delete Multiple by IDs
 
 ```dart
-await isar.writeTxn(() async {
-  final count = await isar.users.deleteAll([1, 2, 3]);
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
   print('Deleted $count users');
 });
 ```
@@ -224,10 +224,10 @@ await isar.writeTxn(() async {
 ### Delete Object
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final user = await isar.users.get(1);
   if (user != null) {
-    await isar.users.delete(user.id);
+    isar.users.delete(user.id);
   }
 });
 ```
@@ -235,8 +235,8 @@ await isar.writeTxn(() async {
 ### Delete All
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.users.clear();
+await isar.writeAsync((isar) async {
+  isar.users.clear();
 });
 ```
 
@@ -247,7 +247,7 @@ await isar.writeTxn(() async {
 ### Delete with Filter
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final deletedCount = await isar.users
     .filter()
     .ageLessThan(18)
@@ -261,17 +261,17 @@ await isar.writeTxn(() async {
 All write operations must be wrapped in a transaction:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   // Create
   final user = User()..name = 'Test';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Update
   user.name = 'Updated';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Delete
-  await isar.users.delete(user.id);
+  isar.users.delete(user.id);
   
   // All operations are atomic
 });
@@ -286,9 +286,9 @@ await isar.writeTxn(() async {
 For better performance with multiple reads:
 
 ```dart
-final results = await isar.txn(() async {
+final results = await isar.readAsync((isar) async {
   final users = await isar.users.where().findAll();
-  final count = await isar.users.count();
+  final count = isar.users.count();
   return {'users': users, 'count': count};
 });
 ```
@@ -298,14 +298,14 @@ final results = await isar.txn(() async {
 1. **Use Bulk Operations**
    ```dart
    // ✅ Good - Single transaction
-   await isar.writeTxn(() async {
-     await isar.users.putAll(manyUsers);
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(manyUsers);
    });
    
    // ❌ Bad - Multiple transactions
    for (var user in manyUsers) {
-     await isar.writeTxn(() async {
-       await isar.users.put(user);
+     await isar.writeAsync((isar) async {
+       isar.users.put(user);
      });
    }
    ```
@@ -314,23 +314,23 @@ final results = await isar.txn(() async {
    ```dart
    // ✅ Good
    final data = prepareData();
-   await isar.writeTxn(() async {
-     await isar.users.putAll(data);
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(data);
    });
    
    // ❌ Bad
-   await isar.writeTxn(() async {
+   await isar.writeAsync((isar) async {
      final data = prepareData(); // Heavy operation in transaction
-     await isar.users.putAll(data);
+     isar.users.putAll(data);
    });
    ```
 
 3. **Check Before Delete**
    ```dart
-   await isar.writeTxn(() async {
+   await isar.writeAsync((isar) async {
      final exists = await isar.users.get(id) != null;
      if (exists) {
-       await isar.users.delete(id);
+       isar.users.delete(id);
      }
    });
    ```
@@ -339,8 +339,8 @@ final results = await isar.txn(() async {
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.users.put(user);
+  await isar.writeAsync((isar) async {
+    isar.users.put(user);
   });
 } catch (e) {
   print('Error: $e');

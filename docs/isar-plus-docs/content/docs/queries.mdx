@@ -463,7 +463,7 @@ final expensiveIPhones = await isar.products
 
 ```dart
 // Delete matching objects
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final count = await isar.shoes
     .filter()
     .sizeLessThan(35)

@@ -22,7 +22,7 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
+  final isar = await Isar.openAsync(
     schemas: [RecipeSchema, UserSchema],
     directory: dir.path,
   );
@@ -45,7 +45,11 @@ void main() async {
 <Tabs items={['Varsayılan', 'Özel', 'Bellek İçi']}>
   <Tab value="Varsayılan">
     ```dart
-    final isar = await Isar.open([UserSchema]);
+    final dir = await getApplicationDocumentsDirectory();
+    final isar = await Isar.openAsync(
+      schemas: [UserSchema],
+      directory: dir.path,
+    );
     ```
   </Tab>
   <Tab value="Özel">
@@ -84,8 +88,8 @@ final user = User()
 ### Yazma İşlemiyle Ekle
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.users.put(user);
+await isar.writeAsync((isar) async {
+  isar.users.put(user);
 });
 ```
 
@@ -102,8 +106,8 @@ final users = [
   User()..name = 'Charlie'..age = 35,
 ];
 
-await isar.writeTxn(() async {
-  await isar.users.putAll(users);
+await isar.writeAsync((isar) async {
+  isar.users.putAll(users);
 });
 ```
 
@@ -163,26 +167,26 @@ print('Toplam kullanıcı: $count');
       user.age = 30;
       
       // Kaydet
-      await isar.writeTxn(() async {
-        await isar.users.put(user);
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
       });
     }
     ```
   </Tab>
   <Tab value="Alan Güncelle">
     ```dart
-    await isar.writeTxn(() async {
+    await isar.writeAsync((isar) async {
       final user = await isar.users.get(1);
       if (user != null) {
         user.age = (user.age ?? 0) + 1;
-        await isar.users.put(user);
+        isar.users.put(user);
       }
     });
     ```
   </Tab>
   <Tab value="Koşullu Güncelle">
     ```dart
-    await isar.writeTxn(() async {
+    await isar.writeAsync((isar) async {
       final adults = await isar.users
         .filter()
         .ageGreaterThan(18)
@@ -190,7 +194,7 @@ print('Toplam kullanıcı: $count');
       
       for (var user in adults) {
         user.verified = true;
-        await isar.users.put(user);
+        isar.users.put(user);
       }
     });
     ```
@@ -206,8 +210,8 @@ print('Toplam kullanıcı: $count');
 ### ID ile Sil
 
 ```dart
-await isar.writeTxn(() async {
-  final success = await isar.users.delete(1);
+await isar.writeAsync((isar) async {
+  final success = isar.users.delete(1);
   print('Silindi: $success');
 });
 ```
@@ -215,8 +219,8 @@ await isar.writeTxn(() async {
 ### Birden Fazla ID ile Sil
 
 ```dart
-await isar.writeTxn(() async {
-  final count = await isar.users.deleteAll([1, 2, 3]);
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
   print('$count kullanıcı silindi');
 });
 ```
@@ -224,10 +228,10 @@ await isar.writeTxn(() async {
 ### Nesneyi Sil
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final user = await isar.users.get(1);
   if (user != null) {
-    await isar.users.delete(user.id);
+    isar.users.delete(user.id);
   }
 });
 ```
@@ -235,8 +239,8 @@ await isar.writeTxn(() async {
 ### Hepsini Sil
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.users.clear();
+await isar.writeAsync((isar) async {
+  isar.users.clear();
 });
 ```
 
@@ -247,7 +251,7 @@ await isar.writeTxn(() async {
 ### Filtreyle Sil
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final deletedCount = await isar.users
     .filter()
     .ageLessThan(18)
@@ -261,17 +265,17 @@ await isar.writeTxn(() async {
 Tüm yazma işlemleri bir transaction içinde olmalıdır:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   // Create
   final user = User()..name = 'Test';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Update
   user.name = 'Updated';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Delete
-  await isar.users.delete(user.id);
+  isar.users.delete(user.id);
   
   // Tüm işlemler atomic
 });
@@ -286,9 +290,9 @@ await isar.writeTxn(() async {
 Birden fazla okumada daha iyi performans için:
 
 ```dart
-final results = await isar.txn(() async {
+final results = await isar.readAsync((isar) async {
   final users = await isar.users.where().findAll();
-  final count = await isar.users.count();
+  final count = isar.users.count();
   return {'users': users, 'count': count};
 });
 ```
@@ -298,14 +302,14 @@ final results = await isar.txn(() async {
 1. **Toplu İşlemler Kullanın**
    ```dart
    // ✅ İyi - Tek transaction
-   await isar.writeTxn(() async {
-     await isar.users.putAll(manyUsers);
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(manyUsers);
    });
    
    // ❌ Kötü - Birden fazla transaction
    for (var user in manyUsers) {
-     await isar.writeTxn(() async {
-       await isar.users.put(user);
+     await isar.writeAsync((isar) async {
+       isar.users.put(user);
      });
    }
    ```
@@ -314,23 +318,23 @@ final results = await isar.txn(() async {
    ```dart
    // ✅ İyi
    final data = prepareData();
-   await isar.writeTxn(() async {
-     await isar.users.putAll(data);
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(data);
    });
    
    // ❌ Kötü
-   await isar.writeTxn(() async {
+   await isar.writeAsync((isar) async {
      final data = prepareData(); // Ağır işlem transaction içinde
-     await isar.users.putAll(data);
+     isar.users.putAll(data);
    });
    ```
 
 3. **Silmeden Önce Kontrol Edin**
    ```dart
-   await isar.writeTxn(() async {
+   await isar.writeAsync((isar) async {
      final exists = await isar.users.get(id) != null;
      if (exists) {
-       await isar.users.delete(id);
+       isar.users.delete(id);
      }
    });
    ```
@@ -339,8 +343,8 @@ final results = await isar.txn(() async {
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.users.put(user);
+  await isar.writeAsync((isar) async {
+    isar.users.put(user);
   });
 } catch (e) {
   print('Hata: $e');

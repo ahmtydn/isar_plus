@@ -29,8 +29,8 @@ Transactions ensure data consistency:
 
 | Type | Sync Method | Async Method | Use Case |
 | --- | --- | --- | --- |
-| Read | `.txn()` | `.txnSync()` | Consistent reads |
-| Write | `.writeTxn()` | `.writeTxnSync()` | Data modifications |
+| Read | `.read()` | `.readAsync()` | Consistent reads |
+| Write | `.write()` | `.writeAsync()` | Data modifications |
 
 <Callout type="info">
   Most read operations use implicit transactions automatically.
@@ -53,9 +53,9 @@ class Contact {
   <Tab value="Async">
     ```dart
     // Explicit async read transaction
-    final result = await isar.txn(() async {
+    final result = await isar.readAsync((isar) async {
       final contacts = await isar.contacts.where().findAll();
-      final count = await isar.contacts.count();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,
@@ -67,9 +67,9 @@ class Contact {
   <Tab value="Sync">
     ```dart
     // Synchronous read transaction
-    final result = isar.txnSync(() {
-      final contacts = isar.contacts.where().findAllSync();
-      final count = isar.contacts.countSync();
+    final result = isar.read((isar) {
+      final contacts = isar.contacts.where().findAll();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,
@@ -96,12 +96,12 @@ class Contact {
 All write operations must be wrapped in an explicit transaction:
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final contact = Contact()
     ..name = 'John Doe'
     ..age = 25;
   
-  await isar.contacts.put(contact);
+  isar.contacts.put(contact);
 });
 ```
 
@@ -110,10 +110,10 @@ await isar.writeTxn(() async {
 Transactions auto-commit on success:
 
 ```dart
-await isar.writeTxn(() async {
-  await isar.contacts.put(contact1);
-  await isar.contacts.put(contact2);
-  await isar.contacts.put(contact3);
+await isar.writeAsync((isar) async {
+  isar.contacts.put(contact1);
+  isar.contacts.put(contact2);
+  isar.contacts.put(contact3);
   // All changes committed together ✅
 });
 ```
@@ -124,11 +124,11 @@ Transactions auto-rollback on error:
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact1); // ✅ Executed
-    await isar.contacts.put(contact2); // ✅ Executed
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact1); // ✅ Executed
+    isar.contacts.put(contact2); // ✅ Executed
     throw Exception('Error!');
-    await isar.contacts.put(contact3); // ❌ Not executed
+    isar.contacts.put(contact3); // ❌ Not executed
   });
 } catch (e) {
   // All changes rolled back ↩️
@@ -146,15 +146,15 @@ try {
 
 ```dart
 // ✅ Good - Single transaction
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   for (var contact in contacts) {
-    await isar.contacts.put(contact);
+    isar.contacts.put(contact);
   }
 });
 
 // ✅ Even better - Bulk operation
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(contacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(contacts);
 });
 ```
 
@@ -163,8 +163,8 @@ await isar.writeTxn(() async {
 ```dart
 // ❌ Bad - Many transactions (slow!)
 for (var contact in contacts) {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact);
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact);
   });
 }
 ```
@@ -179,8 +179,8 @@ final processedContacts = contacts.map((c) =>
     ..age = c.age
 ).toList();
 
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(processedContacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(processedContacts);
 });
 ```
 
@@ -188,14 +188,14 @@ await isar.writeTxn(() async {
 
 ```dart
 // ❌ Bad - Heavy processing in transaction
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final processedContacts = contacts.map((c) => 
     Contact()
       ..name = c.name.toUpperCase()
       ..age = c.age
   ).toList();
   
-  await isar.contacts.putAll(processedContacts);
+  isar.contacts.putAll(processedContacts);
 });
 ```
 
@@ -203,18 +203,18 @@ await isar.writeTxn(() async {
 
 ```dart
 // ❌ Very Bad - Network call in transaction
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final response = await http.get('https://api.example.com/data');
   final contacts = parseContacts(response.body);
-  await isar.contacts.putAll(contacts);
+  isar.contacts.putAll(contacts);
 });
 
 // ✅ Good - Network call outside
 final response = await http.get('https://api.example.com/data');
 final contacts = parseContacts(response.body);
 
-await isar.writeTxn(() async {
-  await isar.contacts.putAll(contacts);
+await isar.writeAsync((isar) async {
+  isar.contacts.putAll(contacts);
 });
 ```
 
@@ -227,23 +227,23 @@ await isar.writeTxn(() async {
 ### Multiple Collections
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   // Create user
   final user = User()..name = 'John';
-  await isar.users.put(user);
+  isar.users.put(user);
   
   // Create profile linked to user
   final profile = Profile()
     ..userId = user.id
     ..bio = 'Developer';
-  await isar.profiles.put(profile);
+  isar.profiles.put(profile);
   
   // Create posts
   final posts = [
     Post()..userId = user.id..title = 'First Post',
     Post()..userId = user.id..title = 'Second Post',
   ];
-  await isar.posts.putAll(posts);
+  isar.posts.putAll(posts);
   
   // All operations committed together ✅
 });
@@ -252,12 +252,12 @@ await isar.writeTxn(() async {
 ### Conditional Operations
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final user = await isar.users.get(userId);
   
   if (user != null && user.age >= 18) {
     user.verified = true;
-    await isar.users.put(user);
+    isar.users.put(user);
   } else {
     throw Exception('User not eligible');
   }
@@ -267,7 +267,7 @@ await isar.writeTxn(() async {
 ### Update with Validation
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final users = await isar.users
     .filter()
     .ageGreaterThan(18)
@@ -277,7 +277,7 @@ await isar.writeTxn(() async {
     if (!user.verified) {
       user.verified = true;
       user.verifiedAt = DateTime.now();
-      await isar.users.put(user);
+      isar.users.put(user);
     }
   }
 });
@@ -289,12 +289,12 @@ await isar.writeTxn(() async {
   <Tab value="Concurrent Reads">
     ```dart
     // Multiple read transactions run in parallel
-    final future1 = isar.txn(() async {
+    final future1 = isar.readAsync((isar) async {
       return await isar.contacts.where().findAll();
     });
     
-    final future2 = isar.txn(() async {
-      return await isar.contacts.count();
+    final future2 = isar.readAsync((isar) async {
+      return isar.contacts.count();
     });
     
     // Both execute simultaneously ⚡
@@ -304,9 +304,9 @@ await isar.writeTxn(() async {
   <Tab value="Read During Write">
     ```dart
     // Readers get consistent snapshot
-    unawaited(isar.writeTxn(() async {
+    unawaited(isar.writeAsync((isar) async {
       await Future.delayed(Duration(seconds: 2));
-      await isar.contacts.put(newContact);
+      isar.contacts.put(newContact);
     }));
     
     // This read sees old data (consistent snapshot)
@@ -317,13 +317,13 @@ await isar.writeTxn(() async {
   <Tab value="Write Blocking">
     ```dart
     // Write transactions execute serially
-    final future1 = isar.writeTxn(() async {
+    final future1 = isar.writeAsync((isar) async {
       await Future.delayed(Duration(seconds: 1));
-      await isar.contacts.put(contact1);
+      isar.contacts.put(contact1);
     });
     
-    final future2 = isar.writeTxn(() async {
-      await isar.contacts.put(contact2);
+    final future2 = isar.writeAsync((isar) async {
+      isar.contacts.put(contact2);
     });
     
     // future2 waits for future1 to complete
@@ -337,8 +337,8 @@ await isar.writeTxn(() async {
 
 ```dart
 try {
-  await isar.writeTxn(() async {
-    await isar.contacts.put(contact);
+  await isar.writeAsync((isar) async {
+    isar.contacts.put(contact);
   });
   print('Transaction succeeded');
 } catch (e) {
@@ -356,11 +356,11 @@ class ValidationException implements Exception {
 }
 
 try {
-  await isar.writeTxn(() async {
+  await isar.writeAsync((isar) async {
     if (contact.age < 0) {
       throw ValidationException('Age cannot be negative');
     }
-    await isar.contacts.put(contact);
+    isar.contacts.put(contact);
   });
 } on ValidationException catch (e) {
   print('Validation error: ${e.message}');
@@ -375,8 +375,8 @@ try {
 Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   for (var attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      await isar.writeTxn(() async {
-        await isar.contacts.put(contact);
+      await isar.writeAsync((isar) async {
+        isar.contacts.put(contact);
       });
       return; // Success
     } catch (e) {
@@ -393,8 +393,8 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   <Tab value="When to Use Async">
     ```dart
     // ✅ Use async in UI isolate
-    await isar.writeTxn(() async {
-      await isar.contacts.put(contact);
+    await isar.writeAsync((isar) async {
+      isar.contacts.put(contact);
     });
     
     // Doesn't block UI
@@ -403,8 +403,8 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
   <Tab value="When to Use Sync">
     ```dart
     // ✅ Use sync in background isolate
-    isar.writeTxnSync(() {
-      isar.contacts.putSync(contact);
+    isar.write((isar) {
+      isar.contacts.put(contact);
     });
     
     // Faster, but blocks current isolate
@@ -421,11 +421,11 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 1. **Batch Operations**
    ```dart
    // ✅ Fast - 1 transaction
-   await isar.writeTxn(() => isar.contacts.putAll(list));
+   await isar.writeAsync((isar) => isar.contacts.putAll(list));
    
    // ❌ Slow - N transactions
    for (var item in list) {
-     await isar.writeTxn(() => isar.contacts.put(item));
+     await isar.writeAsync((isar) => isar.contacts.put(item));
    }
    ```
 
@@ -433,21 +433,21 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
    ```dart
    // ✅ Fast
    final data = prepareData();
-   await isar.writeTxn(() => isar.contacts.putAll(data));
+   await isar.writeAsync((isar) => isar.contacts.putAll(data));
    
    // ❌ Slow
-   await isar.writeTxn(() {
+   await isar.writeAsync((isar) {
      final data = prepareData(); // Heavy operation
-     await isar.contacts.putAll(data);
+     isar.contacts.putAll(data);
    });
    ```
 
 3. **Use Bulk Operations**
    ```dart
    // ✅ Optimized
-   await isar.writeTxn(() async {
-     await isar.contacts.putAll(contacts);
-     await isar.posts.deleteAll(postIds);
+   await isar.writeAsync((isar) async {
+     isar.contacts.putAll(contacts);
+     isar.posts.deleteAll(postIds);
    });
    ```
 
@@ -456,7 +456,7 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 ### Create or Update
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final existing = await isar.users
     .filter()
     .emailEqualTo(user.email)
@@ -466,7 +466,7 @@ await isar.writeTxn(() async {
     user.id = existing.id; // Reuse ID
   }
   
-  await isar.users.put(user);
+  isar.users.put(user);
 });
 ```
 
@@ -474,14 +474,14 @@ await isar.writeTxn(() async {
 
 ```dart
 Future<int> incrementCounter(String key) async {
-  return await isar.writeTxn(() async {
+  return await isar.writeAsync((isar) async {
     final counter = await isar.counters
       .filter()
       .keyEqualTo(key)
       .findFirst() ?? Counter()..key = key..value = 0;
     
     counter.value++;
-    await isar.counters.put(counter);
+    isar.counters.put(counter);
     return counter.value;
   });
 }
@@ -490,7 +490,7 @@ Future<int> incrementCounter(String key) async {
 ### Bulk Update
 
 ```dart
-await isar.writeTxn(() async {
+await isar.writeAsync((isar) async {
   final users = await isar.users
     .filter()
     .statusEqualTo('pending')
@@ -500,7 +500,7 @@ await isar.writeTxn(() async {
     user.status = 'active';
   }
   
-  await isar.users.putAll(users);
+  isar.users.putAll(users);
 });
 ```
 
