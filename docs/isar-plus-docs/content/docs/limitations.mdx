@@ -130,27 +130,27 @@ class LargeDocument {
     Isar.splitWords('hello world');
     isar.users.filter().nameMatches('pattern');
     
-    // ❌ Some sync transaction methods
-    isar.writeTxnSync(() {
-      isar.users.putSync(user);
+    // ❌ Some synchronous transaction methods
+    isar.write((isar) {
+      isar.users.put(user);
     });
     ```
   </Tab>
   <Tab value="Supported">
     ```dart
     // ✅ All async operations
-    await isar.users.get(1);
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.users.getAsync(1);
+    await isar.writeAsync((isar) => isar.users.put(user));
     
     // ✅ Filters and queries
     await isar.users.filter()
       .nameContains('John')
-      .findAll();
+      .findAllAsync();
     
     // ✅ Where clauses
     await isar.users.where()
       .nameEqualTo('John')
-      .findAll();
+      .findAllAsync();
     
     // ✅ Watchers
     isar.users.watchObject(1).listen((user) {
@@ -166,15 +166,15 @@ When OPFS is not available, IndexedDB fallback has additional limitations:
 
 ```dart
 // ⚠️ Return values may differ
-await isar.writeTxn(() async {
-  final count = await isar.users.deleteAll([1, 2, 3]);
-  // On OPFS: returns exact count
-  // On IndexedDB: might return different value
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
+  // OPFS: returns exact count
+  // IndexedDB: may return different value
 });
 
 // ⚠️ Auto-increment not reset by clear()
-await isar.writeTxn(() async {
-  await isar.users.clear();
+await isar.writeAsync((isar) async {
+  isar.users.clear();
 });
 // On OPFS: next ID is 1
 // On IndexedDB: next ID continues from before
@@ -345,10 +345,10 @@ void configureIsar() {
 1. **Write Cross-Platform Code**
    ```dart
    // ✅ Works everywhere
-   await isar.writeTxn(() => isar.users.put(user));
+   await isar.writeAsync((isar) => isar.users.put(user));
    
-   // ❌ Doesn't work on web
-   isar.writeTxnSync(() => isar.users.putSync(user));
+   // ❌ Won't work on web
+   isar.write((isar) => isar.users.put(user));
    ```
 
 2. **Test on Target Platforms**

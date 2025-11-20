@@ -119,14 +119,14 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     }
     
     // ✅ Toplu işlemler
-    await isar.writeTxn(() => isar.users.putAll(users));
+    await isar.writeAsync((isar) => isar.users.putAll(users));
     
     // ✅ Where cümleleri
-    await isar.users.where().emailEqualTo('x').findAll();
+    await isar.users.where().emailEqualTo('x').findAllAsync();
     
     // ❌ Kaçının
     for (var user in users) {
-      await isar.writeTxn(() => isar.users.put(user));
+      await isar.writeAsync((isar) => isar.users.put(user));
     }
     ```
     
@@ -214,12 +214,12 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     
     ```dart
     // Veri migration'ları
-    final users = await isar.users.where().findAll();
-    await isar.writeTxn(() async {
+    final users = await isar.users.where().findAllAsync();
+    await isar.writeAsync((isar) async {
       for (var user in users) {
         // Veriyi dönüştür
         user.newField = transformOldField(user.oldField);
-        await isar.users.put(user);
+        isar.users.put(user);
       }
     });
     ```
@@ -240,10 +240,10 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     
     ```dart
     // ✅ Tüm platformlarda çalışır
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     
     // ❌ Web'de çalışmaz
-    isar.writeTxnSync(() => isar.users.putSync(user));
+    isar.write((isar) => isar.users.put(user));
     ```
     
     Ayrıntılar için [Kısıtlamalar](/docs/limitations).
@@ -363,22 +363,22 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
   <Accordion title="Transaction hataları">
     ```dart
     // ❌ Hata: Transaction zaten tamamlandı
-    await isar.writeTxn(() async {
-      await isar.users.put(user);
+    await isar.writeAsync((isar) async {
+      isar.users.put(user);
       throw Exception('Error');
       // Transaction burada biter
-      await isar.users.put(user2); // Çalışmaz
+      isar.users.put(user2); // Çalışmaz
     });
     
     // ✅ Çözüm: Başarısız transaction'ı yeniden kullanmayın
     try {
-      await isar.writeTxn(() async {
-        await isar.users.put(user);
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
       });
     } catch (e) {
       // Yeni transaction başlat
-      await isar.writeTxn(() async {
-        await isar.users.put(userBackup);
+      await isar.writeAsync((isar) async {
+        isar.users.put(userBackup);
       });
     }
     ```
