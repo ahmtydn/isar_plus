@@ -8,6 +8,7 @@ import {
 import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/mdx-components';
 import type { Metadata } from 'next';
+import { InlineTOC } from 'fumadocs-ui/components/inline-toc';
 
 export default async function Page(
   props: {
@@ -21,7 +22,11 @@ export default async function Page(
   const MDX = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      tableOfContent={{
+        style: 'clerk',
+      }}
+      toc={page.data.toc}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
