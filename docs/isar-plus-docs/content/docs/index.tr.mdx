@@ -1,94 +1,54 @@
 ---
-title: Isar Plus'a Hoş Geldiniz
-description: Flutter uygulamaları için yüksek performanslı NoSQL veritabanı
+title: Ana Sayfa
+description: En harika Flutter veritabanı
 icon: Home
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 
-# Isar Plus'a Hoş Geldiniz
-
-Isar Plus, Flutter ve Dart uygulamaları için son derece hızlı, kullanımı kolay ve tam özellikli bir veritabanıdır.
-
-<Callout type="info">
-  Isar Plus, orijinal Isar veritabanının geliştirilmiş özellikler ve sürekli destek ile topluluk tarafından yönetilen bir fork'udur.
-</Callout>
-
-## Neden Isar Plus?
+# Isar Plus
 
 <Cards>
-  <Card title="💙 Flutter için Yapıldı" href="/tr/docs/quickstart">
-    Minimal kurulum, Kullanımı kolay, yapılandırma yok, boilerplate yok. Başlamak için sadece birkaç satır kod ekleyin.
-  </Card>
-  <Card title="🚀 Yüksek Ölçeklenebilir" href="/tr/docs/crud">
-    Tek bir NoSQL veritabanında yüz binlerce kayıt saklayın ve bunları verimli ve asenkron olarak sorgulayın.
-  </Card>
-  <Card title="🍭 Özellik Zengin" href="/tr/docs/queries">
-    Kompozit ve çoklu giriş indeksleri, sorgu değiştiricileri, JSON desteği ve daha fazlası.
-  </Card>
-  <Card title="🔎 Tam Metin Arama" href="/tr/docs/indexes">
-    Yerleşik tam metin arama. Çoklu giriş indeksi oluşturun ve kayıtları kolayca arayın.
-  </Card>
-  <Card title="🧪 ACID Semantiği" href="/tr/docs/transactions">
-    ACID uyumlu ve işlemleri otomatik olarak yönetir. Bir hata oluşursa değişiklikleri geri alır.
-  </Card>
-  <Card title="💃 Statik Tipleme" href="/tr/docs/schema">
-    Sorgular statik olarak tiplendirilir ve derleme zamanında kontrol edilir. Çalışma zamanı hatalarından endişelenmenize gerek yok.
-  </Card>
-  <Card title="📱 Çoklu Platform" href="/tr/docs/limitations">
-    iOS, Android, Desktop ve OPFS/IndexedDB aracılığıyla kalıcı Flutter Web depolama.
-  </Card>
-  <Card title="⏱ Asenkron" href="/tr/docs/watchers">
-    Paralel sorgu işlemleri ve kullanıma hazır çoklu isolate desteği.
-  </Card>
+  <Card 
+    title="💙 Flutter için üretildi" 
+    description="Minimum kurulum, kolay kullanım, yapılandırma yok, boilerplate yok. Başlamak için sadece birkaç satır kod eklemeniz yeterli." 
+  />
+  <Card 
+    title="🚀 Yüksek ölçeklenebilirlik" 
+    description="Tek bir NoSQL veritabanında yüz binlerce kaydı saklayın ve bunları verimli ve asenkron şekilde sorgulayın." 
+  />
+  <Card 
+    title="🍭 Zengin özellikler" 
+    description="Isar, verilerinizi yönetmenize yardımcı olacak zengin özelliklere sahiptir. Bileşik ve çok girişli indeksler, sorgu değiştiriciler, JSON desteği ve daha fazlası." 
+  />
+  <Card 
+    title="🔎 Tam metin arama" 
+    description="Isar yerleşik tam metin aramaya sahiptir. Çok girişli bir indeks oluşturun ve kayıtları kolayca arayın." 
+  />
+  <Card 
+    title="🧪 ACID prensipleri" 
+    description="Isar ACID uyumludur ve işlemleri otomatik olarak yönetir. Bir hata oluşursa değişiklikleri geri alır." 
+  />
+  <Card 
+    title="💃 Statik tip kontrolü" 
+    description="Isar'ın sorguları statik olarak tiplenir ve derleme zamanında doğrulanır. Çalışma zamanı hatalarıyla uğraşmanıza gerek kalmaz." 
+  />
+  <Card 
+    title="📱 Çoklu platform" 
+    description="iOS, Android, Masaüstü ve OPFS/IndexedDB üzerinden kalıcı Flutter Web depolaması desteği." 
+  />
+  <Card 
+    title="⏱ Asenkron" 
+    description="Paralel sorgu işlemleri ve çoklu-isolate desteği kutudan çıkar çıkmaz gelir." 
+  />
+  <Card 
+    title="🦄 Açık Kaynak" 
+    description="Her şey açık kaynak ve sonsuza kadar ücretsiz!" 
+  />
 </Cards>
 
-## Hızlı Başlangıç
+---
 
-Dakikalar içinde Isar Plus ile başlayın:
-
-```dart
-// 1. pubspec.yaml'a ekleyin
-dependencies:
-  isar_plus: ^4.0.0
-  isar_plus_flutter_libs: ^4.0.0
-
-  build_runner: ^2.4.0
-
-// 2. Şemanızı tanımlayın
-@collection
-class User {
-  Id id = Isar.autoIncrement;
-  String? name;
-  int? age;
-}
-
-// 3. Isar'ı açın ve kullanın
-final isar = await Isar.open([UserSchema]);
-
-final user = User()
-  ..name = 'John'
-  ..age = 25;
-
-await isar.writeTxn(() async {
-  await isar.users.put(user);
-});
-```
-
-## Sonraki Adımlar
-
-<Cards>
-  <Card title="Hızlı Başlangıç Kılavuzu" href="/tr/docs/quickstart">
-    Projenizde Isar Plus'ı nasıl kuracağınızı ve ayarlayacağınızı öğrenin
-  </Card>
-  <Card title="Şema Tanımlama" href="/tr/docs/schema">
-    Veri modellerinizi nasıl tanımlayacağınızı anlayın
-  </Card>
-  <Card title="CRUD İşlemleri" href="/tr/docs/crud">
-    Oluşturma, Okuma, Güncelleme, Silme işlemlerinde ustalaşın
-  </Card>
-  <Card title="Sorgular" href="/tr/docs/queries">
-    Verilerinizi verimli bir şekilde nasıl sorgulayacağınızı öğrenin
-  </Card>
-</Cards>
+<p style={{ textAlign: 'center', marginTop: '2rem' }}>
+  Isar © 2023 Simon Choi | Isar Plus © 2025 Ahmet Aydın
+</p>

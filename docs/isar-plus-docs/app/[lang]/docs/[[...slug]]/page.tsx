@@ -10,7 +10,9 @@ import { getMDXComponents } from '@/mdx-components';
 import type { Metadata } from 'next';
 
 export default async function Page(
-  props: PageProps<'/[lang]/docs/[[...slug]]'>,
+  props: {
+    params: Promise<{ lang: string; slug?: string[] }>;
+  },
 ) {
   const params = await props.params;
   const page = source.getPage(params.slug, params.lang);
@@ -19,7 +21,7 @@ export default async function Page(
   const MDX = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc}>
+    <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
@@ -34,7 +36,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<'/[lang]/docs/[[...slug]]'>,
+  props: {
+    params: Promise<{ lang: string; slug?: string[] }>;
+  },
 ): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug, params.lang);
