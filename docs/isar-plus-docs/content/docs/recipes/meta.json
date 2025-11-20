@@ -1,6 +1,7 @@
 {
     "title": "Recipes",
     "pages": [
+        "index",
         "full_text_search",
         "multi_isolate",
         "data_migration",
