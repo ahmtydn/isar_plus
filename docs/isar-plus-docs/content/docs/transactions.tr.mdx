@@ -1,0 +1,522 @@
+---
+title: İşlemler
+description: ACID uyumlu işlemlerle veri tutarlılığını sağlayın
+icon: Shield
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# İşlemler
+
+İşlemler, birden fazla veritabanı operasyonunu tek bir atomik iş birimine toplar. Isar, otomatik geri alma sağlayan ACID uyumlu işlemler sunar.
+
+<Callout type="success">
+  Tüm Isar işlemleri ACID uyumludur: Atomic, Consistent, Isolated, Durable.
+</Callout>
+
+## Genel Bakış
+
+İşlemler veri tutarlılığını sağlar:
+
+- **Atomic** - Tüm işlemler başarılı olur ya da hiçbiri olmaz
+- **Consistent** - Veri geçerliliğini korur
+- **Isolated** - Eşzamanlı işlemler birbirini etkilemez
+- **Durable** - Commit edilen değişiklikler kalıcıdır
+
+## İşlem Türleri
+
+| Tür | Sync Metodu | Async Metodu | Kullanım |
+| --- | --- | --- | --- |
+| Okuma | `.txn()` | `.txnSync()` | Tutarlı okumalar |
+| Yazma | `.writeTxn()` | `.writeTxnSync()` | Veri değişiklikleri |
+
+<Callout type="info">
+  Çoğu okuma işlemi otomatik olarak örtük transaction kullanır.
+</Callout>
+
+## Okuma İşlemleri
+
+Okuma işlemleri veritabanının tutarlı bir anlık görüntüsünü sağlar:
+
+```dart
+@collection
+class Contact {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+<Tabs items={['Async', 'Sync', 'İmplicit']}>
+  <Tab value="Async">
+    ```dart
+    // Açık async okuma işlemi
+    final result = await isar.txn(() async {
+      final contacts = await isar.contacts.where().findAll();
+      final count = await isar.contacts.count();
+      
+      return {
+        'contacts': contacts,
+        'count': count,
+      };
+    });
+    ```
+  </Tab>
+  <Tab value="Sync">
+    ```dart
+    // Senkron okuma işlemi
+    final result = isar.txnSync(() {
+      final contacts = isar.contacts.where().findAllSync();
+      final count = isar.contacts.countSync();
+      
+      return {
+        'contacts': contacts,
+        'count': count,
+      };
+    });
+    ```
+  </Tab>
+  <Tab value="İmplicit">
+    ```dart
+    // Örtük transaction (otomatik)
+    final contacts = await isar.contacts.where().findAll();
+    // Isar bunu otomatik bir transaction içinde çalıştırır
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="success">
+  Async okuma işlemleri diğer işlemlerle paralel çalışır!
+</Callout>
+
+## Yazma İşlemleri
+
+Tüm yazma operasyonları açık bir transaction içinde olmalıdır:
+
+```dart
+await isar.writeTxn(() async {
+  final contact = Contact()
+    ..name = 'John Doe'
+    ..age = 25;
+  
+  await isar.contacts.put(contact);
+});
+```
+
+### Otomatik Commit
+
+İşlemler başarıyla tamamlanınca otomatik commit olur:
+
+```dart
+await isar.writeTxn(() async {
+  await isar.contacts.put(contact1);
+  await isar.contacts.put(contact2);
+  await isar.contacts.put(contact3);
+  // Tüm değişiklikler birlikte commit edilir ✅
+});
+```
+
+### Otomatik Rollback
+
+Hata durumunda işlemler otomatik geri alınır:
+
+```dart
+try {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact1); // ✅ Çalıştı
+    await isar.contacts.put(contact2); // ✅ Çalıştı
+    throw Exception('Error!');
+    await isar.contacts.put(contact3); // ❌ Çalışmadı
+  });
+} catch (e) {
+  // Tüm değişiklikler geri alındı ↩️
+  print('Transaction failed: $e');
+}
+```
+
+<Callout type="error">
+  Bir transaction başarısız olduktan sonra, hatayı yakalasanız bile tekrar kullanmayın.
+</Callout>
+
+## En İyi Uygulamalar
+
+### ✅ Yapın: Toplu İşlemler
+
+```dart
+// ✅ İyi - Tek transaction
+await isar.writeTxn(() async {
+  for (var contact in contacts) {
+    await isar.contacts.put(contact);
+  }
+});
+
+// ✅ Daha iyi - Bulk
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(contacts);
+});
+```
+
+### ❌ Yapmayın: Çoklu Transaction
+
+```dart
+// ❌ Kötü - Çok sayıda transaction (yavaş!)
+for (var contact in contacts) {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact);
+  });
+}
+```
+
+### ✅ Yapın: Transaction Kapsamını Küçültün
+
+```dart
+// ✅ İyi - Veriyi dışında hazırlayın
+final processedContacts = contacts.map((c) => 
+  Contact()
+    ..name = c.name.toUpperCase()
+    ..age = c.age
+).toList();
+
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(processedContacts);
+});
+```
+
+### ❌ Yapmayın: Ağır İşlemler İçeride
+
+```dart
+// ❌ Kötü - Transaction içinde ağır işlem
+await isar.writeTxn(() async {
+  final processedContacts = contacts.map((c) => 
+    Contact()
+      ..name = c.name.toUpperCase()
+      ..age = c.age
+  ).toList();
+  
+  await isar.contacts.putAll(processedContacts);
+});
+```
+
+### ❌ Yapmayın: Ağ Çağrıları
+
+```dart
+// ❌ Çok Kötü - Transaction içinde ağ çağrısı
+await isar.writeTxn(() async {
+  final response = await http.get('https://api.example.com/data');
+  final contacts = parseContacts(response.body);
+  await isar.contacts.putAll(contacts);
+});
+
+// ✅ İyi - Ağ çağrısı dışarıda
+final response = await http.get('https://api.example.com/data');
+final contacts = parseContacts(response.body);
+
+await isar.writeTxn(() async {
+  await isar.contacts.putAll(contacts);
+});
+```
+
+<Callout type="warning">
+  Transaction içinde ağ çağrısı, dosya I/O veya uzun süren işlemler yapmayın!
+</Callout>
+
+## Karmaşık İşlemler
+
+### Çoklu Koleksiyon
+
+```dart
+await isar.writeTxn(() async {
+  // Kullanıcı oluştur
+  final user = User()..name = 'John';
+  await isar.users.put(user);
+  
+  // Kullanıcıya bağlı profil
+  final profile = Profile()
+    ..userId = user.id
+    ..bio = 'Developer';
+  await isar.profiles.put(profile);
+  
+  // Gönderiler
+  final posts = [
+    Post()..userId = user.id..title = 'First Post',
+    Post()..userId = user.id..title = 'Second Post',
+  ];
+  await isar.posts.putAll(posts);
+  
+  // Hepsi birlikte commit ✅
+});
+```
+
+### Koşullu İşlemler
+
+```dart
+await isar.writeTxn(() async {
+  final user = await isar.users.get(userId);
+  
+  if (user != null && user.age >= 18) {
+    user.verified = true;
+    await isar.users.put(user);
+  } else {
+    throw Exception('User not eligible');
+  }
+});
+```
+
+### Doğrulamalı Güncelleme
+
+```dart
+await isar.writeTxn(() async {
+  final users = await isar.users
+    .filter()
+    .ageGreaterThan(18)
+    .findAll();
+  
+  for (var user in users) {
+    if (!user.verified) {
+      user.verified = true;
+      user.verifiedAt = DateTime.now();
+      await isar.users.put(user);
+    }
+  }
+});
+```
+
+## Transaction İzolasyonu
+
+<Tabs items={['Eşzamanlı Okumalar', 'Yazma Sırasında Okuma', 'Yazmaların Bloklanması']}>
+  <Tab value="Eşzamanlı Okumalar">
+    ```dart
+    // Birden fazla okuma işlemi paralel çalışır
+    final future1 = isar.txn(() async {
+      return await isar.contacts.where().findAll();
+    });
+    
+    final future2 = isar.txn(() async {
+      return await isar.contacts.count();
+    });
+    
+    // İkisi de aynı anda çalışır ⚡
+    final results = await Future.wait([future1, future2]);
+    ```
+  </Tab>
+  <Tab value="Yazma Sırasında Okuma">
+    ```dart
+    // Okuyucular tutarlı snapshot görür
+    unawaited(isar.writeTxn(() async {
+      await Future.delayed(Duration(seconds: 2));
+      await isar.contacts.put(newContact);
+    }));
+    
+    // Bu okuma eski veriyi görür (tutarlı snapshot)
+    final contacts = await isar.contacts.where().findAll();
+    // newContact dahil değildir
+    ```
+  </Tab>
+  <Tab value="Yazmaların Bloklanması">
+    ```dart
+    // Yazma işlemleri seri olarak çalışır
+    final future1 = isar.writeTxn(() async {
+      await Future.delayed(Duration(seconds: 1));
+      await isar.contacts.put(contact1);
+    });
+    
+    final future2 = isar.writeTxn(() async {
+      await isar.contacts.put(contact2);
+    });
+    
+    // future2, future1'in bitmesini bekler
+    ```
+  </Tab>
+</Tabs>
+
+## Hata Yönetimi
+
+### Temel Hata Yönetimi
+
+```dart
+try {
+  await isar.writeTxn(() async {
+    await isar.contacts.put(contact);
+  });
+  print('Transaction succeeded');
+} catch (e) {
+  print('Transaction failed: $e');
+  // Değişiklikler otomatik geri alınır
+}
+```
+
+### Özel Doğrulamalar
+
+```dart
+class ValidationException implements Exception {
+  final String message;
+  ValidationException(this.message);
+}
+
+try {
+  await isar.writeTxn(() async {
+    if (contact.age < 0) {
+      throw ValidationException('Age cannot be negative');
+    }
+    await isar.contacts.put(contact);
+  });
+} on ValidationException catch (e) {
+  print('Validation error: ${e.message}');
+} catch (e) {
+  print('Unexpected error: $e');
+}
+```
+
+### Retry Mantığı
+
+```dart
+Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
+  for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await isar.writeTxn(() async {
+        await isar.contacts.put(contact);
+      });
+      return; // Başarılı
+    } catch (e) {
+      if (attempt == maxAttempts) rethrow;
+      await Future.delayed(Duration(milliseconds: 100 * attempt));
+    }
+  }
+}
+```
+
+## Senkron vs Asenkron
+
+<Tabs items={['Ne Zaman Async', 'Ne Zaman Sync']}>
+  <Tab value="Ne Zaman Async">
+    ```dart
+    // ✅ UI izolatında async kullanın
+    await isar.writeTxn(() async {
+      await isar.contacts.put(contact);
+    });
+    
+    // UI'ı bloklamaz
+    ```
+  </Tab>
+  <Tab value="Ne Zaman Sync">
+    ```dart
+    // ✅ Arka plan izolatında sync kullanın
+    isar.writeTxnSync(() {
+      isar.contacts.putSync(contact);
+    });
+    
+    // Daha hızlıdır ancak mevcut izolatı bloklar
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+  UI kodunda varsayılan olarak async kullanın. Maksimum performans için yalnızca arka plan izolatlarında sync tercih edin.
+</Callout>
+
+## Performans İpuçları
+
+1. **Toplu İşlemler**
+   ```dart
+   // ✅ Hızlı - 1 transaction
+   await isar.writeTxn(() => isar.contacts.putAll(list));
+   
+   // ❌ Yavaş - N transaction
+   for (var item in list) {
+     await isar.writeTxn(() => isar.contacts.put(item));
+   }
+   ```
+
+2. **Süreyi Minimize Edin**
+   ```dart
+   // ✅ Hızlı
+   final data = prepareData();
+   await isar.writeTxn(() => isar.contacts.putAll(data));
+   
+   // ❌ Yavaş
+   await isar.writeTxn(() {
+     final data = prepareData(); // Ağır işlem
+     await isar.contacts.putAll(data);
+   });
+   ```
+
+3. **Bulk Operasyonları Kullanın**
+   ```dart
+   // ✅ Optimize
+   await isar.writeTxn(() async {
+     await isar.contacts.putAll(contacts);
+     await isar.posts.deleteAll(postIds);
+   });
+   ```
+
+## Yaygın Desenler
+
+### Oluştur veya Güncelle
+
+```dart
+await isar.writeTxn(() async {
+  final existing = await isar.users
+    .filter()
+    .emailEqualTo(user.email)
+    .findFirst();
+  
+  if (existing != null) {
+    user.id = existing.id; // ID'yi yeniden kullan
+  }
+  
+  await isar.users.put(user);
+});
+```
+
+### Atomik Sayaç
+
+```dart
+Future<int> incrementCounter(String key) async {
+  return await isar.writeTxn(() async {
+    final counter = await isar.counters
+      .filter()
+      .keyEqualTo(key)
+      .findFirst() ?? Counter()..key = key..value = 0;
+    
+    counter.value++;
+    await isar.counters.put(counter);
+    return counter.value;
+  });
+}
+```
+
+### Toplu Güncelleme
+
+```dart
+await isar.writeTxn(() async {
+  final users = await isar.users
+    .filter()
+    .statusEqualTo('pending')
+    .findAll();
+  
+  for (var user in users) {
+    user.status = 'active';
+  }
+  
+  await isar.users.putAll(users);
+});
+```
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="CRUD İşlemleri" href="/docs/crud">
+    Temel veritabanı işlemlerini öğrenin
+  </Card>
+  <Card title="Sorgular" href="/docs/queries">
+    Verimli sorgular oluşturun
+  </Card>
+  <Card title="Watchers" href="/docs/watchers">
+    Veri değişikliklerine tepki verin
+  </Card>
+  <Card title="Multi-Isolate" href="/docs/recipes/multi_isolate">
+    Isar'ı izolatlar arasında kullanın
+  </Card>
+</Cards>

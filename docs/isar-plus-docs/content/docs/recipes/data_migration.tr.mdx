@@ -1,0 +1,185 @@
+---
+title: Veri Geçişi
+description: Şema değişiklikleri ve sürüm güncellemeleri için veri geçiş stratejileri uygulayın
+icon: Database
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Veri Geçişi
+
+Isar; koleksiyon, alan veya indeks ekleyip kaldırdığınızda şemaları otomatik olarak geçirir. Ancak bazen verileri de dönüştürmek isteyebilirsiniz. Isar keyfi kısıtlar getirmemek için dahili çözüm sunmaz, çünkü ihtiyacınıza uygun geçiş mantığını yazmak oldukça kolaydır.
+
+Bu örnekte tüm veritabanı için tek bir sürüm kullanıyoruz. Geçerli sürümü SharedPreferences ile saklıyor ve hedef sürümle karşılaştırıyoruz. Sürümler eşleşmiyorsa veriyi geçiriyor ve sürümü güncelliyoruz.
+
+<Callout type="info" title="Esnek Sürümleme">
+Her koleksiyona ayrı sürüm verip bağımsız olarak da geçirebilirsiniz.
+</Callout>
+
+## Şema Evrimi Örneği
+
+Doğum günü alanı olan bir kullanıcı koleksiyonumuz olduğunu düşünelim. Uygulamanın 2. sürümünde, kullanıcıları yaşa göre sorgulamak için ek bir doğum yılı alanına ihtiyaç duyuyoruz.
+
+<Tabs items={['Sürüm 1', 'Sürüm 2']}>
+<Tab value="Sürüm 1">
+```dart title="user_v1.dart"
+@collection
+class User {
+  Id? id;
+
+  late String name;
+
+  late DateTime birthday;
+}
+```
+</Tab>
+<Tab value="Sürüm 2">
+```dart title="user_v2.dart"
+@collection
+class User {
+  Id? id;
+
+  late String name;
+
+  late DateTime birthday;
+
+  short get birthYear => birthday.year;
+}
+```
+</Tab>
+</Tabs>
+
+Sorun şu ki mevcut kullanıcı modellerinde `birthYear` alanı boş kalacaktır çünkü 1. sürümde yoktu. `birthYear` alanını doldurmak için veriyi geçirmek gerekir.
+
+## Uygulama
+
+<Steps>
+### Geçerli Sürümü Kontrol Et
+
+SharedPreferences ile veritabanı sürümünü takip edin ve geçiş gerekip gerekmediğini belirleyin.
+
+### Geçişi Gerçekleştir
+
+Tüm kayıtları dolaşıp yeni alanları güncelleyin.
+
+### Sürümü Güncelleyin
+
+Kaydedilen sürüm numarasını güncelleyerek geçişin tamamlandığını işaretleyin.
+</Steps>
+
+```dart title="main.dart"
+import 'package:isar_plus/isar_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
+  final dir = await getApplicationDocumentsDirectory();
+  
+  final isar = await Isar.open(
+    [UserSchema],
+    directory: dir.path,
+  );
+
+  await performMigrationIfNeeded(isar);
+
+  runApp(MyApp(isar: isar));
+}
+
+Future<void> performMigrationIfNeeded(Isar isar) async {
+  final prefs = await SharedPreferences.getInstance();
+  final currentVersion = prefs.getInt('version') ?? 2;
+  
+  switch(currentVersion) {
+    case 1:
+      await migrateV1ToV2(isar);
+      break;
+    case 2:
+      // Sürüm ayarlanmamışsa (yeni kurulum) veya zaten 2 ise
+      // geçiş gerekmez
+      return;
+    default:
+      throw Exception('Unknown version: $currentVersion');
+  }
+
+  // Sürümü güncelle
+  await prefs.setInt('version', 2);
+}
+
+Future<void> migrateV1ToV2(Isar isar) async {
+  final userCount = await isar.users.count();
+
+  // Tüm kullanıcıları aynı anda yüklememek için sayfalıyoruz
+  for (var i = 0; i < userCount; i += 50) {
+    final users = await isar.users
+      .where()
+      .offset(i)
+      .limit(50)
+      .findAll();
+      
+    await isar.writeAsync((isar) async {
+      // birthYear getter olduğu için güncelleme yapmamıza gerek yok
+      await isar.users.putAll(users);
+    });
+  }
+}
+```
+
+## En İyi Uygulamalar
+
+<Callout type="warn" title="Performans Dikkati">
+Çok fazla veri geçirmeniz gerekiyorsa UI thread'ini yormamak için arka plan izolatı kullanmayı düşünün.
+</Callout>
+
+### Sayfalama
+
+Bellek sorunu yaşamamak için kayıtları her zaman 50-100'lük bloklar halinde işleyin:
+
+```dart
+for (var i = 0; i < totalCount; i += batchSize) {
+  final batch = await collection.where().offset(i).limit(batchSize).findAll();
+  // Blok üzerinde işlem yap...
+}
+```
+
+### Hata Yönetimi
+
+Geçiş mantığını try-catch içine alın ve rollback stratejilerini değerlendirin:
+
+```dart
+try {
+  await migrateV1ToV2(isar);
+  await prefs.setInt('version', 2);
+} catch (e) {
+  // Hata logla ve eski sürümde kal
+  print('Migration failed: $e');
+  // Sürümü güncelleme
+}
+```
+
+### Sürüm Yönetimi
+
+Sürüm takibi için enum kullanmayı düşünün:
+
+```dart
+enum DatabaseVersion {
+  v1(1),
+  v2(2),
+  v3(3);
+
+  const DatabaseVersion(this.value);
+  final int value;
+}
+```
+
+### Geçiş Testleri
+
+Geçiş mantığını yayından önce kapsamlı şekilde test edin:
+
+```dart
+void testMigration() async {
+  // V1 verisiyle test DB oluştur
+  // Geçişi çalıştır
+  // V2 veri bütünlüğünü doğrula
+}
+```

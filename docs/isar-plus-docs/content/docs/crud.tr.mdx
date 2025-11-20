@@ -1,0 +1,366 @@
+---
+title: Oluştur, Oku, Güncelle, Sil
+description: Isar Plus ile CRUD işlemlerine hakim olun
+icon: Edit
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Oluştur, Oku, Güncelle, Sil
+
+Isar koleksiyonlarınızı CRUD işlemleriyle nasıl yöneteceğinizi öğrenin.
+
+## Isar'ı Açmak
+
+Herhangi bir işlem yapmadan önce bir Isar örneğine ihtiyacınız var. Her örnek yazma izni olan bir dizin gerektirir.
+
+```dart title="main.dart" {5-9}
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path_provider/path_provider.dart';
+
+void main() async {
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = await Isar.open(
+    [RecipeSchema, UserSchema],
+    directory: dir.path,
+  );
+}
+```
+
+<Callout>
+  `name` parametresiyle farklı isimlere sahip birden fazla örnek açabilirsiniz.
+</Callout>
+
+### Yapılandırma Seçenekleri
+
+| Config | Açıklama |
+| --- | --- |
+| `name` | Farklı isimlerle birden fazla örnek açın. Varsayılan: `"default"` |
+| `directory` | Depolama konumu. Bellek içi veritabanı için `Isar.sqliteInMemory` kullanın |
+| `maxSizeMib` | MiB cinsinden maksimum boyut. Varsayılan: `2048` |
+| `relaxedDurability` | Dayanıklılığı performansla değiştirir |
+
+<Tabs items={['Varsayılan', 'Özel', 'Bellek İçi']}>
+  <Tab value="Varsayılan">
+    ```dart
+    final isar = await Isar.open([UserSchema]);
+    ```
+  </Tab>
+  <Tab value="Özel">
+    ```dart
+    final isar = await Isar.open(
+      [UserSchema],
+      name: 'myInstance',
+      directory: '/custom/path',
+      maxSizeMib: 512,
+    );
+    ```
+  </Tab>
+  <Tab value="Bellek İçi">
+    ```dart
+    final isar = await Isar.open(
+      [UserSchema],
+      directory: Isar.sqliteInMemory,
+    );
+    ```
+  </Tab>
+</Tabs>
+
+## Create (Insert)
+
+<Steps>
+
+### Nesne Oluştur
+
+```dart
+final user = User()
+  ..name = 'Jane Doe'
+  ..age = 28
+  ..email = 'jane@example.com';
+```
+
+### Yazma İşlemiyle Ekle
+
+```dart
+await isar.writeTxn(() async {
+  await isar.users.put(user);
+});
+```
+
+<Callout type="success">
+  `Isar.autoIncrement` kullanıyorsanız `put` metodu ID'yi otomatik atar.
+</Callout>
+
+### Toplu Ekleme
+
+```dart
+final users = [
+  User()..name = 'Alice'..age = 25,
+  User()..name = 'Bob'..age = 30,
+  User()..name = 'Charlie'..age = 35,
+];
+
+await isar.writeTxn(() async {
+  await isar.users.putAll(users);
+});
+```
+
+</Steps>
+
+<Callout type="warning">
+  Veri değişikliklerinde her zaman yazma işlemleri (write transaction) kullanın!
+</Callout>
+
+## Read (Query)
+
+### ID ile Getir
+
+```dart
+final user = await isar.users.get(1);
+if (user != null) {
+  print('Bulundu: ${user.name}');
+}
+```
+
+### Birden Fazla ID ile Getir
+
+```dart
+final users = await isar.users.getAll([1, 2, 3]);
+```
+
+### Hepsini Getir
+
+```dart
+final allUsers = await isar.users.where().findAll();
+```
+
+### İlk Kaydı Bul
+
+```dart
+final firstUser = await isar.users.where().findFirst();
+```
+
+### Sayım
+
+```dart
+final count = await isar.users.count();
+print('Toplam kullanıcı: $count');
+```
+
+## Update
+
+<Tabs items={['Nesneyi Güncelle', 'Alan Güncelle', 'Koşullu Güncelle']}>
+  <Tab value="Nesneyi Güncelle">
+    ```dart
+    // Nesneyi al
+    final user = await isar.users.get(1);
+    
+    if (user != null) {
+      // Değiştir
+      user.name = 'Updated Name';
+      user.age = 30;
+      
+      // Kaydet
+      await isar.writeTxn(() async {
+        await isar.users.put(user);
+      });
+    }
+    ```
+  </Tab>
+  <Tab value="Alan Güncelle">
+    ```dart
+    await isar.writeTxn(() async {
+      final user = await isar.users.get(1);
+      if (user != null) {
+        user.age = (user.age ?? 0) + 1;
+        await isar.users.put(user);
+      }
+    });
+    ```
+  </Tab>
+  <Tab value="Koşullu Güncelle">
+    ```dart
+    await isar.writeTxn(() async {
+      final adults = await isar.users
+        .filter()
+        .ageGreaterThan(18)
+        .findAll();
+      
+      for (var user in adults) {
+        user.verified = true;
+        await isar.users.put(user);
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  `put` metodu upsert gibi çalışır — ID yoksa ekler, varsa günceller.
+</Callout>
+
+## Delete
+
+### ID ile Sil
+
+```dart
+await isar.writeTxn(() async {
+  final success = await isar.users.delete(1);
+  print('Silindi: $success');
+});
+```
+
+### Birden Fazla ID ile Sil
+
+```dart
+await isar.writeTxn(() async {
+  final count = await isar.users.deleteAll([1, 2, 3]);
+  print('$count kullanıcı silindi');
+});
+```
+
+### Nesneyi Sil
+
+```dart
+await isar.writeTxn(() async {
+  final user = await isar.users.get(1);
+  if (user != null) {
+    await isar.users.delete(user.id);
+  }
+});
+```
+
+### Hepsini Sil
+
+```dart
+await isar.writeTxn(() async {
+  await isar.users.clear();
+});
+```
+
+<Callout type="error">
+  `clear()` tüm koleksiyonu siler; dikkatli olun!
+</Callout>
+
+### Filtreyle Sil
+
+```dart
+await isar.writeTxn(() async {
+  final deletedCount = await isar.users
+    .filter()
+    .ageLessThan(18)
+    .deleteAll();
+  print('$deletedCount kullanıcı silindi');
+});
+```
+
+## İşlemler
+
+Tüm yazma işlemleri bir transaction içinde olmalıdır:
+
+```dart
+await isar.writeTxn(() async {
+  // Create
+  final user = User()..name = 'Test';
+  await isar.users.put(user);
+  
+  // Update
+  user.name = 'Updated';
+  await isar.users.put(user);
+  
+  // Delete
+  await isar.users.delete(user.id);
+  
+  // Tüm işlemler atomic
+});
+```
+
+<Callout type="success">
+  Bir hata oluşursa transaction içindeki tüm değişiklikler otomatik olarak geri alınır.
+</Callout>
+
+### Okuma İşlemleri
+
+Birden fazla okumada daha iyi performans için:
+
+```dart
+final results = await isar.txn(() async {
+  final users = await isar.users.where().findAll();
+  final count = await isar.users.count();
+  return {'users': users, 'count': count};
+});
+```
+
+## En İyi Uygulamalar
+
+1. **Toplu İşlemler Kullanın**
+   ```dart
+   // ✅ İyi - Tek transaction
+   await isar.writeTxn(() async {
+     await isar.users.putAll(manyUsers);
+   });
+   
+   // ❌ Kötü - Birden fazla transaction
+   for (var user in manyUsers) {
+     await isar.writeTxn(() async {
+       await isar.users.put(user);
+     });
+   }
+   ```
+
+2. **Transaction Kapsamını Küçük Tutun**
+   ```dart
+   // ✅ İyi
+   final data = prepareData();
+   await isar.writeTxn(() async {
+     await isar.users.putAll(data);
+   });
+   
+   // ❌ Kötü
+   await isar.writeTxn(() async {
+     final data = prepareData(); // Ağır işlem transaction içinde
+     await isar.users.putAll(data);
+   });
+   ```
+
+3. **Silmeden Önce Kontrol Edin**
+   ```dart
+   await isar.writeTxn(() async {
+     final exists = await isar.users.get(id) != null;
+     if (exists) {
+       await isar.users.delete(id);
+     }
+   });
+   ```
+
+## Hata Yönetimi
+
+```dart
+try {
+  await isar.writeTxn(() async {
+    await isar.users.put(user);
+  });
+} catch (e) {
+  print('Hata: $e');
+  // Transaction otomatik olarak geri alınır
+}
+```
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="Sorgular" href="/docs/queries">
+    Verilerinizi verimli şekilde sorgulamayı öğrenin
+  </Card>
+  <Card title="İndeksler" href="/docs/indexes">
+    İndekslerle sorgu performansını artırın
+  </Card>
+  <Card title="İşlemler" href="/docs/transactions">
+    İşlemlere derinlemesine dalın
+  </Card>
+  <Card title="Watchers" href="/docs/watchers">
+    Veri değişimlerine gerçek zamanlı tepki verin
+  </Card>
+</Cards>

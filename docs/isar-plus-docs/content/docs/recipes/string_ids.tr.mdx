@@ -1,0 +1,145 @@
+---
+title: String ID'ler
+description: String UUID'ler kullanmayı ve verimli tamsayı ID'leri korumayı öğrenin
+icon: Hash
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# String ID'ler
+
+En sık aldığım isteklerden biri bu, bu yüzden String ID'leri kullanma üzerine bir rehber hazırladım.
+
+Isar, String ID'leri yerel olarak desteklemez ve bunun iyi bir nedeni vardır: tamsayı ID'ler çok daha verimli ve hızlıdır. Özellikle linkler için, String ID'nin yarattığı ek yük çok büyüktür.
+
+<Callout type="info" title="İki Dünyanın En İyisi">
+Bazen UUID veya başka tamsayı olmayan ID'ler kullanan harici verileri saklamanız gerekir. String ID'yi nesnenizde bir özellik olarak tutmanızı ve Id olarak kullanılabilecek 64 bitlik bir tamsayı üretmek için hızlı bir hash uygulaması kullanmanızı öneririm.
+</Callout>
+
+## Uygulama
+
+<Steps>
+### String ID Alanı Ekle
+
+UUID'nizi veya harici ID'nizi normal bir string alanı olarak saklayın.
+
+### Tamsayı ID Üret
+
+String'i 64 bitlik bir tamsayıya dönüştürmek için hızlı bir hash fonksiyonu kullanın.
+
+### Linklerde Kullanın
+
+Tamsayı ID, linkler ve indeksleme için verimli bir şekilde kullanılır.
+</Steps>
+
+```dart title="user.dart"
+@collection
+class User {
+  String? id;
+
+  Id get isarId => fastHash(id!);
+
+  String? name;
+
+  int? age;
+}
+```
+
+Bu yaklaşımla iki dünyanın en iyisini elde edersiniz: Linkler için verimli tamsayı ID'ler ve String ID kullanabilme esnekliği.
+
+## Hızlı Hash Fonksiyonu
+
+İdeal olarak hash fonksiyonunuz yüksek kalitede olmalı (çakışma istemezsiniz) ve hızlı olmalıdır. Aşağıdaki uygulamayı kullanmanızı tavsiye ederim:
+
+```dart title="fast_hash.dart"
+/// Dart String'leri için optimize edilmiş FNV-1a 64bit hash algoritması
+int fastHash(String string) {
+  var hash = 0xcbf29ce484222325;
+
+  var i = 0;
+  while (i < string.length) {
+    final codeUnit = string.codeUnitAt(i++);
+    hash ^= codeUnit >> 8;
+    hash *= 0x100000001b3;
+    hash ^= codeUnit & 0xFF;
+    hash *= 0x100000001b3;
+  }
+
+  return hash;
+}
+```
+
+### Hash Fonksiyonu Gereksinimleri
+
+Farklı bir hash fonksiyonu seçerseniz şu şartları sağlamasına dikkat edin:
+
+- 64 bit tamsayı döndürmeli
+- Düşük çakışma oranına sahip olmalı
+- Hızlı olmalı (kriptografik hash'lerden kaçının)
+- Platformlar arasında tutarlı olmalı
+
+<Callout type="warn" title="Platform Kararlılığı">
+`string.hashCode` kullanmaktan kaçının çünkü farklı platformlar ve Dart sürümleri arasında kararlı olması garanti edilmez.
+</Callout>
+
+## Kullanım Örneği
+
+```dart title="example.dart"
+void main() async {
+  final isar = await Isar.open([UserSchema]);
+
+  // UUID ile kullanıcı oluştur
+
+  final user = User()
+    ..id = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+    ..name = 'John Doe'
+    ..age = 30;
+
+  // isarId getter'ı otomatik olarak tamsayı ID'sini üretir
+  await isar.writeAsync((isar) async {
+    await isar.users.put(user);
+  });
+
+  // String ID ile sorgu
+  final foundUser = await isar.users
+    .filter()
+    .idEqualTo('f47ac10b-58cc-4372-a567-0e02b2c3d479')
+    .findFirst();
+
+  // Daha hızlı erişim için tamsayı ID ile sorgu
+  final byIntId = await isar.users.get(fastHash(user.id!));
+}
+```
+
+## Alternatif Hash Fonksiyonları
+
+### MurmurHash3
+
+```dart
+int murmurHash3(String string) {
+  var hash = 0x811c9dc5;
+  for (var i = 0; i < string.length; i++) {
+    hash ^= string.codeUnitAt(i);
+    hash *= 0x01000193;
+  }
+  return hash;
+}
+```
+
+### CityHash (daha uzun string'ler için)
+
+Daha uzun UUID'ler veya string'ler için, daha uzun girdilerde daha iyi çakışma direnci sunan CityHash kullanmayı düşünebilirsiniz.
+
+## Performans Karşılaştırması
+
+| Hash Fonksiyonu | Hız | Çakışma Oranı | En iyi kullanım |
+|--------------|-------|----------------|----------|
+| FNV-1a | ⚡⚡⚡ | Düşük | Genel kullanım |
+| MurmurHash3 | ⚡⚡ | Çok Düşük | UUID/GUID |
+| CityHash | ⚡ | Çok Düşük | Uzun string'ler |
+| String.hashCode | ⚡⚡⚡ | Platforma bağlı | ❌ Kaçının |
+
+<Callout type="info" title="Öneri">
+Çoğu UUID/GUID senaryosu için, yukarıdaki FNV-1a uygulaması hız ve çakışma direnci arasında en iyi dengeyi sunar.
+</Callout>

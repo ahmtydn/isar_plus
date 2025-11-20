@@ -1,0 +1,325 @@
+---
+title: Linkler
+description: IsarLink ve IsarLinks ile nesneler arası ilişkileri modelleyin
+icon: Link
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Linkler
+
+Linkler, nesneler arası ilişkileri ifade etmenizi sağlar; örneğin bir yorumun yazarı (User). Isar linkleriyle `1:1`, `1:n` ve `n:n` ilişkileri modelleyebilirsiniz. Link kullanımı gömülü nesnelere göre daha az ergonomiktir; mümkün olduğunda gömülü nesneleri tercih edin.
+
+Link'i, ilişkiyi tutan ayrı bir tablo gibi düşünebilirsiniz. SQL ilişkilerine benzer fakat farklı özellik ve API setine sahiptir.
+
+## IsarLink
+
+`IsarLink<T>` sıfır veya bir ilişkili nesne barındırır ve bire-bir ilişkileri ifade eder. `IsarLink`'in `value` adlı tek bir özelliği vardır ve ilişkili nesneyi tutar.
+
+Linkler tembel yüklenir (lazy). `value`'yu yüklemek veya kaydetmek için `linkProperty.load()` ve `linkProperty.save()` çağırmanız gerekir.
+
+<Callout type="info" title="ID Gereksinimleri">
+Linkin kaynak ve hedef koleksiyonlarındaki id özelliği `final` olmamalıdır.
+</Callout>
+
+Web dışındaki hedeflerde linkler ilk kullanımda otomatik yüklenir. Koleksiyona bir IsarLink ekleyerek başlayalım:
+
+```dart title="models.dart"
+@collection
+class Teacher {
+  Id? id;
+
+  late String subject;
+}
+
+@collection
+class Student {
+  Id? id;
+
+  late String name;
+
+  final teacher = IsarLink<Teacher>();
+}
+```
+
+Bu örnekte öğretmenler ile öğrenciler arasında bir link tanımladık. Her öğrencinin en fazla bir öğretmeni olabilir.
+
+### Link Oluşturma ve Kaydetme
+
+Önce öğretmeni oluşturup öğrenciye atarız. Öğretmeni `.put()` ile eklemeli ve linki manuel kaydetmeliyiz.
+
+<Tabs items={['Async', 'Sync']}>
+<Tab value="Async">
+```dart
+final mathTeacher = Teacher()..subject = 'Math';
+
+final linda = Student()
+  ..name = 'Linda'
+  ..teacher.value = mathTeacher;
+
+await isar.writeAsync((isar) async {
+  await isar.students.put(linda);
+  await isar.teachers.put(mathTeacher);
+  await linda.teacher.save();
+});
+```
+</Tab>
+
+<Tab value="Sync">
+```dart
+final englishTeacher = Teacher()..subject = 'English';
+
+final david = Student()
+  ..name = 'David'
+  ..teacher.value = englishTeacher;
+
+// Senkron kod linkleri otomatik kaydeder
+isar.write((isar) {
+  isar.students.put(david);
+});
+```
+</Tab>
+</Tabs>
+
+### Linkleri Kullanmak
+
+Artık linki kullanabiliriz:
+
+```dart
+final linda = await isar.students
+  .where()
+  .nameEqualTo('Linda')
+  .findFirst();
+
+final teacher = linda.teacher.value; 
+// > Teacher(subject: 'Math')
+```
+
+<Callout type="info" title="Sync Transaction'larda Otomatik Kaydetme">
+Senkron transaction'larda `.put()` tüm linkleri otomatik kaydeder; öğretmeni bile bizim yerimize oluşturur.
+</Callout>
+
+## IsarLinks
+
+Önceki örnekteki öğrencinin birden fazla öğretmeni olması daha mantıklı olurdu. Neyse ki Isar, birden çok ilişkili nesne tutan `IsarLinks<T>` sunar ve bire-çok ilişkileri ifade eder.
+
+`IsarLinks<T>`, `Set<T>`'i genişletir ve set'lerdeki izin verilen tüm metodları sağlar.
+
+`IsarLinks`, `IsarLink` gibi davranır ve lazy'dir. Tüm ilişkili nesneleri yüklemek için `linkProperty.load()` çağırın. Değişiklikleri kalıcı yapmak için `linkProperty.save()` kullanın.
+
+### IsarLink'i IsarLinks'e Yükseltmek
+
+İçeride hem `IsarLink` hem `IsarLinks` aynı şekilde temsil edilir. Önceki `IsarLink<Teacher>`'ı `IsarLinks<Teacher>`'a yükselterek bir öğrenciye birden çok öğretmen atayabiliriz (veri kaybetmeden).
+
+```dart title="student_upgraded.dart"
+@collection
+class Student {
+  Id? id;
+
+  late String name;
+
+  final teachers = IsarLinks<Teacher>();
+}
+```
+
+<Callout type="info" title="Link Adını Koruma">
+Bu, linkin adını (`teacher`) değiştirmediğimiz için çalışır; Isar önceki halini hatırlar.
+</Callout>
+
+### IsarLinks ile Çalışmak
+
+```dart
+final biologyTeacher = Teacher()..subject = 'Biology';
+
+final linda = await isar.students
+  .where()
+  .filter()
+  .nameEqualTo('Linda')
+  .findFirst();
+
+print(linda.teachers); 
+// {Teacher('Math')}
+
+linda.teachers.add(biologyTeacher);
+
+await isar.writeAsync((isar) async {
+  await linda.teachers.save();
+});
+
+print(linda.teachers); 
+// {Teacher('Math'), Teacher('Biology')}
+```
+
+## Backlinkler
+
+"Ters ilişkileri nasıl ifade ederiz?" diye sorabilirsiniz. Şimdi backlink'leri tanıtıyoruz.
+
+Backlink'ler ters yöndeki linklerdir. Her linkin örtük bir backlink'i vardır. Bir `IsarLink` veya `IsarLinks`'i `@Backlink()` ile anotasyonlayarak uygulamada kullanabilirsiniz.
+
+<Callout type="info" title="Sıfır Maliyetli Soyutlama">
+Backlink'ler ek bellek veya kaynak gerektirmez; veriyi kaybetmeden özgürce ekleyip kaldırabilir ya da yeniden adlandırabilirsiniz.
+</Callout>
+
+Belirli bir öğretmenin hangi öğrencileri olduğunu bilmek için backlink tanımlayalım:
+
+```dart title="teacher_with_backlink.dart"
+@collection
+class Teacher {
+  Id id;
+
+  late String subject;
+
+  @Backlink(to: 'teachers')
+  final students = IsarLinks<Student>();
+}
+```
+
+<Callout type="warn" title="Backlink Hedefi">
+Backlink'in işaret ettiği linki belirtmemiz gerekir. İki nesne arasında birden fazla link bulunabilir.
+</Callout>
+
+## Linkleri Başlatma
+
+<Steps>
+### Parametresiz Kurucu Kullanın
+
+`IsarLink` ve `IsarLinks` parametresiz kurucuya sahiptir; nesne oluşturulurken link özelliğine bunu atayın.
+
+### Özellikleri Final Yapın
+
+Link özelliklerini `final` yapmak iyi bir pratiktir.
+
+### Otomatik Başlatma
+
+Nesnenizi ilk kez `put()` ettiğinizde link, kaynak ve hedef koleksiyon bilgileriyle başlatılır.
+</Steps>
+
+```dart
+@collection
+class Student {
+  Id? id;
+
+  late String name;
+
+  // Doğru: parametresiz kuruculu final link
+  final teachers = IsarLinks<Teacher>();
+}
+```
+
+<Callout type="error" title="Önemli Kısıt">
+Bir link'i başka bir nesneye taşımak yasaktır.
+</Callout>
+
+Link, oluşturulduğu anda değişiklikleri izlemeye başlar; bu yüzden link başlatılmadan önce bile ilişkileri ekleyip çıkarabilirsiniz.
+
+## İlişki Türleri
+
+### Bire Bir (1:1)
+
+Bir tarafta `IsarLink<T>` kullanın:
+
+```dart
+@collection
+class User {
+  Id? id;
+  final profile = IsarLink<Profile>();
+}
+
+@collection
+class Profile {
+  Id? id;
+  @Backlink(to: 'profile')
+  final user = IsarLink<User>();
+}
+```
+
+### Bire Çok (1:n)
+
+"Çok" tarafında `IsarLinks<T>` kullanın:
+
+```dart
+@collection
+class Author {
+  Id? id;
+  @Backlink(to: 'author')
+  final posts = IsarLinks<Post>();
+}
+
+@collection
+class Post {
+  Id? id;
+  final author = IsarLink<Author>();
+}
+```
+
+### Çoktan Çoka (n:n)
+
+Her iki tarafta `IsarLinks<T>` kullanın:
+
+```dart
+@collection
+class Student {
+  Id? id;
+  final courses = IsarLinks<Course>();
+}
+
+@collection
+class Course {
+  Id? id;
+  @Backlink(to: 'courses')
+  final students = IsarLinks<Student>();
+}
+```
+
+## En İyi Uygulamalar
+
+### Gömülü Nesneleri Tercih Edin
+
+Mümkün olduğunda performans için link yerine gömülü nesneler kullanın:
+
+```dart
+@collection
+class Post {
+  Id? id;
+  
+  // Daha iyi: gömülü nesne
+  Author? author;
+  
+  // Bunun yerine: link
+  // final author = IsarLink<Author>();
+}
+
+@embedded
+class Author {
+  late String name;
+  late String email;
+}
+```
+
+### Linkleri Açıkça Yükleyin
+
+Gerektiğinde linkleri yüklemeyi unutmayın:
+
+```dart
+final student = await isar.students.get(studentId);
+
+// Linki yükle
+await student.teachers.load();
+
+// Artık kullanabilirsiniz
+print(student.teachers.length);
+```
+
+### Toplu İşlemler
+
+Daha iyi performans için birden fazla linki tek seferde kaydedin:
+
+```dart
+await isar.writeAsync((isar) async {
+  await student1.teachers.save();
+  await student2.teachers.save();
+  await student3.teachers.save();
+});
+```

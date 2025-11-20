@@ -1,0 +1,100 @@
+---
+title: Çoklu İzole Kullanımı
+description: Daha yüksek performans için Isar'ı birden fazla Dart izolesinde kullanmayı öğrenin
+icon: Cpu
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Çoklu İzole Kullanımı
+
+Dart kodu thread yerine izoleler içinde çalışır. Her izolenin kendi bellek yığını vardır ve bir izoladaki durum diğer izoleler tarafından erişilemez.
+
+Isar aynı anda birden fazla izoleden erişilebilir ve watcher'lar bile izoleler arasında çalışır. Bu tarifte Isar'ı çoklu izole ortamında nasıl kullanacağımızı inceleyeceğiz.
+
+## Ne zaman birden fazla izole kullanılmalı?
+
+Isar işlemleri aynı izolada çalışsalar bile paralel yürütülür. Yine de bazı durumlarda Isar'a birden fazla izoleden erişmek faydalıdır.
+
+Bunun nedeni, Isar'ın verileri Dart nesnelerine dönüştürürken ve geri yazarken hatırı sayılır zaman harcamasıdır. Bunu JSON kodlama/çözme işlemlerine benzetebilirsiniz (sadece daha verimli). Bu işlemler veriye eriştiğiniz izolada çalışır ve doğal olarak izoladaki diğer kodları engeller. Başka bir deyişle: Isar işin bir kısmını Dart izolenizde gerçekleştirir.
+
+<Callout type="info" title="İzole Ne Zaman Kullanılır?">
+Aynı anda sadece birkaç yüz nesne okuyup yazmanız gerekiyorsa bunu UI izolesinde yapmak sorun olmaz. Ancak çok büyük işlemler için veya UI thread'i zaten meşgulse ayrı bir izole kullanmayı düşünmelisiniz.
+</Callout>
+
+## Örnek
+
+Yapmamız gereken ilk şey, yeni izolada Isar'ı açmak. Isar örneği ana izolada zaten açık olduğundan `Isar.open()` aynı örneği döndürür.
+
+<Callout type="warn" title="Şema Tutarlılığı">
+Ana izoladakiyle aynı şemaları sağladığınızdan emin olun. Aksi takdirde hata alırsınız.
+</Callout>
+
+`compute()` Flutter'da yeni bir izole başlatır ve verilen fonksiyonu bu izolada çalıştırır.
+
+```dart title="main.dart"
+void main() async {
+  // UI izolesinde Isar'ı aç
+  final dir = await getApplicationDocumentsDirectory();
+  
+  final isar = await Isar.open(
+    [MessageSchema],
+    directory: dir.path,
+    name: 'myInstance',
+  );
+
+  // veritabanındaki değişiklikleri dinle
+  isar.messages.watchLazy(() {
+    print('Aaa mesajlar değişti!');
+  });
+
+  // yeni bir izole başlat ve 10000 mesaj oluştur
+  compute(createDummyMessages, 10000).then(() {
+    print('izole bitti');
+  });
+
+  // bir süre sonra:
+  // > Aaa mesajlar değişti!
+  // > izole bitti
+}
+
+// yeni izolada çalıştırılacak fonksiyon
+Future createDummyMessages(int count) async {
+  // örnek zaten açık olduğu için path'e ihtiyacımız yok
+  final dir = await getApplicationDocumentsDirectory();
+  
+  final isar = await Isar.open(
+    [PostSchema],
+    directory: dir.path,
+    name: 'myInstance',
+  );
+
+  final messages = List.generate(count, (i) => Message()..content = 'Message $i');
+  
+  // izolelerde senkron işlemler kullanıyoruz
+  isar.write((isar) {
+    isar.messages.putAll(messages);
+  });
+}
+```
+
+## Dikkat edilmesi gereken noktalar
+
+<Steps>
+### İzoleler Arası Watcher'lar
+
+`isar.messages.watchLazy()` UI izolesinde çağrılır ve başka bir izoladan gelen değişiklikleri bildirir.
+
+### İsimlendirilmiş Örnekler
+
+Örnekler isimleriyle referans alınır. Varsayılan isim `default`tur ancak bu örnekte `myInstance` kullandık.
+
+### Senkron İşlemler
+
+Mesajları oluşturmak için senkron işlem kullandık. Yeni izolemizi bloklamak sorun değil ve senkron işlemler biraz daha hızlıdır.
+</Steps>
+
+<Callout type="info" title="Performans İpucu">
+Senkron işlemler (`write()`) asenkron işlemlerden (`writeAsync()`) daha hızlıdır ve bloklamanın sorun olmadığı arka plan izoleleri için idealdir.
+</Callout>

@@ -1,0 +1,193 @@
+---
+title: Tam Metin Arama
+description: Kelime indeksleme ve gelişmiş eşleştirme ile güçlü tam metin araması uygulayın
+icon: Search
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Tam Metin Arama
+
+Tam metin arama, veritabanındaki metinleri aramanın güçlü bir yoludur. [İndekslerin](/docs/indexes) nasıl çalıştığını zaten biliyor olmalısınız, ancak hızlıca üzerinden geçelim.
+
+Bir indeks, sorgu motorunun belirli değere sahip kayıtları hızlıca bulmasını sağlayan bir lookup tablosu gibi çalışır. Örneğin nesnenizde bir `title` alanınız varsa, bu alanı indeksleyerek belirli bir başlığa sahip kayıtları daha hızlı bulabilirsiniz.
+
+## Neden tam metin araması?
+
+Filtreler kullanarak metin aramak kolaydır. `.startsWith()`, `.contains()` ve `.matches()` gibi çeşitli string işlemleri vardır. Sorun, filtrelerin çalışma süresinin koleksiyondaki kayıt sayısı `n` olduğunda `O(n)` olmasıdır. `.matches()` gibi string işlemleri özellikle pahalıdır.
+
+<Callout type="info" title="Performans Avantajı">
+Tam metin araması filtrelere göre çok daha hızlıdır, ancak indekslerin bazı kısıtlamaları vardır. Bu tarifte bu kısıtları nasıl aşabileceğimizi inceleyeceğiz.
+</Callout>
+
+## Basit örnek
+
+Fikir her zaman aynıdır: Tüm metni indekslemek yerine metindeki kelimeleri indeksleriz ve böylece tek tek arayabiliriz.
+
+En temel tam metin indeksini oluşturalım:
+
+```dart title="message.dart"
+class Message {
+  Id? id;
+
+  late String content;
+
+  @Index()
+  List<String> get contentWords => content.split(' ');
+}
+```
+
+Artık içerikte belirli kelimeler geçen mesajları arayabiliriz:
+
+```dart
+final posts = await isar.messages
+  .where()
+  .contentWordsAnyEqualTo('hello')
+  .findAll();
+```
+
+Bu sorgu çok hızlıdır, ancak bazı sorunlar var:
+
+1. Sadece tam kelimeleri arayabiliriz
+2. Noktalama işaretlerini dikkate almıyoruz
+3. Diğer boşluk karakterlerini desteklemiyoruz
+
+## Metni doğru şekilde bölmek
+
+Önceki örneği geliştirmeye çalışalım. Kelime bölmeyi düzeltmek için karmaşık bir regex yazabiliriz, ancak muhtemelen yavaş olur ve köşetaşlarında bozulur.
+
+[Unicode Annex #29](https://unicode.org/reports/tr29/) neredeyse tüm diller için metnin kelimelere nasıl bölüneceğini tanımlar. Oldukça karmaşıktır ama neyse ki Isar bizim için işi yapar:
+
+<Tabs items={['Basit Örnekler', 'Gelişmiş Örnekler']}>
+<Tab value="Basit Örnekler">
+```dart
+Isar.splitWords('hello world'); 
+// -> ['hello', 'world']
+```
+</Tab>
+<Tab value="Gelişmiş Örnekler">
+```dart
+Isar.splitWords('The quick ("brown") fox can't jump 32.3 feet, right?');
+// -> ['The', 'quick', 'brown', 'fox', 'can't', 'jump', '32.3', 'feet', 'right']
+```
+</Tab>
+</Tabs>
+
+## Gelişmiş eşleştirme kontrolü
+
+Çok kolay! İndeksi prefix eşleşmesini ve büyük/küçük harf duyarsız aramayı destekleyecek şekilde değiştirebiliriz:
+
+```dart title="post.dart"
+class Post {
+  Id? id;
+
+  late String title;
+
+  @Index(type: IndexType.value, caseSensitive: false)
+  List<String> get titleWords => title.split(' ');
+}
+```
+
+Varsayılan olarak Isar kelimeleri hash'lenmiş şekilde saklar; bu hızlı ve yer açısından verimlidir. Ancak hash'ler prefix eşleşmesinde kullanılamaz. `IndexType.value` kullanarak indeksin kelimeleri doğrudan kullanmasını sağlayabiliriz. Böylece `.titleWordsAnyStartsWith()` where cümlesi elde ederiz:
+
+```dart
+final posts = await isar.posts
+  .where()
+  .titleWordsAnyStartsWith('hel')
+  .or()
+  .titleWordsAnyStartsWith('welco')
+  .or()
+  .titleWordsAnyStartsWith('howd')
+  .findAll();
+```
+
+## `.endsWith()` ile soneki eşleştirme
+
+Elbette! `.endsWith()` eşleşmesi için küçük bir numara kullanacağız:
+
+```dart title="post_with_suffix.dart"
+class Post {
+    Id? id;
+
+    late String title;
+
+    @Index(type: IndexType.value, caseSensitive: false)
+    List<String> get revTitleWords {
+        return Isar.splitWords(title).map(
+          (word) => word.reversed).toList()
+        );
+    }
+}
+```
+
+Aramak istediğiniz son ekin tersini almayı unutmayın:
+
+```dart
+final posts = await isar.posts
+  .where()
+  .revTitleWordsAnyStartsWith('lcome'.reversed)
+  .findAll();
+```
+
+## Stemmer algoritmaları
+
+Ne yazık ki indeksler `.contains()` eşleşmesini desteklemez (bu diğer veritabanları için de geçerlidir). Ancak keşfetmeye değer birkaç alternatif vardır. Seçim kullanım senaryonuza göre değişir. Bir örnek, kelimenin tamamı yerine kökünü indekslemektir.
+
+Stemmer algoritması, bir kelimenin farklı varyantlarını ortak bir forma indirgeme sürecidir:
+
+<Tabs items={['Örnek', 'Varyantlar']}>
+<Tab value="Örnek">
+```
+connection
+connections
+connective          --->   connect
+connected
+connecting
+```
+</Tab>
+<Tab value="Varyantlar">
+Popüler stemmer algoritmaları:
+- **Porter stemming algorithm**: Klasik İngilizce stemmer
+- **Snowball stemming algorithms**: Çoklu dil desteği
+- **Lemmatization**: Daha gelişmiş dilsel normalizasyon
+</Tab>
+</Tabs>
+
+Popüler algoritmalar [Porter stemming algorithm](https://tartarus.org/martin/PorterStemmer/) ve [Snowball stemming algorithms](https://snowballstem.org/algorithms/)'tur.
+
+[Lemmatization](https://en.wikipedia.org/wiki/Lemmatisation) gibi daha gelişmiş yöntemler de vardır.
+
+## Fonetik algoritmalar
+
+[Fonetik algoritma](https://en.wikipedia.org/wiki/Phonetic_algorithm), kelimeleri telaffuzlarına göre indeksleyen bir algoritmadır. Başka bir deyişle, aradığınız kelimelere benzer şekilde söylenen kelimeleri bulmanızı sağlar.
+
+<Callout type="warn" title="Dil Kısıtı">
+Çoğu fonetik algoritma yalnızca tek bir dili destekler.
+</Callout>
+
+### Soundex
+
+[Soundex](https://en.wikipedia.org/wiki/Soundex), adları İngilizce telaffuzlarına göre indeksleyen bir fonetik algoritmadır. Amaç, homofonların aynı temsil ile kodlanması ve yazım farklarına rağmen eşleştirilebilmesidir.
+
+<Tabs items={['Örnekler', 'Nasıl Çalışır']}>
+<Tab value="Örnekler">
+```
+"Robert"   -> "R163"
+"Rupert"   -> "R163"
+"Rubin"    -> "R150"
+"Ashcraft" -> "A261"
+"Ashcroft" -> "A261"
+```
+</Tab>
+<Tab value="Nasıl Çalışır">
+Bu algoritma, homofonların aynı temsile kodlanmasını sağlar; böylece küçük yazım farklarına rağmen eşleştirilebilirler. Oldukça basit bir algoritmadır ve geliştirilmiş sürümleri mevcuttur.
+</Tab>
+</Tabs>
+
+### Double Metaphone
+
+[Double Metaphone](https://en.wikipedia.org/wiki/Metaphone) fonetik kodlama algoritması, bu algoritmanın ikinci neslidir. İlk Metaphone algoritmasına göre temel tasarım iyileştirmeleri içerir.
+
+Double Metaphone; Slav, Germen, Kelt, Yunanca, Fransızca, İtalyanca, İspanyolca, Çince ve diğer kökenli İngilizce düzensizliklerini dikkate alır.

@@ -1,0 +1,310 @@
+---
+title: Şema
+description: Isar koleksiyonlarıyla veri modellerinizi tanımlayın
+icon: Database
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Şema
+
+Isar ile uygulama verinizi sakladığınızda koleksiyonlarla çalışırsınız. Koleksiyon, veritabanı tablosu gibidir ve yalnızca tek bir Dart nesne türünü içerebilir.
+
+## Koleksiyonun Anatomisi
+
+Her Isar koleksiyonunu `@collection` veya `@Collection()` ile anotasyonlayarak tanımlarsınız.
+
+```dart
+@collection
+class User {
+  Id? id;
+
+  String? firstName;
+
+  String? lastName;
+}
+```
+
+<Callout>
+  Bir alanı kalıcı kılmak için Isar'ın ona erişebilmesi gerekir. Alanı public yapın veya getter/setter sağlayın.
+</Callout>
+
+## Veri Türleri
+
+Isar aşağıdaki veri türlerini destekler:
+
+### Primitif Türler
+
+```dart
+@collection
+class PrimitiveTypes {
+  Id id = Isar.autoIncrement;
+
+  bool? boolValue;
+  int? intValue;
+  double? doubleValue;
+  DateTime? dateValue;
+  String? stringValue;
+}
+```
+
+### Listeler
+
+```dart
+@collection
+class ListTypes {
+  Id id = Isar.autoIncrement;
+
+  List<bool>? boolList;
+  List<int>? intList;
+  List<double>? doubleList;
+  List<DateTime>? dateList;
+  List<String>? stringList;
+}
+```
+
+<Callout type="warning">
+  Listeler null değer içeremez. Bunun yerine nullable türler kullanın.
+</Callout>
+
+### Enum'lar
+
+```dart
+enum Status { active, inactive, pending }
+
+@collection
+class Task {
+  Id id = Isar.autoIncrement;
+
+  @enumerated
+  Status? status;
+
+  @Enumerated(EnumType.ordinal)
+  Status? ordinalStatus;
+
+  @Enumerated(EnumType.name)
+  Status? namedStatus;
+}
+```
+
+<Tabs items={['EnumType.ordinal', 'EnumType.name', 'EnumType.value']}>
+  <Tab value="EnumType.ordinal">
+    Enum değerinin indeksini saklar (varsayılan).
+    ```dart
+    // Status.active = 0
+    // Status.inactive = 1
+    // Status.pending = 2
+    ```
+  </Tab>
+  <Tab value="EnumType.name">
+    Enum değerinin adını String olarak saklar.
+    ```dart
+    // Status.active = 'active'
+    // Status.inactive = 'inactive'
+    ```
+  </Tab>
+  <Tab value="EnumType.value">
+    Enum içinde tanımlanan özel değeri saklar.
+    ```dart
+    enum Status {
+      @EnumValue(1) active,
+      @EnumValue(2) inactive,
+      @EnumValue(3) pending,
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Gömülü Nesneler
+
+```dart
+@embedded
+class Address {
+  String? street;
+  String? city;
+  String? country;
+}
+
+@collection
+class Person {
+  Id id = Isar.autoIncrement;
+
+  String? name;
+
+  Address? address;
+
+  List<Address>? addresses;
+}
+```
+
+## Id'ler
+
+Her koleksiyon nesneleri benzersiz tanımlamak için bir `Id` alanına ihtiyaç duyar.
+
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement; // Otomatik artan ID
+
+  String? name;
+}
+```
+
+<Callout type="info">
+  Otomatik ID üretimi için `Isar.autoIncrement` kullanın.
+</Callout>
+
+### Özel ID'ler
+
+```dart
+@collection
+class User {
+  Id id; // ID'yi siz yönetirsiniz
+
+  User(this.id);
+}
+```
+
+## Alan Anotasyonları
+
+### @Index
+
+Sorgu performansını iyileştirmek için indeks oluşturun:
+
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+
+  @Index()
+  String? email;
+
+  @Index(type: IndexType.value)
+  String? username;
+
+  @Index(caseSensitive: false)
+  String? name;
+}
+```
+
+### @Ignore
+
+Alanları depolamadan hariç tutun:
+
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+
+  String? name;
+
+  @ignore
+  String? temporaryData; // Saklanmaz
+}
+```
+
+### @Name
+
+Veritabanında alan adını değiştirin:
+
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+
+  @Name("user_name")
+  String? name;
+}
+```
+
+### @Size
+
+String boyutunu sınırlandırın:
+
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+
+  @Size(max: 100)
+  String? shortText;
+
+  @Size(max: 1000)
+  String? longText;
+}
+```
+
+## Bileşik İndeksler
+
+Birden fazla alan üzerinde indeks oluşturun:
+
+```dart
+@collection
+@Index(composite: [CompositeIndex('lastName'), CompositeIndex('age')])
+class User {
+  Id id = Isar.autoIncrement;
+
+  String? firstName;
+
+  String? lastName;
+
+  int? age;
+}
+```
+
+## Linkler
+
+Koleksiyonlar arasında ilişkiler kurun:
+
+```dart
+@collection
+class Teacher {
+  Id id = Isar.autoIncrement;
+
+  String? name;
+
+  final students = IsarLinks<Student>();
+}
+
+@collection
+class Student {
+  Id id = Isar.autoIncrement;
+
+  String? name;
+
+  @Backlink(to: 'students')
+  final teachers = IsarLinks<Teacher>();
+}
+```
+
+<Callout type="success">
+  Linkler lazy yüklenir ve erişilene kadar ek bellek tüketmez.
+</Callout>
+
+## Migration
+
+Isar çoğu durumda şema geçişlerini otomatik yönetir:
+
+- Yeni alan eklemek
+- Alan kaldırmak
+- Alan türünü değiştirmek (veri kaybıyla)
+- İndeks eklemek/kaldırmak
+
+<Callout type="error">
+  Var olan bir alanın türünü değiştirmek, o alan için veri kaybına yol açar.
+</Callout>
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="CRUD İşlemleri" href="/docs/crud">
+    Veriyi oluşturmayı, okumayı, güncellemeyi ve silmeyi öğrenin
+  </Card>
+  <Card title="İndeksler" href="/docs/indexes">
+    Sorgularınızı indekslerle optimize edin
+  </Card>
+  <Card title="Sorgular" href="/docs/queries">
+    Güçlü sorgular oluşturun
+  </Card>
+</Cards>

@@ -1,0 +1,494 @@
+---
+title: Watcher'lar
+description: Veritabanı değişikliklerine gerçek zamanlı tepki verin
+icon: Eye
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Watcher'lar
+
+Watcher'lar veritabanınızdaki değişikliklere abone olmanıza ve verimli şekilde tepki vermenize olanak tanır. Gerçek zamanlı UI güncellemeleri ve senkronizasyon işlemleri için idealdir.
+
+<Callout type="success">
+  Watcher'lar yalnızca bir transaction başarıyla commit edildikten ve hedef gerçekten değiştiğinde tetiklenir.
+</Callout>
+
+## Genel Bakış
+
+Şunları izleyebilirsiniz:
+- **Belirli nesneler** - Tek bir nesne değiştiğinde bildirim alın
+- **Koleksiyonlar** - Koleksiyondaki herhangi bir nesne değiştiğinde bildirim alın
+- **Sorgular** - Sorgu sonuçları değiştiğinde bildirim alın
+
+## Nesne İzleme
+
+ID'sine göre belirli bir nesneyi izleyin:
+
+```dart
+@collection
+class User {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+<Tabs items={['Tam Nesne', 'Lazy']}>
+  <Tab value="Tam Nesne">
+    ```dart
+    // Güncellenmiş nesneyi al
+    Stream<User?> userStream = isar.users.watchObject(5);
+    
+    userStream.listen((user) {
+      if (user == null) {
+        print('User deleted');
+      } else {
+        print('User changed: ${user.name}');
+      }
+    });
+    
+    // Değişiklik tetikle
+    final user = User()..id = 5..name = 'David'..age = 25;
+    await isar.writeTxn(() => isar.users.put(user));
+    // Çıktı: User changed: David
+    
+    user.name = 'Mark';
+    await isar.writeTxn(() => isar.users.put(user));
+    // Çıktı: User changed: Mark
+    
+    await isar.writeTxn(() => isar.users.delete(5));
+    // Çıktı: User deleted
+    ```
+  </Tab>
+  <Tab value="Lazy">
+    ```dart
+    // Sadece bildir, nesneyi alma
+    Stream<void> userStream = isar.users.watchObjectLazy(5);
+    
+    userStream.listen((_) {
+      print('User 5 changed');
+    });
+    
+    final user = User()..id = 5..name = 'David'..age = 25;
+    await isar.writeTxn(() => isar.users.put(user));
+    // Çıktı: User 5 changed
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+  Nesnenin henüz var olması gerekmez. Oluşturulduğunda watcher sizi bilgilendirir.
+</Callout>
+
+### Hemen Tetikle
+
+Mevcut değeri anında alın:
+
+```dart
+Stream<User?> userStream = isar.users.watchObject(
+  5,
+  fireImmediately: true,
+);
+
+userStream.listen((user) {
+  print('User: ${user?.name}');
+});
+// Mevcut değeri (veya null) hemen yazar
+```
+
+## Koleksiyon İzleme
+
+Bir koleksiyondaki tüm değişiklikleri izleyin:
+
+<Tabs items={['Lazy', 'Tam Nesneler']}>
+  <Tab value="Lazy">
+    ```dart
+    // Sadece bildirim al
+    Stream<void> usersStream = isar.users.watchLazy();
+    
+    usersStream.listen((_) {
+      print('A user changed');
+    });
+    
+    await isar.writeTxn(() async {
+      await isar.users.put(User()..name = 'Alice');
+    });
+    // Çıktı: A user changed
+    ```
+  </Tab>
+  <Tab value="Tam Nesneler">
+    ```dart
+    // Her değişiklikte tüm nesneleri getir
+    Stream<List<User>> usersStream = isar.users.watch();
+    
+    usersStream.listen((users) {
+      print('Users: ${users.map((u) => u.name).join(', ')}');
+    });
+    
+    await isar.writeTxn(() async {
+      await isar.users.put(User()..name = 'Alice');
+    });
+    // Çıktı: Users: Alice
+    ```
+    
+    <Callout type="warning">
+      Tam nesnelerle koleksiyon izlemek büyük koleksiyonlarda pahalı olabilir!
+    </Callout>
+  </Tab>
+</Tabs>
+
+## Sorgu İzleme
+
+Belirli bir sorgunun sonuçlarını izleyin:
+
+```dart
+@collection
+class User {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+```dart
+// Sorgu oluştur
+final adultsQuery = isar.users
+  .filter()
+  .ageGreaterThan(18)
+  .build();
+
+// Sorgu sonuçlarını izle
+Stream<List<User>> adultsStream = adultsQuery.watch(
+  fireImmediately: true,
+);
+
+adultsStream.listen((adults) {
+  print('Adults: ${adults.map((u) => u.name).join(', ')}');
+});
+// Mevcut sonuçları hemen yazar
+
+// Çocuk ekle (bildirim yok)
+await isar.writeTxn(() async {
+  await isar.users.put(User()..name = 'Child'..age = 10);
+});
+// Çıkış yok - sorguya uymuyor
+
+// Yetişkin ekle (bildirim gelir)
+await isar.writeTxn(() async {
+  await isar.users.put(User()..name = 'Alice'..age = 25);
+});
+// Çıktı: Adults: Alice
+
+// Başka yetişkin
+await isar.writeTxn(() async {
+  await isar.users.put(User()..name = 'Bob'..age = 30);
+});
+// Çıktı: Adults: Alice, Bob
+```
+
+<Callout type="success">
+  Sorgu watcher'ları yalnızca sonuçlar gerçekten değiştiğinde tetiklenir!
+</Callout>
+
+### Lazy Sorgu İzleme
+
+```dart
+final adultsQuery = isar.users
+  .filter()
+  .ageGreaterThan(18)
+  .build();
+
+Stream<void> adultsStream = adultsQuery.watchLazy();
+
+adultsStream.listen((_) {
+  print('Adult users changed');
+});
+```
+
+### Sorgu Watcher Sınırlamaları
+
+<Callout type="warning">
+  `offset`, `limit` veya `distinct` kullanırken, görünür sonuçlar değişmemiş olsa bile bildirim gelebilir.
+</Callout>
+
+```dart
+// Fazladan bildirim olabilir
+final topUsers = isar.users
+  .where()
+  .sortByAge()
+  .limit(10)
+  .build();
+
+topUsers.watch().listen((users) {
+  // İlk 10 değişmemiş olsa da tetiklenebilir
+});
+```
+
+## Gerçek Dünya Örnekleri
+
+### Flutter UI Güncellemeleri
+
+```dart
+class UserListWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<User>>(
+      stream: isar.users.where().watch(fireImmediately: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return CircularProgressIndicator();
+        }
+        
+        final users = snapshot.data!;
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+            return ListTile(
+              title: Text(user.name),
+              subtitle: Text('Age: ${user.age}'),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+### Kullanıcı Profili
+
+```dart
+class UserProfileWidget extends StatelessWidget {
+  final int userId;
+  
+  const UserProfileWidget({required this.userId});
+  
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: isar.users.watchObject(userId, fireImmediately: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Text('User not found');
+        }
+        
+        final user = snapshot.data!;
+        return Column(
+          children: [
+            Text('Name: ${user.name}'),
+            Text('Age: ${user.age}'),
+          ],
+        );
+      },
+    );
+  }
+}
+```
+
+### Arama Sonuçları
+
+```dart
+class SearchWidget extends StatefulWidget {
+  @override
+  _SearchWidgetState createState() => _SearchWidgetState();
+}
+
+class _SearchWidgetState extends State<SearchWidget> {
+  String searchQuery = '';
+  
+  @override
+  Widget build(BuildContext context) {
+    final query = isar.users
+      .filter()
+      .nameContains(searchQuery, caseSensitive: false)
+      .build();
+    
+    return Column(
+      children: [
+        TextField(
+          onChanged: (value) {
+            setState(() {
+              searchQuery = value;
+            });
+          },
+        ),
+        Expanded(
+          child: StreamBuilder<List<User>>(
+            stream: query.watch(fireImmediately: true),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return SizedBox();
+              
+              final users = snapshot.data!;
+              return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(users[index].name),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Sunucuya Senkronizasyon
+
+```dart
+class SyncService {
+  void startWatching() {
+    isar.users.watchLazy().listen((_) async {
+      await syncUsersToServer();
+    });
+  }
+  
+  Future<void> syncUsersToServer() async {
+    final users = await isar.users.where().findAll();
+    // Sunucuya gönder...
+  }
+}
+```
+
+### Cache Geçersiz Kılma
+
+```dart
+class CacheService {
+  final _cache = <int, User>{};
+  
+  void startWatching() {
+    isar.users.watchLazy().listen((_) {
+      _cache.clear();
+      print('Cache invalidated');
+    });
+  }
+  
+  Future<User?> getUser(int id) async {
+    if (_cache.containsKey(id)) {
+      return _cache[id];
+    }
+    
+    final user = await isar.users.get(id);
+    if (user != null) {
+      _cache[id] = user;
+    }
+    return user;
+  }
+}
+```
+
+## Performans Dikkatleri
+
+<Tabs items={['En İyi Uygulamalar', 'Anti-Patternler']}>
+  <Tab value="En İyi Uygulamalar">
+    ```dart
+    // ✅ Veriye ihtiyacınız yoksa lazy watcher kullanın
+    isar.users.watchLazy().listen((_) {
+      // Sadece cache invalid et
+      needsRefresh = true;
+    });
+    
+    // ✅ Tüm koleksiyon yerine spesifik sorguları izleyin
+    isar.users
+      .filter()
+      .statusEqualTo('active')
+      .watch()
+      .listen((activeUsers) {
+        // Aktif kullanıcıları işle
+      });
+    
+    // ✅ İşiniz bitince abonelikleri iptal edin
+    final subscription = isar.users.watchLazy().listen((_) {});
+    // Daha sonra...
+    subscription.cancel();
+    ```
+  </Tab>
+  <Tab value="Anti-Patternler">
+    ```dart
+    // ❌ Büyük koleksiyonları tam veriyle izlemeyin
+    isar.users.watch().listen((allUsers) {
+      // Her değişiklikte TÜM kullanıcıları yeniden çeker
+    });
+    
+    // ❌ Listener içinde ağır işlemler yapmayın
+    isar.users.watchLazy().listen((_) async {
+      // Ağır işlem
+      await processAllUsers();
+    });
+    
+    // ❌ Abonelikleri iptal etmeyi unutmayın
+    isar.users.watchLazy().listen((_) {
+      // İptal etmezseniz sonsuza kadar çalışır
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## StreamBuilder ile Kullanım
+
+```dart
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<User>>(
+      stream: isar.users
+        .filter()
+        .ageGreaterThan(18)
+        .build()
+        .watch(fireImmediately: true),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        }
+        
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No users found');
+        }
+        
+        final users = snapshot.data!;
+        return ListView(
+          children: users.map((user) => 
+            ListTile(title: Text(user.name))
+          ).toList(),
+        );
+      },
+    );
+  }
+}
+```
+
+## En İyi Uygulamalar
+
+1. **Sadece bildirim gerekiyorsa lazy watcher kullanın**
+2. **Tüm koleksiyon yerine spesifik sorguları izleyin**
+3. **Widget dispose olduğunda abonelikleri iptal edin**
+4. **Watcher callback'lerinde ağır işlemlerden kaçının**
+5. **İlk UI durumu için fireImmediately kullanın**
+
+<Callout type="info">
+  Watcher'lar verimli ve hafiftir. Reaktif UI'lar oluşturmak için özgürce kullanın!
+</Callout>
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="Sorgular" href="/docs/queries">
+    İzleme için sorgu oluşturmayı öğrenin
+  </Card>
+  <Card title="İşlemler" href="/docs/transactions">
+    Watcher'ların ne zaman tetiklendiğini anlayın
+  </Card>
+  <Card title="Multi-Isolate" href="/docs/recipes/multi_isolate">
+    Watcher'ları izolatlar arasında kullanın
+  </Card>
+</Cards>

@@ -1,0 +1,167 @@
+---
+title: Hızlı Başlangıç
+description: Flutter projenizde Isar Plus ile işe koyulun
+icon: Rocket
+---
+
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Hızlı Başlangıç
+
+Bu rehber yalnızca birkaç dakikada Isar Plus ile yol almanıza yardımcı olur.
+
+<Callout type="success">
+  Isar Plus, OPFS/IndexedDB aracılığıyla kalıcı depolama ile iOS, Android, Masaüstü ve Web üzerinde çalışır.
+</Callout>
+
+## Kurulum
+
+<Steps>
+
+### Bağımlılıkları Ekleyin
+
+Isar Plus'ı projenize ekleyin:
+
+<Tabs items={['Flutter', 'Dart CLI']}>
+  <Tab value="Flutter">
+    ```yaml
+    dependencies:
+      isar_plus: ^4.0.0
+      isar_plus_flutter_libs: ^4.0.0
+      path_provider: ^2.0.0
+
+    dev_dependencies:
+      build_runner: ^2.4.0
+    ```
+  </Tab>
+  <Tab value="Dart CLI">
+    ```yaml
+    dependencies:
+      isar_plus: ^4.0.0
+
+    dev_dependencies:
+      build_runner: ^2.4.0
+    ```
+  </Tab>
+</Tabs>
+
+### Şemanızı Tanımlayın
+
+İlk koleksiyonunuzu oluşturun:
+
+```dart title="lib/models/user.dart"
+import 'package:isar_plus/isar_plus.dart';
+
+part 'user.g.dart';
+
+@collection
+class User {
+  Id id = Isar.autoIncrement;
+
+  late String name;
+
+  int? age;
+
+  late String email;
+}
+```
+
+<Callout>
+  Kod üretimi için `part` yönergesi zorunludur.
+</Callout>
+
+### Kod Üretin
+
+Kod üreticisini çalıştırın:
+
+```bash
+flutter pub run build_runner build
+```
+
+Ya da değişiklikleri izleyin:
+
+```bash
+flutter pub run build_runner watch
+```
+
+### Isar Örneğini Açın
+
+Uygulamanızda Isar'ı başlatın:
+
+```dart title="lib/main.dart" {5-9}
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = await Isar.open(
+    [UserSchema],
+    directory: dir.path,
+  );
+
+  runApp(MyApp(isar: isar));
+}
+```
+
+### Veritabanınızı Kullanın
+
+Veri saklamaya ve sorgulamaya başlayın:
+
+```dart
+// Oluştur
+final user = User()
+  ..name = 'John Doe'
+  ..age = 25
+  ..email = 'john@example.com';
+
+await isar.writeTxn(() async {
+  await isar.users.put(user);
+});
+
+// Oku
+final allUsers = await isar.users.where().findAll();
+
+// Sorgu
+final youngUsers = await isar.users
+  .filter()
+  .ageLessThan(30)
+  .findAll();
+
+// Güncelle
+await isar.writeTxn(() async {
+  user.age = 26;
+  await isar.users.put(user);
+});
+
+// Sil
+await isar.writeTxn(() async {
+  await isar.users.delete(user.id);
+});
+```
+
+</Steps>
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="Şema" href="/docs/schema">
+    Koleksiyon ve alan tanımlamayı öğrenin
+  </Card>
+  <Card title="CRUD İşlemleri" href="/docs/crud">
+    Veri manipülasyonuna hakim olun
+  </Card>
+  <Card title="Sorgular" href="/docs/queries">
+    Güçlü sorgular oluşturun
+  </Card>
+  <Card title="İndeksler" href="/docs/indexes">
+    Sorgu performansını optimize edin
+  </Card>
+</Cards>
+
+<Callout type="warning">
+  Veriyi değiştirirken daima yazma işlemleri (write transaction) kullanmayı unutmayın!
+</Callout>
