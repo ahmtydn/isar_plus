@@ -131,13 +131,36 @@ export async function generateMetadata(
   if (!page) notFound();
 
   const slugPath = params.slug?.join('/') || 'index';
-  const pageUrl = `https://isarplus.ahmetaydin.dev/${params.lang}/docs/${slugPath}`;
+  const baseUrl = 'https://isarplus.ahmetaydin.dev';
+  const pageUrl = `${baseUrl}/${params.lang}/docs/${slugPath}`;
+  const enUrl = `${baseUrl}/en/docs/${slugPath}`;
+  const trUrl = `${baseUrl}/tr/docs/${slugPath}`;
+
+  // Generate keywords based on page content
+  const keywords = [
+    'isar',
+    'isar plus',
+    'flutter database',
+    'dart database',
+    'nosql',
+    'mobile database',
+    'local database',
+    'flutter storage',
+    'dart storage',
+    page.data.title.toLowerCase(),
+  ];
 
   return {
     title: page.data.title,
     description: page.data.description,
+    keywords,
     alternates: {
       canonical: pageUrl,
+      languages: {
+        'en': enUrl,
+        'tr': trUrl,
+        'x-default': enUrl,
+      },
     },
     openGraph: {
       title: page.data.title,
@@ -146,11 +169,18 @@ export async function generateMetadata(
       siteName: 'Isar Plus',
       locale: params.lang === 'tr' ? 'tr_TR' : 'en_US',
       type: 'article',
+      images: [{
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'Isar Plus - Ultra-fast Flutter Database',
+      }],
     },
     twitter: {
       card: 'summary_large_image',
       title: page.data.title,
       description: page.data.description,
+      images: [`${baseUrl}/og-image.png`],
     },
   };
 }
