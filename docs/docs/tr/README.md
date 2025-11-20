@@ -26,5 +26,5 @@ features:
   - title: 🦄 Açık Kaynak
     details: Her şey açık kaynak ve sonsuza kadar ücretsiz!
 
-footer: Apache Lisanslı | Orijinal proje © 2023 Simon Choi | Isar Plus © 2024-2025 Ahmet Aydın
+footer: Isar © 2023 Simon Choi | Isar Plus © 2025 Ahmet Aydın
 ---

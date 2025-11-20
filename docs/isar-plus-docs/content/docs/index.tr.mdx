@@ -1,54 +1,83 @@
 ---
 title: Ana Sayfa
-description: En harika Flutter veritabanı
+description: En havalı Flutter veritabanı
 icon: Home
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
+import { DynamicLink } from 'fumadocs-core/dynamic-link';
+import Image from 'next/image';
+import { buttonVariants } from 'fumadocs-ui/components/ui/button';
 
-# Isar Plus
+<div className="flex flex-col items-center text-center" style={{ gap: 0 }}>
+  <Image
+    src="/isar.svg"
+    alt="Isar Plus Logosu"
+    width={180}
+    height={180}
+    priority
+    className="drop-shadow-lg"
+    style={{ margin: 0 }}
+  />
 
-<Cards>
+  <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 to-cyan-400 text-transparent bg-clip-text" style={{ margin: 0 }}>
+    Isar Plus
+  </h1>
+
+  <div className="text-xl text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed" style={{ margin: 0 }}>
+    En havalı Flutter veritabanı — performans, basitlik ve ölçeklenebilirlik için tasarlandı.
+  </div>
+
+  <div className="not-prose flex justify-center" style={{ marginTop: '1rem', marginBottom: '3rem' }}>
+    <DynamicLink
+      href="/[lang]/docs/quickstart"
+      className={buttonVariants({ variant: 'primary', className: 'text-lg px-10 py-6 gap-2 rounded-2xl shadow-md hover:shadow-lg transition-all' })}
+    >
+      <span className="text-2xl">🚀</span>
+      <span>Hadi Başlayalım!</span>
+    </DynamicLink>
+  </div>
+</div>
+
+<Cards className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
   <Card 
-    title="💙 Flutter için üretildi" 
-    description="Minimum kurulum, kolay kullanım, yapılandırma yok, boilerplate yok. Başlamak için sadece birkaç satır kod eklemeniz yeterli." 
+    title="💙 Flutter için Yapıldı" 
+    description="Minimal kurulum, kullanımı kolay, yapılandırma yok, şablon kod yok. Başlamak için sadece birkaç satır kod ekleyin."
   />
   <Card 
-    title="🚀 Yüksek ölçeklenebilirlik" 
-    description="Tek bir NoSQL veritabanında yüz binlerce kaydı saklayın ve bunları verimli ve asenkron şekilde sorgulayın." 
+    title="🚀 Yüksek Ölçeklenebilir" 
+    description="Tek bir NoSQL veritabanında yüz binlerce kayıt saklayın ve bunları verimli ve asenkron bir şekilde sorgulayın."
   />
   <Card 
-    title="🍭 Zengin özellikler" 
-    description="Isar, verilerinizi yönetmenize yardımcı olacak zengin özelliklere sahiptir. Bileşik ve çok girişli indeksler, sorgu değiştiriciler, JSON desteği ve daha fazlası." 
+    title="🍭 Zengin Özellikler" 
+    description="Isar, verilerinizi yönetmenize yardımcı olacak zengin özelliklere sahiptir. Bileşik ve çoklu girişli indeksler, sorgu değiştiricileri, JSON desteği ve daha fazlası."
   />
   <Card 
-    title="🔎 Tam metin arama" 
-    description="Isar yerleşik tam metin aramaya sahiptir. Çok girişli bir indeks oluşturun ve kayıtları kolayca arayın." 
+    title="🔎 Tam Metin Arama" 
+    description="Isar'da yerleşik tam metin arama vardır. Çoklu girişli bir indeks oluşturun ve kayıtları kolayca arayın."
   />
   <Card 
-    title="🧪 ACID prensipleri" 
-    description="Isar ACID uyumludur ve işlemleri otomatik olarak yönetir. Bir hata oluşursa değişiklikleri geri alır." 
+    title="🧪 ACID Semantiği" 
+    description="Isar, ACID uyumludur ve işlemleri otomatik olarak yönetir. Bir hata oluşursa değişiklikleri geri alır."
   />
   <Card 
-    title="💃 Statik tip kontrolü" 
-    description="Isar'ın sorguları statik olarak tiplenir ve derleme zamanında doğrulanır. Çalışma zamanı hatalarıyla uğraşmanıza gerek kalmaz." 
+    title="💃 Statik Yazım" 
+    description="Isar'ın sorguları statik olarak yazılmıştır ve derleme zamanında kontrol edilir. Çalışma zamanı hatalarından endişelenmenize gerek yok."
   />
   <Card 
-    title="📱 Çoklu platform" 
-    description="iOS, Android, Masaüstü ve OPFS/IndexedDB üzerinden kalıcı Flutter Web depolaması desteği." 
+    title="📱 Çoklu Platform" 
+    description="iOS, Android, Masaüstü ve OPFS/IndexedDB aracılığıyla kalıcı Flutter Web depolama."
   />
   <Card 
     title="⏱ Asenkron" 
-    description="Paralel sorgu işlemleri ve çoklu-isolate desteği kutudan çıkar çıkmaz gelir." 
+    description="Paralel sorgu işlemleri ve çoklu izolat desteği hazır olarak geliyor"
   />
   <Card 
     title="🦄 Açık Kaynak" 
-    description="Her şey açık kaynak ve sonsuza kadar ücretsiz!" 
+    description="Her şey açık kaynak ve sonsuza kadar ücretsiz!"
   />
 </Cards>
 
----
-
-<p style={{ textAlign: 'center', marginTop: '2rem' }}>
+<div className="mt-12 text-center text-sm text-muted-foreground">
   Isar © 2023 Simon Choi | Isar Plus © 2025 Ahmet Aydın
-</p>
+</div>

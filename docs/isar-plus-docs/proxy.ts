@@ -6,5 +6,5 @@ export default createI18nMiddleware(i18n);
 export const config = {
   // Matcher ignoring `/_next/` and `/api/`
   // You may need to adjust it to ignore static assets in `/public` folder
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.ico).*)'],
 };
