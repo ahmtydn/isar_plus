@@ -4,13 +4,9 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = false;
 
-type RouteContext<T extends string> = {
-    params: Promise<Record<T, string[]>>;
-};
-
 export async function GET(
     _req: Request,
-    { params }: RouteContext<'slug'>,
+    { params }: { params: Promise<{ slug?: string[] }> },
 ) {
     const { slug } = await params;
     const page = source.getPage(slug);
