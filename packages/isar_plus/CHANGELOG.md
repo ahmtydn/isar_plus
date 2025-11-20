@@ -1,4 +1,17 @@
+## 1.1.6
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.6 -->
+
+## What's Changed
+### Other Changes
+* docs: Update API examples to v4 and add Android 16KB support documentation by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/56
+* Update documentation image format from SVG to PNG for better compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/57
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.5...1.1.6
+
 ## 1.1.5
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.5 -->
 
