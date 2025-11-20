@@ -29,8 +29,8 @@ import { Steps } from 'fumadocs-ui/components/steps';
 
 | Tür | Sync Metodu | Async Metodu | Kullanım |
 | --- | --- | --- | --- |
-| Okuma | `.txn()` | `.txnSync()` | Tutarlı okumalar |
-| Yazma | `.writeTxn()` | `.writeTxnSync()` | Veri değişiklikleri |
+| Okuma | `.read()` | `.readAsync()` | Tutar lı okumalar |
+| Yazma | `.write()` | `.writeAsync()` | Veri değişiklikleri |
 
 <Callout type="info">
   Çoğu okuma işlemi otomatik olarak örtük transaction kullanır.
@@ -53,9 +53,9 @@ class Contact {
   <Tab value="Async">
     ```dart
     // Açık async okuma işlemi
-    final result = await isar.txn(() async {
+    final result = await isar.readAsync((isar) async {
       final contacts = await isar.contacts.where().findAll();
-      final count = await isar.contacts.count();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,
@@ -67,9 +67,9 @@ class Contact {
   <Tab value="Sync">
     ```dart
     // Senkron okuma işlemi
-    final result = isar.txnSync(() {
-      final contacts = isar.contacts.where().findAllSync();
-      final count = isar.contacts.countSync();
+    final result = isar.read((isar) {
+      final contacts = isar.contacts.where().findAll();
+      final count = isar.contacts.count();
       
       return {
         'contacts': contacts,

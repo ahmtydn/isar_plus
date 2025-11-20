@@ -51,14 +51,14 @@ class User {
     
     // Trigger changes
     final user = User()..id = 5..name = 'David'..age = 25;
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Output: User changed: David
     
     user.name = 'Mark';
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Output: User changed: Mark
     
-    await isar.writeTxn(() => isar.users.delete(5));
+    await isar.writeAsync((isar) => isar.users.delete(5));
     // Output: User deleted
     ```
   </Tab>
@@ -72,7 +72,7 @@ class User {
     });
     
     final user = User()..id = 5..name = 'David'..age = 25;
-    await isar.writeTxn(() => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     // Output: User 5 changed
     ```
   </Tab>
@@ -112,8 +112,8 @@ Watch all changes in a collection:
       print('A user changed');
     });
     
-    await isar.writeTxn(() async {
-      await isar.users.put(User()..name = 'Alice');
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
     });
     // Output: A user changed
     ```
@@ -127,8 +127,8 @@ Watch all changes in a collection:
       print('Users: ${users.map((u) => u.name).join(', ')}');
     });
     
-    await isar.writeTxn(() async {
-      await isar.users.put(User()..name = 'Alice');
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
     });
     // Output: Users: Alice
     ```
@@ -170,20 +170,20 @@ adultsStream.listen((adults) {
 // Immediately outputs current results
 
 // Add a child (no notification)
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Child'..age = 10);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Child'..age = 10);
 });
 // No output - doesn't match query
 
 // Add an adult (triggers notification)
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Alice'..age = 25);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Alice'..age = 25);
 });
 // Output: Adults: Alice
 
 // Add another adult
-await isar.writeTxn(() async {
-  await isar.users.put(User()..name = 'Bob'..age = 30);
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Bob'..age = 30);
 });
 // Output: Adults: Alice, Bob
 ```
