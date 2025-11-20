@@ -16,6 +16,20 @@ export const metadata: Metadata = {
     template: '%s | Isar Plus',
   },
   description: 'Isar Plus is an ultra-fast, easy-to-use database for Flutter and Dart applications',
+  metadataBase: new URL('https://isarplus.ahmetaydin.dev'),
+  openGraph: {
+    title: 'Isar Plus - Ultra-fast Flutter Database',
+    description: 'Isar Plus is an ultra-fast, easy-to-use database for Flutter and Dart applications',
+    url: 'https://isarplus.ahmetaydin.dev',
+    siteName: 'Isar Plus',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Isar Plus - Ultra-fast Flutter Database',
+    description: 'Isar Plus is an ultra-fast, easy-to-use database for Flutter and Dart applications',
+  },
   icons: {
     icon: [
       { url: '/icon-256x256.png', sizes: '256x256', type: 'image/png' },
@@ -60,8 +74,46 @@ export default async function Layout({
   children: ReactNode;
 }) {
   const { lang } = await params;
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Isar Plus',
+    description: 'Ultra-fast, easy-to-use database for Flutter and Dart applications',
+    url: 'https://isarplus.ahmetaydin.dev',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `https://isarplus.ahmetaydin.dev/${lang}/docs?search={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Isar Plus',
+    url: 'https://isarplus.ahmetaydin.dev',
+    logo: 'https://isarplus.ahmetaydin.dev/icon-512x512.png',
+    sameAs: [
+      'https://github.com/ahmtydn/isar_plus',
+    ],
+  };
+
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body
         style={{
           display: 'flex',

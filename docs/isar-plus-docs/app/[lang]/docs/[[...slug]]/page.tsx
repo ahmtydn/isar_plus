@@ -29,26 +29,91 @@ export default async function Page(
   // Markdown URL should include the slug path with language suffix
   const markdownUrl = `/${params.lang}/docs/${slugPath}${langSuffix}.mdx`;
 
+  // Create breadcrumb schema
+  const breadcrumbItems = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: `https://isarplus.ahmetaydin.dev/${params.lang}`,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Docs',
+      item: `https://isarplus.ahmetaydin.dev/${params.lang}/docs`,
+    },
+  ];
+
+  // Add slug parts to breadcrumb
+  if (params.slug && params.slug.length > 0) {
+    params.slug.forEach((segment, index) => {
+      const path = params.slug!.slice(0, index + 1).join('/');
+      breadcrumbItems.push({
+        '@type': 'ListItem',
+        position: index + 3,
+        name: segment.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        item: `https://isarplus.ahmetaydin.dev/${params.lang}/docs/${path}`,
+      });
+    });
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbItems,
+  };
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: page.data.title,
+    description: page.data.description,
+    dateModified: page.data.lastModified ?? new Date().toISOString(),
+    author: {
+      '@type': 'Organization',
+      name: 'Isar Plus',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Isar Plus',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://isarplus.ahmetaydin.dev/icon-512x512.png',
+      },
+    },
+  };
+
   return (
-    <DocsPage
-      tableOfContent={{
-        style: 'clerk',
-      }}
-      lastUpdate={new Date(page.data.lastModified ?? new Date())}
-      toc={page.data.toc}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
-      <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6">
-        <LLMCopyButton markdownUrl={markdownUrl} />
-        <ViewOptions
-          markdownUrl={markdownUrl}
-          githubUrl={githubUrl}
-        />
-      </div>
-      <DocsBody>
-        <MDX components={getMDXComponents()} />
-      </DocsBody>
-    </DocsPage>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <DocsPage
+        tableOfContent={{
+          style: 'clerk',
+        }}
+        lastUpdate={new Date(page.data.lastModified ?? new Date())}
+        toc={page.data.toc}>
+        <DocsTitle>{page.data.title}</DocsTitle>
+        <DocsDescription>{page.data.description}</DocsDescription>
+        <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6">
+          <LLMCopyButton markdownUrl={markdownUrl} />
+          <ViewOptions
+            markdownUrl={markdownUrl}
+            githubUrl={githubUrl}
+          />
+        </div>
+        <DocsBody>
+          <MDX components={getMDXComponents()} />
+        </DocsBody>
+      </DocsPage>
+    </>
   );
 }
 
@@ -65,8 +130,27 @@ export async function generateMetadata(
   const page = source.getPage(params.slug, params.lang);
   if (!page) notFound();
 
+  const slugPath = params.slug?.join('/') || 'index';
+  const pageUrl = `https://isarplus.ahmetaydin.dev/${params.lang}/docs/${slugPath}`;
+
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title: page.data.title,
+      description: page.data.description,
+      url: pageUrl,
+      siteName: 'Isar Plus',
+      locale: params.lang === 'tr' ? 'tr_TR' : 'en_US',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.data.title,
+      description: page.data.description,
+    },
   };
 }
