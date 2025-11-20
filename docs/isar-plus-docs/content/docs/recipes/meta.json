@@ -1,0 +1,10 @@
+{
+    "title": "Recipes",
+    "pages": [
+        "full_text_search",
+        "multi_isolate",
+        "data_migration",
+        "string_ids",
+        "migrate_from_isar3"
+    ]
+}

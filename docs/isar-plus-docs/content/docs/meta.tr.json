@@ -1,0 +1,19 @@
+{
+    "title": "Dökümanlar",
+    "pages": [
+        "---Başlangıç---",
+        "quickstart",
+        "schema",
+        "---Temel Kavramlar---",
+        "crud",
+        "queries",
+        "indexes",
+        "links",
+        "transactions",
+        "watchers",
+        "---Gelişmiş---",
+        "limitations",
+        "faq",
+        "recipes"
+    ]
+}

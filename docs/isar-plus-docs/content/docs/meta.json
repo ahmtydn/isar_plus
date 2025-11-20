@@ -1,0 +1,20 @@
+{
+    "title": "Documentation",
+    "root": true,
+    "pages": [
+        "---Getting Started---",
+        "quickstart",
+        "schema",
+        "---Core Concepts---",
+        "crud",
+        "queries",
+        "indexes",
+        "links",
+        "transactions",
+        "watchers",
+        "---Advanced---",
+        "limitations",
+        "faq",
+        "recipes"
+    ]
+}
