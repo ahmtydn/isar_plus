@@ -26,6 +26,7 @@ export default async function Page(
       tableOfContent={{
         style: 'clerk',
       }}
+      lastUpdate={new Date(page.data.lastModified ?? new Date())}
       toc={page.data.toc}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
