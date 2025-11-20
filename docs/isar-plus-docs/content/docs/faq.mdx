@@ -255,7 +255,7 @@ Common questions about Isar Plus and Flutter databases.
     **Isar Inspector:**
     ```dart
     final isar = await Isar.open(
-      [UserSchema],
+      schemas: [UserSchema],
       inspector: true, // Enable in debug mode
     );
     ```
@@ -326,7 +326,7 @@ Common questions about Isar Plus and Flutter databases.
     
     ```dart
     final isar = await Isar.open(
-      [UserSchema],
+      schemas: [UserSchema],
       compactOnLaunch: CompactCondition(
         minFileSize: 100 * 1024 * 1024, // 100 MB
         minRatio: 3.0, // Compact if 3x larger than needed
@@ -392,7 +392,7 @@ Common questions about Isar Plus and Flutter databases.
        // Get valid directory
        final dir = await getApplicationDocumentsDirectory();
        final isar = await Isar.open(
-         [UserSchema],
+         schemas: [UserSchema],
          directory: dir.path,
        );
        ```

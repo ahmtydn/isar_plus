@@ -99,7 +99,7 @@ Future<void> main() async {
   
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
-    [UserSchema],
+    schemas: [UserSchema],
     directory: dir.path,
   );
 

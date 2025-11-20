@@ -95,7 +95,7 @@ void main() async {
   }
 
   final isar = await Isar.open(
-    [UserSchema],
+    schemas: [UserSchema],
     engine: IsarEngine.sqlite,
     directory: 'isar_data',
   );

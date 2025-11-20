@@ -39,7 +39,7 @@ void main() async {
   final dir = await getApplicationDocumentsDirectory();
   
   final isar = await Isar.open(
-    [MessageSchema],
+    schemas: [MessageSchema],
     directory: dir.path,
     name: 'myInstance',
   );

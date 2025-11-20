@@ -23,7 +23,7 @@ import 'package:path_provider/path_provider.dart';
 void main() async {
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
-    [RecipeSchema, UserSchema],
+    schemas: [RecipeSchema, UserSchema],
     directory: dir.path,
   );
 }
@@ -51,7 +51,7 @@ void main() async {
   <Tab value="Custom Config">
     ```dart
     final isar = await Isar.open(
-      [UserSchema],
+      schemas: [UserSchema],
       name: 'myInstance',
       directory: '/custom/path',
       maxSizeMib: 512,
@@ -61,7 +61,7 @@ void main() async {
   <Tab value="In-Memory">
     ```dart
     final isar = await Isar.open(
-      [UserSchema],
+      schemas: [UserSchema],
       directory: Isar.sqliteInMemory,
     );
     ```
