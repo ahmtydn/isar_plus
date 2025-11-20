@@ -10,8 +10,8 @@ This package is automatically included when you add `isar_plus` to your dependen
 
 ```yaml
 dependencies:
-  isar_plus: ^4.0.0
-  isar_plus_flutter_libs: ^4.0.0
+  isar_plus: latest
+  isar_plus_flutter_libs: latest
 ```
 
 For documentation and examples, please visit the [main repository](https://github.com/ahmtydn/isar).
