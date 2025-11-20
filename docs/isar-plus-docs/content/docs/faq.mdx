@@ -249,6 +249,45 @@ Common questions about Isar Plus and Flutter databases.
     See [Limitations](/docs/limitations) for details.
   </Accordion>
 
+  <Accordion title="Does Isar Plus support Android 16KB page size?">
+    Yes! Isar Plus fully supports Android 15+'s 16KB page size requirement:
+    
+    **Google Play Requirement:**
+    - **Deadline:** November 2025
+    - **Requirement:** All apps must support 16KB page sizes
+    - **Affects:** Android 15+ devices
+    
+    **Automatic Support:**
+    Isar Plus handles this automatically - no code changes needed!
+    
+    **For NDK Users:**
+    If your app uses other native libraries, ensure:
+    - NDK version r27 or higher
+    - Add linker flags to `android/app/build.gradle`:
+    
+    ```gradle
+    android {
+        defaultConfig {
+            ndk {
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+            }
+        }
+        
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PAGE_SIZE=16384"
+                cFlags "-Wl,-z,max-page-size=16384"
+                cppFlags "-Wl,-z,max-page-size=16384"
+            }
+        }
+    }
+    ```
+    
+    <Callout type="success">
+      Isar Plus is ready for Android 15 and Google Play's 16KB requirement!
+    </Callout>
+  </Accordion>
+
   <Accordion title="How do I debug Isar issues?">
     Several debugging tools available:
     

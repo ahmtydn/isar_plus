@@ -249,6 +249,45 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     Ayrıntılar için [Kısıtlamalar](/docs/limitations).
   </Accordion>
 
+  <Accordion title="Isar Plus Android 16KB sayfa boyutunu destekliyor mu?">
+    Evet! Isar Plus, Android 15+'ın 16KB sayfa boyutu gereksinimini tamamen destekler:
+    
+    **Google Play Gereksinimi:**
+    - **Son Tarih:** Kasım 2025
+    - **Gereksinim:** Tüm uygulamalar 16KB sayfa boyutunu desteklemeli
+    - **Etkiler:** Android 15+ cihazlar
+    
+    **Otomatik Destek:**
+    Isar Plus bunu otomatik olarak halleder - kod değişikliği gerekmez!
+    
+    **NDK Kullanıcıları İçin:**
+    Uygulamanız başka native kütüphaneler kullanıyorsa şunları sağlayın:
+    - NDK sürüm r27 veya daha yüksek
+    - `android/app/build.gradle` dosyasına linker flag'leri ekleyin:
+    
+    ```gradle
+    android {
+        defaultConfig {
+            ndk {
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+            }
+        }
+        
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PAGE_SIZE=16384"
+                cFlags "-Wl,-z,max-page-size=16384"
+                cppFlags "-Wl,-z,max-page-size=16384"
+            }
+        }
+    }
+    ```
+    
+    <Callout type="success">
+      Isar Plus, Android 15 ve Google Play'in 16KB gereksinimi için hazır!
+    </Callout>
+  </Accordion>
+
   <Accordion title="Isar sorunlarını nasıl debug ederim?">
     Birkaç debug aracı var:
     
