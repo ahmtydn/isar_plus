@@ -7,6 +7,10 @@ const { rewrite: rewriteLLM } = rewritePath('/:lang/docs/*path', '/llms.mdx/*pat
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+    return NextResponse.next();
+  }
+
   if (pathname.includes('.mdx')) {
     const mdxMatch = pathname.match(/\/([^/]+)\/docs\/(.+)\.mdx$/);
     if (mdxMatch) {

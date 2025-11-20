@@ -28,9 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     languages.forEach((lang) => {
         const pages = source.getPages(lang);
         pages.forEach((page) => {
-            const slug = page.url;
+            let pageUrl = page.url;
+            if (!pageUrl.startsWith(`/${lang}/`)) {
+                pageUrl = `/${lang}${pageUrl}`;
+            }
             urls.push({
-                url: `${baseUrl}/${lang}${slug}`,
+                url: `${baseUrl}${pageUrl}`,
                 lastModified: new Date(page.data.lastModified ?? new Date()),
                 changeFrequency: 'weekly',
                 priority: 0.8,
