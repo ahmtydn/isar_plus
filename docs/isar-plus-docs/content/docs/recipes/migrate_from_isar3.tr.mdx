@@ -77,7 +77,7 @@ Isar Plus, üreticisini ana paketle birlikte getirir. Yeni yardımcılar ve adap
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-Burada durup derleme hatalarını giderin (örneğin, `Id?` alanlarının non-null `int id` olması veya `Isar.autoIncrement` kullanması gerekir).
+Burada durup derleme hatalarını giderin (örneğin, `Id?` alanlarının non-null `int id` olması gerekir ve otomatik üretilen ID'ler için `collection.autoIncrement()` kullanın).
 
 ### API Geçiş Rehberi Temel Değişiklikler
 
@@ -103,7 +103,8 @@ await isar.writeAsync((isar) async {
 ```dart
 @collection
 class User {
-  Id? id; // nullable
+  Id id = Isar.autoIncrement; // ❌ v3'te geçerliydi
+  String? name;
 }
 ```
 
@@ -111,9 +112,32 @@ class User {
 ```dart
 @collection
 class User {
-  int id = Isar.autoIncrement; // ya da @id
+  User(this.id);
+
+  final int id; // ✅ Non-nullable, siz yönetirsiniz
+  String? name;
 }
 ```
+
+<Callout type="error" title="Önemli Değişiklik: Isar.autoIncrement Kaldırıldı">
+`Isar.autoIncrement` **sabiti artık v4'te mevcut değil**. Artık class tanımında doğrudan atayamazsınız.
+
+Bunun yerine, **nesneleri oluştururken** `collection.autoIncrement()` metodunu çağırın:
+
+```dart
+// ✅ v4: Oluştururken auto-increment ID al
+isar.write((isar) {
+  final user = User(isar.users.autoIncrement())
+    ..name = 'John';
+  isar.users.put(user);
+});
+```
+
+ID alanı artık:
+- Non-nullable olmalı (`int`, `Id?` değil)
+- Constructor ile geçilmeli
+- Class tanımında değil, oluşturma sırasında üretilmeli
+</Callout>
 </Tab>
 
 <Tab value="Enumlar">
@@ -191,7 +215,7 @@ Future<void> _copyUsers(legacy.Isar legacyDb, plus.Isar plusDb) async {
     await plusDb.writeAsync((isar) async {
       await isar.users.putAll(
         batch.map((user) => User(
-          id: user.id ?? plus.Isar.autoIncrement,
+          id: user.id ?? isar.users.autoIncrement(),
           email: user.email,
           status: _mapStatus(user.status),
         )),
@@ -290,7 +314,7 @@ v4 örneğini açmadan önce v3 dosyalarını sildiğinizden emin olun. Eski WAL
 ### Yinelenen Birincil Anahtarlar
 
 <Callout type="warn" title="ID Gereksinimleri">
-v4 ID'lerinin benzersiz, null olmayan tamsayılar olması gerektiğini unutmayın. Kopyalama sırasında `Isar.autoIncrement` kullanın veya deterministik anahtarlar üretin.
+v4 ID'lerinin benzersiz, null olmayan tamsayılar olması gerektiğini unutmayın. Kopyalama sırasında `collection.autoIncrement()` metodunu kullanın veya deterministik anahtarlar üretin.
 </Callout>
 
 ### Üreteç Hata Veriyor

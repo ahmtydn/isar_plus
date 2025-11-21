@@ -77,7 +77,7 @@ Isar Plus ships its generator inside the main package. Re-run the builder so it 
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-Pause here and address any compilation errors (for example, nullable `Id?` fields must become non-nullable `int id` or use `Isar.autoIncrement`).
+Pause here and address any compilation errors (for example, nullable `Id?` fields must become non-nullable `int id`, and use `collection.autoIncrement()` for auto-generated IDs).
 
 ### API Migration Guide Key Changes
 
@@ -103,7 +103,8 @@ await isar.writeAsync((isar) async {
 ```dart
 @collection
 class User {
-  Id? id; // nullable
+  Id id = Isar.autoIncrement; // ❌ This was valid in v3
+  String? name;
 }
 ```
 
@@ -111,9 +112,32 @@ class User {
 ```dart
 @collection
 class User {
-  int id = Isar.autoIncrement; // or @id
+  User(this.id);
+
+  final int id; // ✅ Non-nullable, managed by you
+  String? name;
 }
 ```
+
+<Callout type="error" title="Breaking Change: Isar.autoIncrement Removed">
+The `Isar.autoIncrement` **constant no longer exists** in v4. You can no longer assign it directly in the class definition.
+
+Instead, call `collection.autoIncrement()` **when creating objects**:
+
+```dart
+// ✅ v4: Get auto-increment ID when creating
+isar.write((isar) {
+  final user = User(isar.users.autoIncrement())
+    ..name = 'John';
+  isar.users.put(user);
+});
+```
+
+The ID field must now be:
+- Non-nullable (`int`, not `Id?`)
+- Passed via constructor
+- Generated at creation time, not in class definition
+</Callout>
 </Tab>
 
 <Tab value="Enums">
@@ -191,7 +215,7 @@ Future<void> _copyUsers(legacy.Isar legacyDb, plus.Isar plusDb) async {
     await plusDb.writeAsync((isar) async {
       await isar.users.putAll(
         batch.map((user) => User(
-          id: user.id ?? plus.Isar.autoIncrement,
+          id: user.id ?? isar.users.autoIncrement(),
           email: user.email,
           status: _mapStatus(user.status),
         )),
@@ -290,7 +314,7 @@ Double-check that you deleted the v3 files before opening the v4 instance. Old W
 ### Duplicate Primary Keys
 
 <Callout type="warn" title="ID Requirements">
-Remember that v4 IDs must be unique, non-null integers. Use `Isar.autoIncrement` or generate your own deterministic keys while copying.
+Remember that v4 IDs must be unique, non-null integers. Use `collection.autoIncrement()` method or generate your own deterministic keys while copying.
 </Callout>
 
 ### Generator Fails

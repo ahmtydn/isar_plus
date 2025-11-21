@@ -39,7 +39,9 @@ Isar supports the following data types:
 ```dart
 @collection
 class PrimitiveTypes {
-  Id id = Isar.autoIncrement;
+  PrimitiveTypes(this.id);
+
+  final int id;
 
   bool? boolValue;
   int? intValue;
@@ -54,7 +56,9 @@ class PrimitiveTypes {
 ```dart
 @collection
 class ListTypes {
-  Id id = Isar.autoIncrement;
+  ListTypes(this.id);
+
+  final int id;
 
   List<bool>? boolList;
   List<int>? intList;
@@ -75,7 +79,9 @@ enum Status { active, inactive, pending }
 
 @collection
 class Task {
-  Id id = Isar.autoIncrement;
+  Task(this.id);
+
+  final int id;
 
   @enumerated
   Status? status;
@@ -128,7 +134,9 @@ class Address {
 
 @collection
 class Person {
-  Id id = Isar.autoIncrement;
+  Person(this.id);
+
+  final int id;
 
   String? name;
 
@@ -145,14 +153,22 @@ Every collection needs an `Id` field to uniquely identify objects.
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement; // Auto-incrementing ID
+  User(this.id);
+
+  final int id;
 
   String? name;
 }
 ```
 
 <Callout type="info">
-  Use `Isar.autoIncrement` for automatic ID generation.
+  For auto-incrementing IDs, use the `collection.autoIncrement()` method when inserting:
+  ```dart
+  isar.write((isar) {
+    final user = User(isar.users.autoIncrement());
+    isar.users.put(user);
+  });
+  ```
 </Callout>
 
 ### Custom IDs
@@ -160,9 +176,11 @@ class User {
 ```dart
 @collection
 class User {
-  Id id; // You manage the ID
-
   User(this.id);
+
+  final int id; // You manage the ID
+
+  String? name;
 }
 ```
 
@@ -175,7 +193,9 @@ Create indexes for better query performance:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Index()
   String? email;
@@ -195,7 +215,9 @@ Exclude fields from storage:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   String? name;
 
@@ -211,7 +233,9 @@ Rename fields in the database:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Name("user_name")
   String? name;
@@ -225,7 +249,9 @@ Limit string size:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Size(max: 100)
   String? shortText;
@@ -243,7 +269,9 @@ Create indexes on multiple fields:
 @collection
 @Index(composite: [CompositeIndex('lastName'), CompositeIndex('age')])
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   String? firstName;
 
@@ -260,7 +288,9 @@ Create relationships between collections:
 ```dart
 @collection
 class Teacher {
-  Id id = Isar.autoIncrement;
+  Teacher(this.id);
+
+  final int id;
 
   String? name;
 
@@ -269,7 +299,9 @@ class Teacher {
 
 @collection
 class Student {
-  Id id = Isar.autoIncrement;
+  Student(this.id);
+
+  final int id;
 
   String? name;
 

@@ -58,7 +58,9 @@ part 'user.g.dart';
 
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User({required this.id});
+
+  final int id;
 
   late String name;
 
@@ -113,12 +115,12 @@ Start storing and querying data:
 
 ```dart
 // Create
-final user = User()
-  ..name = 'John Doe'
-  ..age = 25
-  ..email = 'john@example.com';
-
 await isar.writeAsync((isar) async {
+  final user = User(id: isar.users.autoIncrement())
+    ..name = 'John Doe'
+    ..age = 25
+    ..email = 'john@example.com';
+  
   isar.users.put(user);
 });
 

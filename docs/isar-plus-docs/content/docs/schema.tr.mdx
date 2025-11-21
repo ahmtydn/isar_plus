@@ -39,7 +39,9 @@ Isar aşağıdaki veri türlerini destekler:
 ```dart
 @collection
 class PrimitiveTypes {
-  Id id = Isar.autoIncrement;
+  PrimitiveTypes(this.id);
+
+  final int id;
 
   bool? boolValue;
   int? intValue;
@@ -54,7 +56,9 @@ class PrimitiveTypes {
 ```dart
 @collection
 class ListTypes {
-  Id id = Isar.autoIncrement;
+  ListTypes(this.id);
+
+  final int id;
 
   List<bool>? boolList;
   List<int>? intList;
@@ -75,7 +79,9 @@ enum Status { active, inactive, pending }
 
 @collection
 class Task {
-  Id id = Isar.autoIncrement;
+  Task(this.id);
+
+  final int id;
 
   @enumerated
   Status? status;
@@ -128,7 +134,9 @@ class Address {
 
 @collection
 class Person {
-  Id id = Isar.autoIncrement;
+  Person(this.id);
+
+  final int id;
 
   String? name;
 
@@ -145,14 +153,22 @@ Her koleksiyon nesneleri benzersiz tanımlamak için bir `Id` alanına ihtiyaç 
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement; // Otomatik artan ID
+  User(this.id);
+
+  final int id;
 
   String? name;
 }
 ```
 
 <Callout type="info">
-  Otomatik ID üretimi için `Isar.autoIncrement` kullanın.
+  Otomatik artan ID'ler için, ekleme sırasında `collection.autoIncrement()` metodunu kullanın:
+  ```dart
+  isar.write((isar) {
+    final user = User(isar.users.autoIncrement());
+    isar.users.put(user);
+  });
+  ```
 </Callout>
 
 ### Özel ID'ler
@@ -160,9 +176,11 @@ class User {
 ```dart
 @collection
 class User {
-  Id id; // ID'yi siz yönetirsiniz
-
   User(this.id);
+
+  final int id; // ID'yi siz yönetirsiniz
+
+  String? name;
 }
 ```
 
@@ -175,7 +193,9 @@ Sorgu performansını iyileştirmek için indeks oluşturun:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Index()
   String? email;
@@ -195,7 +215,9 @@ Alanları depolamadan hariç tutun:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   String? name;
 
@@ -211,7 +233,9 @@ Veritabanında alan adını değiştirin:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Name("user_name")
   String? name;
@@ -225,7 +249,9 @@ String boyutunu sınırlandırın:
 ```dart
 @collection
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   @Size(max: 100)
   String? shortText;
@@ -243,7 +269,9 @@ Birden fazla alan üzerinde indeks oluşturun:
 @collection
 @Index(composite: [CompositeIndex('lastName'), CompositeIndex('age')])
 class User {
-  Id id = Isar.autoIncrement;
+  User(this.id);
+
+  final int id;
 
   String? firstName;
 
@@ -260,7 +288,9 @@ Koleksiyonlar arasında ilişkiler kurun:
 ```dart
 @collection
 class Teacher {
-  Id id = Isar.autoIncrement;
+  Teacher(this.id);
+
+  final int id;
 
   String? name;
 
@@ -269,7 +299,9 @@ class Teacher {
 
 @collection
 class Student {
-  Id id = Isar.autoIncrement;
+  Student(this.id);
+
+  final int id;
 
   String? name;
 
