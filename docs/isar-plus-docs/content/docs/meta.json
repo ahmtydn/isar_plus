@@ -9,7 +9,7 @@
         "crud",
         "queries",
         "indexes",
-        "links",
+        "relationships",
         "transactions",
         "watchers",
         "---Advanced---",

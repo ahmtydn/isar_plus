@@ -168,6 +168,95 @@ List<Post> posts = [];
 </Tab>
 </Tabs>
 
+### Linklerle İlgili Ayrıntılar
+
+Projeniz yoğun şekilde `IsarLink`, `IsarLinks` veya `@Backlink` kullanıyorsa, **verileri kopyalamadan önce** bu ilişkileri yeni modele taşıyın. v4 çekirdeği yalnızca sıradan Dart alanlarını (skalerler, gömülü nesneler, `List<T>`) bilir; dolayısıyla her link ya gömülü bir nesneye ya da sizin yöneteceğiniz açık bir foreign-key ID'sine dönüşmelidir. Şu adımları izleyin:
+
+#### 1. Tüm legacy linkleri envanterleyin
+
+- Modellerinizde `IsarLink`, `IsarLinks` ve `@Backlink` için arama yapın.
+- Her ilişki için kardinaliteyi (bire bir, bire çok, çoktan çoka) not alın.
+- İlgili verinin daima ebeveynle birlikte taşınıp taşınmadığına karar verin. Her zaman birlikteyse embed edin, değilse ID tutun.
+
+#### 2. Şemayı v4 terimleriyle yeniden yazın
+
+- **Embed edin:** Her zaman ebeveynle gelen küçük listeler için alanı `List<EmbeddedTip>` veya nullable gömülü tipe çevirin.
+- **ID saklayın:** Büyük koleksiyonlar veya bağımsız yaşam döngüsü gereken ilişkiler için `int authorId`, `List<int> followerIds>` gibi alanlar ekleyin ve sorgularla yükleyin.
+- Backlink'leri açık referanslara çevirin; `@Backlink(to: 'posts')` yerine `int authorId` alanı ekleyin.
+
+```dart title="Legacy / v4 (packages/isar_plus_test/lib/src/twitter örneğinden)"
+// v3
+@collection
+class LegacyTweet {
+  LegacyTweet({this.id});
+
+  Id? id;
+  late IsarLink<LegacyUser> author;
+  late IsarLinks<LegacyUser> likedBy;
+}
+
+// v4
+@collection
+class Tweet {
+  Tweet(this.id, this.authorId, {this.reactions = const []});
+
+  final int id;
+  final int authorId; // eski author linki
+  final List<TweetReaction> reactions; // likedBy linklerinin yerini alır
+}
+
+@embedded
+class TweetReaction {
+  TweetReaction({required this.userId, required this.createdAt});
+
+  final int userId;
+  final DateTime createdAt;
+}
+```
+
+Daha fazla örnek ve canlı referans için [ilişkiler rehberine](../schema/relationships) göz atın.
+
+#### 3. Mevcut veriyi dönüştürün
+
+Kopyalama sırasında her linki elle materyalize edin ve yeni yapıya map'leyin:
+
+```dart title="Linkleri gömülü nesnelere taşıyın"
+Future<void> _copyTweets(
+  legacy.Isar legacyDb,
+  plus.Isar plusDb,
+) async {
+  final tweets = await legacyDb.legacyTweets.where().findAll();
+
+  await plusDb.writeAsync((isar) async {
+    for (final legacyTweet in tweets) {
+      final authorId = legacyTweet.author.value?.id;
+      if (authorId == null) {
+        continue; // veya farklı bir strateji seçin
+      }
+
+      final reactions = legacyTweet.likedBy.map((user) {
+        return TweetReaction(
+          userId: user.id!,
+          createdAt: DateTime.now(), // metadata saklıyorsanız burada kullanın
+        );
+      }).toList();
+
+      await isar.tweets.put(
+        Tweet(
+          legacyTweet.id ?? isar.tweets.autoIncrement(),
+          authorId,
+          reactions: reactions,
+        ),
+      );
+    }
+  });
+}
+```
+
+v3'te iki `IsarLinks` ile tuttuğunuz çoktan çoka ilişkiler için, her iki ID'yi bir arada saklayan açık bir join koleksiyonu oluşturun. Migrasyon sırasında link çiftlerini okuyup bu koleksiyona kendiniz ekleyin. Backlink yerine ise filtreli sorgular kullanın: `user.posts` yerine `isar.posts.where().authorIdEqualTo(user.id)` gibi.
+
+Tüm linkler veri olarak ifade edildiğinde Isar Plus'a geçiş sıradan insert'lerden ibarettir ve projeden bütün `IsarLink` API'lerini kaldırabilirsiniz.
+
 ## Verilerin Kendini Kopyalayın
 
 Geçici bir geçiş rutini oluşturun (örneğin uygulamanızı başlatmadan önce `main()` içinde veya ayrı bir `bin/migrate.dart` dosyasında). Şablon şu şekildedir:

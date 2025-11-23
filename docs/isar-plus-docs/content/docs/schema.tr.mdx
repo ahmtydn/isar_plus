@@ -281,38 +281,9 @@ class User {
 }
 ```
 
-## Linkler
+## İlişkileri Modellemek
 
-Koleksiyonlar arasında ilişkiler kurun:
-
-```dart
-@collection
-class Teacher {
-  Teacher(this.id);
-
-  final int id;
-
-  String? name;
-
-  final students = IsarLinks<Student>();
-}
-
-@collection
-class Student {
-  Student(this.id);
-
-  final int id;
-
-  String? name;
-
-  @Backlink(to: 'students')
-  final teachers = IsarLinks<Teacher>();
-}
-```
-
-<Callout type="success">
-  Linkler lazy yüklenir ve erişilene kadar ek bellek tüketmez.
-</Callout>
+Isar Plus v4, çalışma zamanı link tipleri yerine gömülü nesneler ve açık ID alanlarıyla ilişkileri modeller. Depodan alınmış örnekler görmek için [İlişkiler](./relationships) sayfasına göz atın.
 
 ## Migration
 

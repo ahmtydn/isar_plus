@@ -168,6 +168,95 @@ List<Post> posts = [];
 </Tab>
 </Tabs>
 
+### Legacy Links Deep Dive
+
+If your project relied heavily on `IsarLink`, `IsarLinks`, or `@Backlink`, convert them **before** you start copying rows. The v4 core only understands regular Dart fields (scalars, embedded objects, `List<T>`) so each link must become either an embedded document or an explicit foreign-key ID that you manage yourself. Use the following workflow:
+
+#### 1. Inventory every legacy link
+
+- Search your v3 models for `IsarLink`, `IsarLinks`, or `@Backlink` annotations.
+- Record whether each relationship is one-to-one, one-to-many, or many-to-many.
+- Decide whether the related data should always travel with the parent (embed it) or live in its own collection (store IDs).
+
+#### 2. Rewrite the schema in v4 terms
+
+- **Embed** one-to-few relationships that you always load together. Replace the link field with a `List<YourEmbeddedType>` or a nullable embedded object.
+- **Store IDs** for relationships that span large collections or need independent lifecycle. Add `int authorId`, `List<int> memberIds`, etc. and use queries to load the related records.
+- For backlinks, expose the forward reference explicitly (for example, add `int authorId` instead of `@Backlink(to: 'posts')`).
+
+```dart title="Legacy vs v4 (simplified from packages/isar_plus_test/lib/src/twitter)"
+// v3
+@collection
+class LegacyTweet {
+  LegacyTweet({this.id});
+
+  Id? id;
+  late IsarLink<LegacyUser> author;
+  late IsarLinks<LegacyUser> likedBy;
+}
+
+// v4
+@collection
+class Tweet {
+  Tweet(this.id, this.authorId, {this.reactions = const []});
+
+  final int id;
+  final int authorId; // was author IsarLink
+  final List<TweetReaction> reactions; // replaces likedBy links
+}
+
+@embedded
+class TweetReaction {
+  TweetReaction({required this.userId, required this.createdAt});
+
+  final int userId;
+  final DateTime createdAt;
+}
+```
+
+See the dedicated [relationships guide](../schema/relationships) for more schema patterns and live references.
+
+#### 3. Migrate the existing data
+
+During the copy phase, materialize every link into the new structure yourself:
+
+```dart title="Copy links into embedded objects"
+Future<void> _copyTweets(
+  legacy.Isar legacyDb,
+  plus.Isar plusDb,
+) async {
+  final tweets = await legacyDb.legacyTweets.where().findAll();
+
+  await plusDb.writeAsync((isar) async {
+    for (final legacyTweet in tweets) {
+      final authorId = legacyTweet.author.value?.id;
+      if (authorId == null) {
+        continue; // or decide on a fallback
+      }
+
+      final reactions = legacyTweet.likedBy.map((user) {
+        return TweetReaction(
+          userId: user.id!,
+          createdAt: DateTime.now(), // capture metadata if you stored it elsewhere
+        );
+      }).toList();
+
+      await isar.tweets.put(
+        Tweet(
+          legacyTweet.id ?? isar.tweets.autoIncrement(),
+          authorId,
+          reactions: reactions,
+        ),
+      );
+    }
+  });
+}
+```
+
+For many-to-many tables where you previously used two `IsarLinks`, create an explicit join collection that stores both IDs. During migration, iterate over the legacy link pairs and insert rows into that join collection yourself. Backlinks become filtered queries: instead of `user.posts`, query `isar.posts.where().authorIdEqualTo(user.id)`.
+
+Once every link is expressed as data that your Dart code owns, the copy to Isar Plus becomes a normal insert, and you can delete all `IsarLink` APIs from the project.
+
 ## Copy the Actual Data
 
 Create a one-off migration routine (for example in `main()` before initializing your app, or in a separate `bin/migrate.dart`). The pattern is:

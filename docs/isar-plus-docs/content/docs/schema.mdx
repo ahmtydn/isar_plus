@@ -281,38 +281,9 @@ class User {
 }
 ```
 
-## Links
+## Modeling Relationships
 
-Create relationships between collections:
-
-```dart
-@collection
-class Teacher {
-  Teacher(this.id);
-
-  final int id;
-
-  String? name;
-
-  final students = IsarLinks<Student>();
-}
-
-@collection
-class Student {
-  Student(this.id);
-
-  final int id;
-
-  String? name;
-
-  @Backlink(to: 'students')
-  final teachers = IsarLinks<Teacher>();
-}
-```
-
-<Callout type="success">
-  Links are lazy-loaded and don't increase memory usage until accessed.
-</Callout>
+Isar Plus v4 models relationships with embedded objects or manual ID fields instead of runtime link types. See the dedicated [Relationships](./relationships) page for concrete examples lifted from the codebase.
 
 ## Migration
 
