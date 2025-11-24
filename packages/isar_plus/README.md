@@ -39,7 +39,7 @@ Isar Plus is an enhanced fork of the original [Isar database](https://github.com
 - ⏱ **Asynchronous**. Parallel query operations & multi-isolate support by default
 - 🦄 **Open source**. Everything is open source and free forever!
 - ✨ **Enhanced**. Additional features and improvements over the original Isar
-- 🌐 **Persistent web storage**. Automatic OPFS + IndexedDB fallback for Flutter Web.
+- 🌐 **Persistent web storage**. IndexedDB for Flutter Web.
 
 ## Documentation
 
