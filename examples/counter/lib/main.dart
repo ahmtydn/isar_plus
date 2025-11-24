@@ -91,7 +91,7 @@ class _CounterScreenState extends State<CounterScreen> {
     }
   }
 
-  Future<int> _getCurrentCount() async {
+  int _getCurrentCount() {
     final isar = _isar;
     if (isar == null) return 0;
     return isar.counts.where().stepProperty().sum();
