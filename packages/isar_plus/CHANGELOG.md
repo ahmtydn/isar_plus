@@ -1,4 +1,16 @@
+## 1.1.7
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.7 -->
+
+## What's Changed
+### Other Changes
+* fix: preserve nullable bools when importing JSON by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/60
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.6...1.1.7
+
 ## 1.1.6
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.6 -->
 
