@@ -267,7 +267,7 @@ Birden fazla alan üzerinde indeks oluşturun:
 
 ```dart
 @collection
-@Index(composite: [CompositeIndex('lastName'), CompositeIndex('age')])
+@Index(composite: ['lastName', 'age'])
 class User {
   User(this.id);
 

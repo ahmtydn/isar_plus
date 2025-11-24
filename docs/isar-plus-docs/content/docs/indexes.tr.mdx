@@ -150,7 +150,7 @@ class Person {
 
   late String firstName;
 
-  @Index(composite: [CompositeIndex('firstName')])
+  @Index(composite: ['firstName'])
   late String lastName;
 
   late int age;
@@ -173,10 +173,7 @@ final people = await isar.persons
 
 ```dart
 @collection
-@Index(composite: [
-  CompositeIndex('lastName'),
-  CompositeIndex('age')
-])
+@Index(composite: ['lastName', 'age'])
 class Person {
   Id? id;
   late String firstName;
@@ -237,74 +234,52 @@ class User {
 ```
 
 ```dart
-final user1 = User()
-  ..username = 'john_doe'
-  ..age = 25;
-await isar.users.put(user1); // ✅ OK
+await isar.writeAsync((isar) async {
+  final user1 = User()
+    ..id = 1
+    ..username = 'john_doe'
+    ..age = 25;
+  await isar.users.put(user1); // ✅ eklendi
 
-final user2 = User()
-  ..username = 'john_doe'
-  ..age = 30;
-await isar.users.put(user2); // ❌ Hata: benzersiz kısıt ihlali
+  final user2 = User()
+    ..id = 2
+    ..username = 'john_doe'
+    ..age = 30;
+  await isar.users.put(user2); // ✅ önceki kayıt sessizce silinir
+
+  final son = await isar.users
+      .where()
+      .usernameEqualTo('john_doe')
+      .findFirst();
+  print(son);
+  // {id: 2, username: john_doe, age: 30}
+});
 ```
 
-<Callout type="error">
-  Yinelenen değer eklemeye çalışmak hata fırlatır.
+<Callout type="warning" title="v4 benzersiz indeksler overwrite eder">
+  Aynı anahtar kombinasyonunu ikinci kez yazarsanız Isar, önceki kaydı silip
+  yenisini yazar. Duplicate girişleri **reddetmek** istiyorsanız kendiniz kontrol
+  ekleyin:
+
+```dart
+await isar.writeAsync((isar) async {
+  final varMi = await isar.users
+      .where()
+      .usernameEqualTo('john_doe')
+      .findFirst();
+  if (varMi != null) {
+    throw StateError('username zaten kullanılıyor');
+  }
+
+  final user = User()
+    ..id = 42
+    ..username = 'john_doe'
+    ..age = 30;
+
+  await isar.users.put(user);
+});
+```
 </Callout>
-
-## Replace İndeksleri
-
-Benzersiz kısıt ihlalinde nesneleri otomatik olarak değiştirin:
-
-```dart
-@collection
-class User {
-  Id? id;
-
-  @Index(unique: true, replace: true)
-  late String username;
-
-  late int age;
-}
-```
-
-```dart
-final user1 = User()
-  ..id = 1
-  ..username = 'john_doe'
-  ..age = 25;
-await isar.users.put(user1);
-print(await isar.users.where().findAll());
-// [{id: 1, username: 'john_doe', age: 25}]
-
-final user2 = User()
-  ..id = 2
-  ..username = 'john_doe'
-  ..age = 30;
-await isar.users.put(user2);
-print(await isar.users.where().findAll());
-// [{id: 2, username: 'john_doe', age: 30}]
-```
-
-### putBy Metodları
-
-Replace indeksleri yardımcı metodlar üretir:
-
-```dart
-final user = User()
-  ..username = 'john_doe'
-  ..age = 25;
-
-// Kullanıcı adını baz alarak ekle ya da güncelle
-await isar.users.putByUsername(user);
-
-// Var olan id tekrar kullanılır
-final user2 = User()
-  ..username = 'john_doe'
-  ..age = 30;
-await isar.users.putByUsername(user2);
-// user ile aynı id, sadece yaş güncellendi
-```
 
 ## Büyük/Küçük Harf Duyarlılığı
 
@@ -470,7 +445,7 @@ class User {
 
 ```dart
 // ✅ İyi - firstName + lastName birlikte sorgulanıyor
-@Index(composite: [CompositeIndex('lastName')])
+  @Index(composite: ['lastName'])
 late String firstName;
 
 // ❌ Kötü - ayrı ayrı sorgular

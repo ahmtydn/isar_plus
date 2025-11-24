@@ -168,6 +168,32 @@ List<Post> posts = [];
 </Tab>
 </Tabs>
 
+### Unique Indexes
+
+<Callout type="warning" title="`replace` flag removed">
+  In v3 you could opt into `@Index(unique: true, replace: true)` (plus automatic
+  `putBy*` helpers) to overwrite duplicates. Isar Plus v4 **always keeps the most
+  recent value** for a unique index key and there is no toggle to make it throw.
+  Guard your writes manually if you need hard errors:
+
+```dart
+await isar.writeAsync((isar) async {
+  final clash = await isar.users
+      .where()
+      .emailEqualTo(user.email)
+      .findFirst();
+  if (clash != null) {
+    throw StateError('email already registered');
+  }
+
+  await isar.users.put(user);
+});
+```
+
+  Remove legacy `putBy*` calls during migration and replace them with explicit
+  lookups or your own upsert helpers.
+</Callout>
+
 ### Legacy Links Deep Dive
 
 If your project relied heavily on `IsarLink`, `IsarLinks`, or `@Backlink`, convert them **before** you start copying rows. The v4 core only understands regular Dart fields (scalars, embedded objects, `List<T>`) so each link must become either an embedded document or an explicit foreign-key ID that you manage yourself. Use the following workflow:

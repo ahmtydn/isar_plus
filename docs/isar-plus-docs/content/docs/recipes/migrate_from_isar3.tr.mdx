@@ -168,6 +168,33 @@ List<Post> posts = [];
 </Tab>
 </Tabs>
 
+### Benzersiz İndeksler
+
+<Callout type="warning" title="`replace` parametresi kaldırıldı">
+  v3'te `@Index(unique: true, replace: true)` ve `putBy...` yardımcıları duplicate
+  kayıtları otomatik olarak değiştiriyordu. Isar Plus v4'te **her benzersiz indeks
+  varsayılan olarak overwrite eder** ve bu davranışı kapatmanın yerleşik bir yolu
+  yoktur. Duplicate girişleri reddetmek için `put` çağrısından önce manuel kontrol
+  ekleyin:
+
+```dart
+await isar.writeAsync((isar) async {
+  final clash = await isar.users
+      .where()
+      .emailEqualTo(user.email)
+      .findFirst();
+  if (clash != null) {
+    throw StateError('email zaten kayıtlı');
+  }
+
+  await isar.users.put(user);
+});
+```
+
+  Kod tabanınızda `putBy*` çağrıları varsa, bunları bu örnekteki gibi manuel
+  kontrollerle veya koleksiyon düzeyinde `filter`/`where` sorgularıyla değiştirin.
+</Callout>
+
 ### Linklerle İlgili Ayrıntılar
 
 Projeniz yoğun şekilde `IsarLink`, `IsarLinks` veya `@Backlink` kullanıyorsa, **verileri kopyalamadan önce** bu ilişkileri yeni modele taşıyın. v4 çekirdeği yalnızca sıradan Dart alanlarını (skalerler, gömülü nesneler, `List<T>`) bilir; dolayısıyla her link ya gömülü bir nesneye ya da sizin yöneteceğiniz açık bir foreign-key ID'sine dönüşmelidir. Şu adımları izleyin:

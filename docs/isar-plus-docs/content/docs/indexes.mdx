@@ -150,7 +150,7 @@ class Person {
 
   late String firstName;
 
-  @Index(composite: [CompositeIndex('firstName')])
+  @Index(composite: ['firstName'])
   late String lastName;
 
   late int age;
@@ -173,10 +173,7 @@ final people = await isar.persons
 
 ```dart
 @collection
-@Index(composite: [
-  CompositeIndex('lastName'),
-  CompositeIndex('age')
-])
+@Index(composite: ['lastName', 'age'])
 class Person {
   Id? id;
   late String firstName;
@@ -239,80 +236,50 @@ class User {
 ```dart
 await isar.writeAsync((isar) async {
   final user1 = User()
-    ..username = 'john_doe'
-    ..age = 25;
-  isar.users.put(user1); // ✅ OK
-});
-
-await isar.writeAsync((isar) async {
-  final user2 = User()
-    ..username = 'john_doe'
-    ..age = 30;
-  isar.users.put(user2); // ❌ Error: unique constraint violated
-});
-```
-
-<Callout type="error">
-  Attempting to insert duplicate values will throw an error.
-</Callout>
-
-## Replace Indexes
-
-Auto-replace objects on unique constraint violation:
-
-```dart
-@collection
-class User {
-  Id? id;
-
-  @Index(unique: true, replace: true)
-  late String username;
-
-  late int age;
-}
-```
-
-```dart
-await isar.writeAsync((isar) async {
-  final user1 = User()
     ..id = 1
     ..username = 'john_doe'
     ..age = 25;
-  isar.users.put(user1);
-  print(await isar.users.where().findAll());
-  // [{id: 1, username: 'john_doe', age: 25}]
+  await isar.users.put(user1); // ✅ inserted
 
   final user2 = User()
     ..id = 2
     ..username = 'john_doe'
     ..age = 30;
-  isar.users.put(user2);
-  print(await isar.users.where().findAll());
-  // [{id: 2, username: 'john_doe', age: 30}]
+  await isar.users.put(user2); // ✅ overwrites the previous row
+
+  final current = await isar.users
+      .where()
+      .usernameEqualTo('john_doe')
+      .findFirst();
+  print(current);
+  // => {id: 2, username: john_doe, age: 30}
 });
 ```
 
-### PutBy Methods
-
-Replace indexes generate helper methods:
+<Callout type="warning" title="Unique indexes always replace">
+  v4 keeps the most recent write for a unique key combination. If you need to
+  **reject** duplicates instead of overwriting, query first and throw your own
+  error:
 
 ```dart
 await isar.writeAsync((isar) async {
+  final exists = await isar.users
+      .where()
+      .usernameEqualTo('john_doe')
+      .findFirst();
+  if (exists != null) {
+    throw StateError('username already taken');
+  }
+
   final user = User()
-    ..username = 'john_doe'
-    ..age = 25;
-
-  // Insert or update by username
-  isar.users.putByUsername(user);
-
-  // The existing id is reused
-  final user2 = User()
+    ..id = 42
     ..username = 'john_doe'
     ..age = 30;
-  isar.users.putByUsername(user2);
-  // Same id as user, just updated age
+
+  await isar.users.put(user);
 });
 ```
+</Callout>
 
 ## Case Sensitivity
 
@@ -478,7 +445,7 @@ class User {
 
 ```dart
 // ✅ Good - queries firstName + lastName together
-@Index(composite: [CompositeIndex('lastName')])
+  @Index(composite: ['lastName'])
 late String firstName;
 
 // ❌ Bad - separate queries
