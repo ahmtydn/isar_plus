@@ -127,8 +127,9 @@ macro_rules! write_list {
 macro_rules! write_scalar {
     ($writer:expr, $map:ident, $index:expr, $type:ty, $write:ident) => {{
         let value = $map.next_value::<Option<$type>>()?;
-        if let Some(value) = value {
-            $writer.$write($index as u32, value);
+        match value {
+            Some(value) => $writer.$write($index as u32, value),
+            None => $writer.write_null($index as u32),
         }
     }};
 }
