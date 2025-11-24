@@ -21,6 +21,8 @@ class Tweet {
   @Id()
   late String idStr;
 
+  late int isarId;
+
   String? source;
 
   bool? truncated;
