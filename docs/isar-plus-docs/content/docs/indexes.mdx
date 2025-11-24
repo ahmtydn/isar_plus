@@ -461,8 +461,8 @@ Use Isar Inspector to analyze query performance:
 
 ```dart
 // Enable inspector in debug mode
-final isar = await Isar.open(
-  [UserSchema],
+final isar = Isar.open(
+  schemas: [UserSchema],
   inspector: true, // Open inspector
 );
 ```

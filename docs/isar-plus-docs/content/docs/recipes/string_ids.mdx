@@ -87,7 +87,7 @@ Avoid using `string.hashCode` because it is not guaranteed to be stable across d
 
 ```dart title="example.dart"
 void main() async {
-  final isar = await Isar.open([UserSchema]);
+  final isar = Isar.open(schemas: [UserSchema]);
 
   // Create user with UUID
   final user = User()

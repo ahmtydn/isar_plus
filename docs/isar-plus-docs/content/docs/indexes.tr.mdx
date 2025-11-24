@@ -461,8 +461,8 @@ Isar Inspector ile sorgu performansını analiz edin:
 
 ```dart
 // Debug modunda inspector'ı etkinleştir
-final isar = await Isar.open(
-  [UserSchema],
+final isar = Isar.open(
+  schemas: [UserSchema],
   inspector: true, // Inspector'ı aç
 );
 ```

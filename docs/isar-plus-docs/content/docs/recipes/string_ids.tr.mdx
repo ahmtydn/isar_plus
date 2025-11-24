@@ -87,7 +87,7 @@ Farklı bir hash fonksiyonu seçerseniz şu şartları sağlamasına dikkat edin
 
 ```dart title="example.dart"
 void main() async {
-  final isar = await Isar.open([UserSchema]);
+  final isar = Isar.open(schemas: [UserSchema]);
 
   // UUID ile kullanıcı oluştur
 

@@ -54,7 +54,7 @@ void main() async {
   </Tab>
   <Tab value="Özel">
     ```dart
-    final isar = await Isar.open(
+    final isar = Isar.open(
       schemas: [UserSchema],
       name: 'myInstance',
       directory: '/custom/path',
@@ -64,7 +64,7 @@ void main() async {
   </Tab>
   <Tab value="Bellek İçi">
     ```dart
-    final isar = await Isar.open(
+    final isar = Isar.open(
       schemas: [UserSchema],
       directory: Isar.sqliteInMemory,
     );

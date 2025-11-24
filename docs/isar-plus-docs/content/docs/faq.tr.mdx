@@ -186,11 +186,11 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     
     ```dart
     // Ana izolat
-    final isar = await Isar.open([UserSchema]);
+    final isar = Isar.open(schemas:[UserSchema]);
     
     // Arka plan izolatı
     await compute((schemas) async {
-      final isar = await Isar.open([UserSchema]);
+      final isar = Isar.open(schemas:[UserSchema]);
       // Aynı örneği kullan
       await isar.users.where().findAll();
     }, [UserSchema]);
@@ -293,7 +293,7 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     
     **Isar Inspector:**
     ```dart
-    final isar = await Isar.open(
+    final isar = Isar.open(
       schemas: [UserSchema],
       inspector: true, // Debug modunda etkinleştirin
     );
@@ -364,7 +364,7 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     Evet, açılışta compact kullanarak:
     
     ```dart
-    final isar = await Isar.open(
+    final isar = Isar.open(
       schemas: [UserSchema],
       compactOnLaunch: CompactCondition(
         minFileSize: 100 * 1024 * 1024, // 100 MB
@@ -430,7 +430,7 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
        ```dart
        // Geçerli dizin alın
        final dir = await getApplicationDocumentsDirectory();
-       final isar = await Isar.open(
+       final isar = Isar.open(
          schemas: [UserSchema],
          directory: dir.path,
        );

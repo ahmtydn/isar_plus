@@ -302,8 +302,8 @@ Future<void> migrateLegacyDb(String directoryPath) async {
     name: 'legacy',
   );
 
-  final plusDb = await plus.Isar.open(
-    [UserSchema, TodoSchema],
+  final plusDb = plus.Isar.open(
+    schemas: [UserSchema, TodoSchema],
     directory: directoryPath,
     name: 'app_v4',
     engine: plus.IsarEngine.sqlite, // native için IsarEngine.isar
@@ -372,8 +372,8 @@ Future<void> bootstrapIsar(String dir) async {
     await MigrationTracker.markDone();
   }
 
-  final isar = await plus.Isar.open(
-    [UserSchema, TodoSchema],
+  final isar = plus.Isar.open(
+    schemas: [UserSchema, TodoSchema],
     directory: dir,
   );
 
