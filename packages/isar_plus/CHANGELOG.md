@@ -1,4 +1,16 @@
+## 1.1.8
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.8 -->
+
+## What's Changed
+### Other Changes
+* fix: handle null values in serialization for various data types by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/61
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.7...1.1.8
+
 ## 1.1.7
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.7 -->
 
