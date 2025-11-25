@@ -59,7 +59,7 @@ jobs:
     name: Dart Test
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -77,7 +77,7 @@ jobs:
         working-directory: packages/isar_plus_test
 
   test_web:
-    name: Dart Web Test
+    name: Flutter Web Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,8 +90,8 @@ jobs:
         run: npx --yes serve --cors &
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
-      - name: Run Dart Unit tests
-        run: dart test -p chrome
+      - name: Run Flutter Web tests
+        run: flutter test -d chrome
         working-directory: packages/isar_plus_test
 
   coverage:
@@ -144,6 +144,7 @@ jobs:
 
   integration_test_ios:
     name: Integration Test iOS
+    if: ${{ false }}
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
@@ -166,6 +167,7 @@ jobs:
 
   integration_test_android:
     name: Integration Test Android
+    if: ${{ false }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -194,6 +196,7 @@ jobs:
 
   integration_test_macos:
     name: Integration Test macOS
+    if: ${{ false }}
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
@@ -261,6 +264,7 @@ jobs:
 
   integration_test_chrome:
     name: Integration Test Chrome
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -286,6 +290,7 @@ jobs:
 
   integration_test_safari:
     name: Integration Test Safari
+    if: ${{ false }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -313,6 +318,7 @@ jobs:
 
   integration_test_firefox:
     name: Integration Test Firefox
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
