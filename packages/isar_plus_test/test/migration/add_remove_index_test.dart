@@ -1,8 +1,8 @@
 import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_test/isar_plus_test.dart';
+import 'package:test/test.dart';
 
 part 'add_remove_index_test.g.dart';
-
-// ignore_for_file: unreachable_from_main
 
 @collection
 @Name('Col')
@@ -36,7 +36,7 @@ class Col2 {
 }
 
 void main() {
-  /*isarTest('Add remove index', () {
+  isarTest('Add remove index', () async {
     final isar1 = await openTempIsar([Col1Schema]);
     final isarName = isar1.name;
     isar1.write((isar) {
@@ -46,10 +46,10 @@ void main() {
 
     final isar2 = await openTempIsar([Col2Schema], name: isarName);
     expect(isar2.col2s.where().findAll(), [Col2(1, 'a'), Col2(2, 'b')]);
-    /*expect(await isar2.col2s.getByValue('a'), Col2(1, 'a'));
-     isar2.write((isar) {
+    expect(isar2.col2s.where().valueEqualTo('a').findAll(), [Col2(1, 'a')]);
+    isar2.write((isar) {
       return isar2.col2s.putAll([Col2(1, 'c'), Col2(3, 'd')]);
-    });*/
+    });
     expect(isar2.close(), true);
 
     final isar3 = await openTempIsar([Col1Schema], name: isarName);
@@ -58,5 +58,5 @@ void main() {
       Col1(2, 'b'),
       Col1(3, 'd'),
     ]);
-  });*/
+  });
 }
