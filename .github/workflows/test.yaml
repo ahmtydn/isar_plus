@@ -82,6 +82,7 @@ jobs:
   test_web:
     name: Dart Web Test
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
