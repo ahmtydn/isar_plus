@@ -114,11 +114,11 @@ jobs:
       - name: Add packages
         run: |
           flutter pub add json_annotation
-          flutter pub add isar_plus_test --path ../isar_plus_test
           echo "" >> pubspec.yaml
           echo "dependency_overrides:" >> pubspec.yaml
           echo "  isar_plus_flutter_libs:" >> pubspec.yaml
           echo "    path: ../isar_plus_flutter_libs" >> pubspec.yaml
+          flutter pub add isar_plus_test --path ../isar_plus_test
           flutter pub get
         working-directory: packages/isar_plus
       - name: Collect isar_plus_test Coverage
