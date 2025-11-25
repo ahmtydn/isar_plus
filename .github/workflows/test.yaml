@@ -77,7 +77,7 @@ jobs:
         working-directory: packages/isar_plus_test
 
   test_web:
-    name: Flutter Web Test
+    name: Dart Web Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,8 +90,8 @@ jobs:
         run: npx --yes serve --cors &
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
-      - name: Run Flutter Web tests
-        run: flutter test -d chrome
+      - name: Run Dart Unit tests
+        run: dart test -p chrome
         working-directory: packages/isar_plus_test
 
   coverage:
