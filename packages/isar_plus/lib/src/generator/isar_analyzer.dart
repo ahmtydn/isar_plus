@@ -119,11 +119,11 @@ class _IsarAnalyzer {
 
     final constructor =
         modelClass.constructors
-            .where((c) => !c.isFactory && !c.isConst)
+            .where((c) => !c.isFactory && !c.isConst && c.name == 'new')
             .firstOrNull ??
-        modelClass.constructors.firstOrNull;
+        modelClass.constructors.where((c) => c.name == 'new').firstOrNull;
     if (constructor == null) {
-      _err('Class needs a constructor.', modelClass);
+      _err('Class needs an unnamed constructor.', modelClass);
     }
 
     final hasCollectionSupertype = modelClass.allSupertypes.any((type) {
