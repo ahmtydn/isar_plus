@@ -90,7 +90,7 @@ jobs:
       - name: Build Isar Core
         run: bash tool/build_wasm.sh
       - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: npx --yes serve --cors -p 3000 &
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Dart Unit tests
@@ -277,7 +277,7 @@ jobs:
       - name: Build Isar Core
         run: bash tool/build_wasm.sh
       - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: npx --yes serve --cors -p 3000 &
       - name: Install chromedricer
         uses: nanasess/setup-chromedriver@v2
       - name: Prepare chromedricer
@@ -305,7 +305,7 @@ jobs:
           brew install llvm
           bash tool/build_wasm.sh
       - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: npx --yes serve --cors -p 3000 &
       - name: Prepare safaridricer
         run: |
           sudo safaridriver --enable
@@ -331,7 +331,7 @@ jobs:
       - name: Build Isar Core
         run: bash tool/build_wasm.sh
       - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: npx --yes serve --cors -p 3000 &
       - name: Install geckodriver
         uses: browser-actions/setup-geckodriver@latest
       - name: Prepare geckodriver
