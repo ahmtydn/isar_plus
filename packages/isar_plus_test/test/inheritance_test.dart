@@ -182,6 +182,8 @@ void main() {
       });
     });
 
+    // TODO(ahmtydn): implement
+
     /*test('Validate inheritance model properties', () {
       expect(InheritingModelSchema.idName, 'identifier');
       expect(InheritingModelSchema.propertyIds.containsKey('nameHash'), true);

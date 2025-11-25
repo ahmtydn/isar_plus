@@ -104,7 +104,7 @@ void main() {
       },
     );
 
-    // enable when indexes are implemented
+    // TODO(ahmtydn): enable when indexes are implemented
     /*isarTest('includeIndexes should change size', () {
       isar.write((isar) => isar.modelAs.putAll([objA0, objA1, objA3]));
 

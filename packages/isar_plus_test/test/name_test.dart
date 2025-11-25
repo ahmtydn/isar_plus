@@ -16,7 +16,6 @@ class NameModel {
   @Name('valueN')
   String? value;
 
-  //@Index(composite: [CompositeIndex('value')])
   @Name('otherValueN')
   String? otherValue;
 }

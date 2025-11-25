@@ -146,6 +146,7 @@ void main() {
       expect(isar.models.where().findAll(), [allNull, simple, nested]);
     });
 
+    // TODO(ahmtydn): enable
     /*isarTest('.importJson()', ()  {
        isar.write(()  {
          isar.models.tImportJson([
