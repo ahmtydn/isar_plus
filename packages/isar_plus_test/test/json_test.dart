@@ -1,46 +1,53 @@
+import 'package:isar_plus/isar_plus.dart';
+import 'package:isar_plus_test/isar_plus_test.dart';
+import 'package:isar_plus_test/src/twitter/tweet.dart';
 import 'package:test/test.dart';
-
-// ignore_for_file: unreachable_from_main
 
 void main() {
   group('JSON', () {
-    //late Isar isar;
+    late Isar isar;
 
     setUp(() async {
-      //isar = await openTempIsar([TweetSchema]);
+      isar = await openTempIsar([TweetSchema]);
     });
 
-    /*test('Import', () {
+    isarTest('Import', () {
       isar.write((isar) {
         isar.tweets.importJson([tweetJson]);
       });
 
-      //expect(isar.tweets.where().findAll(), [tweetJson]);
-    });*/
-
-    /*test('Import / Export raw', () async {
-      final bytes = JsonUtf8Encoder().convert([tweetJson]);
-      await isar.write((isar) async {
-        await isar.tweets.tImportJsonRaw(Uint8List.fromList(bytes));
-      });
-
-      await isar.tweets.where().tExportJsonRaw((qBytes) {
-        expect(bytes, qBytes);
-      });
+      final tweets = isar.tweets.where().findAll();
+      expect(tweets.length, 1);
+      expect(tweets[0].isarId, 372526);
+      expect(tweets[0].idStr, '602584278883553280');
+      expect(tweets[0].user?.screenName, 'rosa_cinque');
     });
 
-    test('Import raw malformed', () async {
-      final i1 = isar.write((isar) async {
-        await isar.tweets.tImportJsonRaw(Uint8List(0));
+    isarTest('Import / Export', () {
+      isar.write((isar) {
+        isar.tweets.importJson([tweetJson]);
       });
-      await expectLater(() => i1, throwsIsarError());
 
-      final i2 = isar.write((isar) async {
-        final bytes = JsonUtf8Encoder().convert({});
-        await isar.tweets.tImportJsonRaw(Uint8List.fromList(bytes));
-      });
-      await expectLater(() => i2, throwsIsarError());
-    });*/
+      final exported = isar.tweets.where().exportJson();
+      expect(exported.length, 1);
+    });
+    isarTest('Import raw malformed empty', () {
+      expect(
+        () => isar.write((isar) {
+          isar.tweets.importJsonString('');
+        }),
+        throwsIsarError(),
+      );
+    });
+
+    isarTest('Import raw malformed object', () {
+      expect(
+        () => isar.write((isar) {
+          isar.tweets.importJsonString('[{}]');
+        }),
+        throwsIsarError(),
+      );
+    });
   });
 }
 
@@ -69,7 +76,7 @@ const Map<String, Object?> tweetJson = {
       {
         'indices': [88, 97],
         'text': 'Expo2015',
-      }
+      },
     ],
     'media': [
       {
@@ -91,7 +98,7 @@ const Map<String, Object?> tweetJson = {
         'type': 'photo',
         'url': 'http://t.co/yFgRfzL6DF',
         'videoInfo': null,
-      }
+      },
     ],
     'polls': null,
     'symbols': <dynamic>[],
@@ -102,7 +109,7 @@ const Map<String, Object?> tweetJson = {
             'http://blog.giallozafferano.it/lacucinadikaty/cheesecake-frutta/',
         'indices': [18, 40],
         'url': 'http://t.co/S8yyMcL62d',
-      }
+      },
     ],
     'userMentions': [
       {
@@ -110,7 +117,7 @@ const Map<String, Object?> tweetJson = {
         'indices': [1, 16],
         'name': 'La cucina di katy',
         'screenName': 'caterinaboagno',
-      }
+      },
     ],
   },
   'extendedEntities': {
@@ -135,7 +142,7 @@ const Map<String, Object?> tweetJson = {
         'type': 'photo',
         'url': 'http://t.co/yFgRfzL6DF',
         'videoInfo': null,
-      }
+      },
     ],
     'polls': null,
     'symbols': null,
