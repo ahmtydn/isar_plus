@@ -4,9 +4,19 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   format:
@@ -24,6 +34,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
+          cache: true
       - name: Format code
         run: dart format .
       - name: Check for changes
@@ -53,6 +64,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
+          cache: true
       - run: dart pub get
         working-directory: packages/isar_plus
       - run: flutter pub get
@@ -91,6 +103,8 @@ jobs:
       - run: echo "$OSTYPE"
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -108,6 +122,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -127,6 +150,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -171,6 +196,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Run Generator Unit tests
         run: |
           dart pub get
@@ -184,6 +211,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -210,6 +246,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -236,6 +281,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      - name: Cache CocoaPods
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/isar_plus_test/macos/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -268,6 +332,18 @@ jobs:
           java-version: "17"
           distribution: "zulu"
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -295,6 +371,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache CocoaPods
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/isar_plus_test/macos/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -317,6 +405,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Install Linux requirements
@@ -345,6 +435,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -369,6 +461,18 @@ jobs:
         with:
           model: iPhone 14
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache CocoaPods
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/isar_plus_test/ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
