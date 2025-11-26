@@ -1,5 +1,5 @@
 if [ "$1" = "x64" ]; then
-  rustup target add target x86_64-unknown-linux-gnu
+  rustup target add x86_64-unknown-linux-gnu
   cargo build --target x86_64-unknown-linux-gnu --features sqlcipher-vendored --release
   cp "target/x86_64-unknown-linux-gnu/release/libisar.so" "libisar_linux_x64.so"
 else
