@@ -132,11 +132,13 @@ jobs:
       - name: Upload isar_plus_test Coverage
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/isar_plus/lcov_isar_plus_test.info
           flags: isar
       - name: Upload isar_core Coverage
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           flags: core
 
