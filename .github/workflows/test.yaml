@@ -451,18 +451,141 @@ jobs:
           flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
   
+  
+  build_ios_targets:
+    name: Build iOS Target (${{ matrix.target.name }})
+    runs-on: macos-13
+    strategy:
+      matrix:
+        target:
+          - arch: aarch64-apple-ios
+            name: device
+            path: release
+          - arch: aarch64-apple-ios-sim
+            name: simulator-arm
+            path: release
+          - arch: x86_64-apple-ios
+            name: simulator-x86
+            path: release
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      
+      - name: Add iOS target
+        run: rustup target add ${{ matrix.target.arch }}
+      
+      - name: Build for ${{ matrix.target.arch }}
+        run: |
+          set -e
+          export IPHONEOS_DEPLOYMENT_TARGET=11.0
+          echo "Building for ${{ matrix.target.arch }}..."
+          cargo build --target ${{ matrix.target.arch }} --features sqlcipher --release
+      
+      - name: Verify binary exists
+        run: |
+          if [[ ! -f "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a" ]]; then
+            echo "Error: Binary not found at target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
+            exit 1
+          fi
+          ls -lh "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: isar-ios-${{ matrix.target.name }}
+          path: target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a
+          retention-days: 1
+
+  assemble_ios_xcframework:
+    name: Assemble iOS XCFramework
+    runs-on: macos-13
+    needs: build_ios_targets
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download device binary
+        uses: actions/download-artifact@v3
+        with:
+          name: isar-ios-device
+          path: build/device
+      
+      - name: Download simulator ARM binary
+        uses: actions/download-artifact@v3
+        with:
+          name: isar-ios-simulator-arm
+          path: build/simulator-arm
+      
+      - name: Download simulator x86 binary
+        uses: actions/download-artifact@v3
+        with:
+          name: isar-ios-simulator-x86
+          path: build/simulator-x86
+      
+      - name: Verify downloaded artifacts
+        run: |
+          echo "Checking downloaded artifacts..."
+          ls -lh build/device/libisar.a
+          ls -lh build/simulator-arm/libisar.a
+          ls -lh build/simulator-x86/libisar.a
+      
+      - name: Create universal simulator binary
+        run: |
+          echo "Creating universal simulator binary..."
+          mkdir -p build/simulator
+          lipo "build/simulator-arm/libisar.a" \
+               "build/simulator-x86/libisar.a" \
+               -output "build/simulator/libisar.a" \
+               -create
+          echo "Universal binary created:"
+          lipo -info build/simulator/libisar.a
+      
+      - name: Create XCFramework
+        run: |
+          echo "Creating XCFramework..."
+          xcodebuild \
+            -create-xcframework \
+            -library build/device/libisar.a \
+            -library build/simulator/libisar.a \
+            -output isar.xcframework
+          echo "XCFramework created successfully"
+          ls -lh isar.xcframework
+      
+      - name: Create archive
+        run: |
+          echo "Creating archive..."
+          zip -r isar_ios.xcframework.zip isar.xcframework
+          ls -lh isar_ios.xcframework.zip
+      
+      - name: Upload XCFramework
+        uses: actions/upload-artifact@v3
+        with:
+          name: isar-ios-xcframework
+          path: isar_ios.xcframework.zip
+          retention-days: 1
+
   integration_test_ios:
     name: Integration Test iOS
     runs-on: macos-13
+    needs: assemble_ios_xcframework
     steps:
       - uses: actions/checkout@v4
+      
       - name: Start simulator
         uses: futureware-tech/simulator-action@v2
         with:
           model: iPhone 14
+      
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      
       - name: Cache CocoaPods
         uses: actions/cache@v3
         with:
@@ -473,14 +596,26 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+      
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
+      
+      - name: Download XCFramework
+        uses: actions/download-artifact@v3
+        with:
+          name: isar-ios-xcframework
+          path: .
+      
+      - name: Extract XCFramework
         run: |
-          bash tool/build_ios.sh
-          unzip isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
+          echo "Extracting XCFramework..."
+          unzip -o isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
+          ls -lh packages/isar_plus_flutter_libs/ios/
+      
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
+      
       - name: Run Flutter Integration tests
         run: flutter test integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
+
