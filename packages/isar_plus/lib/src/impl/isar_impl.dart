@@ -48,9 +48,10 @@ class _IsarImpl extends Isar {
     final namePtr = IsarCore._toNativeString(name);
     final directoryPtr = IsarCore._toNativeString(directory);
     final schemaPtr = IsarCore._toNativeString(schemaJson);
-    final encryptionKeyPtr = encryptionKey != null
-        ? IsarCore._toNativeString(encryptionKey)
-        : nullptr;
+    final encryptionKeyPtr =
+        encryptionKey != null
+            ? IsarCore._toNativeString(encryptionKey)
+            : nullptr;
 
     final isarPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarInstance>>();
     IsarCore.b
@@ -152,6 +153,7 @@ class _IsarImpl extends Isar {
     final library = IsarCore._library;
 
     final receivePort = ReceivePort();
+    final responses = StreamIterator(receivePort);
     final sendPort = receivePort.sendPort;
     final isolate = runIsolate('Isar open async', () async {
       try {
@@ -170,18 +172,29 @@ class _IsarImpl extends Isar {
         sendPort.send(receivePort.sendPort);
         await receivePort.first;
         isar.close();
+        sendPort.send('closed');
       } on Exception catch (e) {
         sendPort.send(e);
       }
     });
 
-    final response = await receivePort.first;
+    await responses.moveNext();
+    final response = responses.current;
     if (response is SendPort) {
       final isar = Isar.get(schemas: schemas, name: name);
       response.send(null);
+      await responses.moveNext();
+      final closeConfirmation = responses.current;
+      await responses.cancel();
+      receivePort.close();
+      if (closeConfirmation != 'closed') {
+        throw Exception('Unexpected response from background isolate');
+      }
       unawaited(isolate);
       return isar;
     } else {
+      await responses.cancel();
+      receivePort.close();
       throw Exception(response);
     }
   }
@@ -222,9 +235,8 @@ class _IsarImpl extends Isar {
   }();
 
   @override
-  late final List<IsarSchema> schemas = generatedSchemas
-      .map((e) => e.schema)
-      .toList();
+  late final List<IsarSchema> schemas =
+      generatedSchemas.map((e) => e.schema).toList();
 
   @override
   bool get isOpen => _ptr != null;
