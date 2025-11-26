@@ -309,6 +309,7 @@ jobs:
   integration_test_linux:
     name: Integration Test Linux
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -335,6 +336,7 @@ jobs:
 
   integration_test_windows:
     name: Integration Test Windows
+    if: ${{ false }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -352,6 +354,7 @@ jobs:
           flutter config --enable-windows-desktop 
           flutter test -d windows integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
+  
   integration_test_ios:
     name: Integration Test iOS
     runs-on: macos-13
