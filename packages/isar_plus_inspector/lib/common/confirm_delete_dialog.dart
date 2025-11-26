@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Shows a confirmation dialog before deleting an item
-Future<bool?> showConfirmDeleteDialog(
-  BuildContext context,
-  String message,
-) {
+Future<bool?> showConfirmDeleteDialog(BuildContext context, String message) {
   return showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(

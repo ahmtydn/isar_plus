@@ -18,10 +18,9 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   try {
     library ??= Platform.isIOS ? null : library ?? Abi.current().localName;
 
-    final dylib =
-        Platform.isIOS
-            ? DynamicLibrary.process()
-            : DynamicLibrary.open(library!);
+    final dylib = Platform.isIOS
+        ? DynamicLibrary.process()
+        : DynamicLibrary.open(library!);
     bindings = IsarCoreBindings(dylib);
   } catch (e) {
     throw IsarNotReadyError(

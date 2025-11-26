@@ -15,8 +15,10 @@ class FilterGroup extends FilterOperation {
   @override
   Filter? toIsarFilter() {
     if (filters.isEmpty) return null;
-    final isarFilters =
-        filters.map((e) => e.toIsarFilter()).whereType<Filter>().toList();
+    final isarFilters = filters
+        .map((e) => e.toIsarFilter())
+        .whereType<Filter>()
+        .toList();
     return and ? AndGroup(isarFilters) : OrGroup(isarFilters);
   }
 }
@@ -39,41 +41,41 @@ class FilterCondition extends FilterOperation {
     return switch (type) {
       FilterType.equalTo => EqualCondition(property: property, value: value1),
       FilterType.greaterThan => GreaterCondition(
-          property: property,
-          value: value1,
-        ),
+        property: property,
+        value: value1,
+      ),
       FilterType.lessThan => LessCondition(property: property, value: value1),
       FilterType.between => BetweenCondition(
-          property: property,
-          lower: value1,
-          upper: value2,
-        ),
+        property: property,
+        lower: value1,
+        upper: value2,
+      ),
       FilterType.startsWith => StartsWithCondition(
-          property: property,
-          value: value1! as String,
-        ),
+        property: property,
+        value: value1! as String,
+      ),
       FilterType.endsWith => EndsWithCondition(
-          property: property,
-          value: value1! as String,
-        ),
+        property: property,
+        value: value1! as String,
+      ),
       FilterType.contains => ContainsCondition(
-          property: property,
-          value: value1! as String,
-        ),
+        property: property,
+        value: value1! as String,
+      ),
       FilterType.matches => MatchesCondition(
-          property: property,
-          wildcard: value1! as String,
-        ),
+        property: property,
+        wildcard: value1! as String,
+      ),
       FilterType.isNull => IsNullCondition(property: property),
       FilterType.isNotNull => NotGroup(IsNullCondition(property: property)),
       FilterType.elementIsNull => EqualCondition(
-          property: property,
-          value: null,
-        ),
+        property: property,
+        value: null,
+      ),
       FilterType.elementIsNotNull => GreaterCondition(
-          property: property,
-          value: null,
-        ),
+        property: property,
+        value: null,
+      ),
     };
   }
 }
