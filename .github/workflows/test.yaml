@@ -231,7 +231,7 @@ jobs:
 
   integration_test_safari:
     name: Integration Test Safari
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -243,7 +243,7 @@ jobs:
           bash tool/build_wasm.sh
       - name: Serve isar.wasm
         run: npx --yes serve --cors -p 3000 &
-      - name: Prepare safaridricer
+      - name: Prepare safaridriver
         run: |
           sudo safaridriver --enable
           safaridriver --port=4444 &
