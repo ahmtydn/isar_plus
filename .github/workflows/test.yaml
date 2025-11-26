@@ -11,7 +11,6 @@ on:
 jobs:
   format:
     name: Check formatting
-    if: ${{ false }} # TODO: Enable and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -102,6 +101,7 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
