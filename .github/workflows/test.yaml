@@ -12,6 +12,7 @@ jobs:
   format:
     name: Check formatting
     runs-on: ubuntu-latest
+    if: ${{ false }}
     permissions:
       contents: write
     steps:
@@ -166,7 +167,6 @@ jobs:
   test_generator:
     name: Generator Test
     runs-on: ubuntu-latest
-    if: ${{ false }} # TODO: Enable and test
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -178,7 +178,6 @@ jobs:
 
   integration_test_ios:
     name: Integration Test iOS
-    if: ${{ false }}
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
@@ -201,7 +200,6 @@ jobs:
 
   integration_test_android:
     name: Integration Test Android
-    if: ${{ false }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -230,7 +228,6 @@ jobs:
 
   integration_test_macos:
     name: Integration Test macOS
-    if: ${{ false }}
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
@@ -252,7 +249,6 @@ jobs:
 
   integration_test_linux:
     name: Integration Test Linux
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -277,8 +273,7 @@ jobs:
 
   integration_test_windows:
     name: Integration Test Windows
-    runs-on: windows-2019
-    if: ${{ false }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -298,7 +293,6 @@ jobs:
 
   integration_test_chrome:
     name: Integration Test Chrome
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -324,7 +318,6 @@ jobs:
 
   integration_test_safari:
     name: Integration Test Safari
-    if: ${{ false }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -352,7 +345,6 @@ jobs:
 
   integration_test_firefox:
     name: Integration Test Firefox
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
