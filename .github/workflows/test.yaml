@@ -284,7 +284,7 @@ jobs:
           profile: pixel
           target: default
           working-directory: packages/isar_plus_test
-          script: flutter test integration_test.dart --dart-define STRESS=true
+          script: flutter test integration_test/isar_test.dart --dart-define STRESS=true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
 
   integration_test_macos:
@@ -306,7 +306,7 @@ jobs:
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-macos-desktop 
-          flutter test -d macos integration_test.dart --dart-define STRESS=true
+          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
   integration_test_linux:
@@ -334,7 +334,7 @@ jobs:
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-linux-desktop 
-          flutter test -d linux integration_test.dart --dart-define STRESS=true
+          flutter test -d linux integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
   integration_test_windows:
@@ -355,7 +355,7 @@ jobs:
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-windows-desktop 
-          flutter test -d windows integration_test.dart --dart-define STRESS=true
+          flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
   
   integration_test_ios:
@@ -378,5 +378,5 @@ jobs:
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Integration tests
-        run: flutter test integration_test.dart --dart-define STRESS=true
+        run: flutter test integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
