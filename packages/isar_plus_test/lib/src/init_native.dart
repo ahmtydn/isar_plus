@@ -10,14 +10,18 @@ Future<void> prepareTest() async {
   if (!_setUp) {
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       try {
-        await Isar.initialize(getBinaryPath());
-        if (testTempPath == null) {
-          final dartToolDir = path.join(Directory.current.path, '.dart_tool');
-          testTempPath = path.join(dartToolDir, 'test', 'tmp');
-          Directory(testTempPath!).createSync(recursive: true);
+        await Isar.initialize();
+      } catch (e) {
+        try {
+          await Isar.initialize(getBinaryPath());
+        } catch (e) {
         }
-      } on Exception {
-        // Ignore initialization errors in test environment
+      }
+
+      if (testTempPath == null) {
+        final dartToolDir = path.join(Directory.current.path, '.dart_tool');
+        testTempPath = path.join(dartToolDir, 'test', 'tmp');
+        Directory(testTempPath!).createSync(recursive: true);
       }
     }
     _setUp = true;
