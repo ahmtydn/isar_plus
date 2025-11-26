@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -10,14 +11,14 @@ Future<void> prepareTest() async {
   if (!_setUp) {
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       try {
-        await Isar.initialize(getBinaryPath());
+        await Isar.initialize();
         if (testTempPath == null) {
           final dartToolDir = path.join(Directory.current.path, '.dart_tool');
           testTempPath = path.join(dartToolDir, 'test', 'tmp');
           Directory(testTempPath!).createSync(recursive: true);
         }
-      } on Exception {
-        // Ignore initialization errors in test environment
+      } on Object catch (e) {
+        log('Failed to initialize Isar natively: $e');
       }
     }
     _setUp = true;
