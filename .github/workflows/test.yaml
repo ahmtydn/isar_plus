@@ -260,6 +260,7 @@ jobs:
   integration_test_android:
     name: Integration Test Android
     runs-on: ubuntu-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
@@ -361,7 +362,6 @@ jobs:
   integration_test_ios:
     name: Integration Test iOS
     runs-on: macos-13
-    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - name: Start simulator
