@@ -1,4 +1,4 @@
-export MACOSX_DEPLOYMENT_TARGET=10.11
+export MACOSX_DEPLOYMENT_TARGET=10.15
 
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 cargo build --target aarch64-apple-darwin --features sqlcipher --release
