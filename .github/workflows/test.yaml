@@ -497,7 +497,7 @@ jobs:
           ls -lh "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: isar-ios-${{ matrix.target.name }}
           path: target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a
@@ -511,19 +511,19 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Download device binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: isar-ios-device
           path: build/device
       
       - name: Download simulator ARM binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: isar-ios-simulator-arm
           path: build/simulator-arm
       
       - name: Download simulator x86 binary
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: isar-ios-simulator-x86
           path: build/simulator-x86
@@ -564,7 +564,7 @@ jobs:
           ls -lh isar_ios.xcframework.zip
       
       - name: Upload XCFramework
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: isar-ios-xcframework
           path: isar_ios.xcframework.zip
@@ -601,7 +601,7 @@ jobs:
         uses: ./.github/actions/prepare-build
       
       - name: Download XCFramework
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: isar-ios-xcframework
           path: .
