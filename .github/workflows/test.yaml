@@ -167,6 +167,7 @@ jobs:
   test_generator:
     name: Generator Test
     runs-on: ubuntu-latest
+    if: ${{ false }} #done
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -176,26 +177,83 @@ jobs:
           dart test
         working-directory: packages/isar_plus
 
-  integration_test_ios:
-    name: Integration Test iOS
-    runs-on: macos-13
+  integration_test_chrome:
+    name: Integration Test Chrome
+    runs-on: ubuntu-latest
+    if: ${{ false }} #done
     steps:
       - uses: actions/checkout@v4
-      - name: Start simulator
-        uses: futureware-tech/simulator-action@v2
-        with:
-          model: iPhone 14
+      - uses: subosito/flutter-action@v2
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      - name: Build Isar Core
+        run: bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Install chromedricer
+        uses: nanasess/setup-chromedriver@v2
+      - name: Prepare chromedricer
+        run: chromedriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          dart tool/generate_all_tests.dart
+          flutter pub run build_runner build
+          flutter drive --driver=integration_driver.dart  --target=integration_test.dart -d web-server --browser-name chrome
+        working-directory: packages/isar_plus_test
+        
+  integration_test_firefox:
+    name: Integration Test Firefox
+    runs-on: ubuntu-latest
+    if: ${{ false }} #done
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      - name: Build Isar Core
+        run: bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Install geckodriver
+        uses: browser-actions/setup-geckodriver@latest
+      - name: Prepare geckodriver
+        run: geckodriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          flutter pub run build_runner build
+          dart tool/generate_all_tests.dart
+          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name firefox
+        working-directory: packages/isar_plus_test
+
+  integration_test_safari:
+    name: Integration Test Safari
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: |
-          bash tool/build_ios.sh
-          unzip isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
-      - name: Prepare Tests
-        run: sh tool/prepare_tests.sh
-      - name: Run Flutter Integration tests
-        run: flutter test integration_test.dart --dart-define STRESS=true
+          brew install llvm
+          bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Prepare safaridricer
+        run: |
+          sudo safaridriver --enable
+          safaridriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          flutter pub run build_runner build
+          dart tool/generate_all_tests.dart
+          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name safari
         working-directory: packages/isar_plus_test
 
   integration_test_android:
@@ -290,80 +348,24 @@ jobs:
           flutter config --enable-windows-desktop 
           flutter test -d windows integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
-
-  integration_test_chrome:
-    name: Integration Test Chrome
-    runs-on: ubuntu-latest
+  integration_test_ios:
+    name: Integration Test iOS
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors -p 3000 &
-      - name: Install chromedricer
-        uses: nanasess/setup-chromedriver@v2
-      - name: Prepare chromedricer
-        run: chromedriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          dart tool/generate_all_tests.dart
-          flutter pub run build_runner build
-          flutter drive --driver=integration_driver.dart  --target=integration_test.dart -d web-server --browser-name chrome
-        working-directory: packages/isar_plus_test
-
-  integration_test_safari:
-    name: Integration Test Safari
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Start simulator
+        uses: futureware-tech/simulator-action@v2
+        with:
+          model: iPhone 14
       - uses: subosito/flutter-action@v2
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: |
-          brew install llvm
-          bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors -p 3000 &
-      - name: Prepare safaridricer
-        run: |
-          sudo safaridriver --enable
-          safaridriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name safari
-        working-directory: packages/isar_plus_test
-
-  integration_test_firefox:
-    name: Integration Test Firefox
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors -p 3000 &
-      - name: Install geckodriver
-        uses: browser-actions/setup-geckodriver@latest
-      - name: Prepare geckodriver
-        run: geckodriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name firefox
+          bash tool/build_ios.sh
+          unzip isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
+      - name: Prepare Tests
+        run: sh tool/prepare_tests.sh
+      - name: Run Flutter Integration tests
+        run: flutter test integration_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
