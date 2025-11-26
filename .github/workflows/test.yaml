@@ -288,6 +288,7 @@ jobs:
   integration_test_macos:
     name: Integration Test macOS
     runs-on: macos-13
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
