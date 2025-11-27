@@ -11,7 +11,7 @@ void main() {
 
   final imports = files
       .map((String e) {
-        final dartPath = '../' + e.replaceAll(p.separator, '/');
+        final dartPath = e.replaceAll(p.separator, '/');
         final name = e.split('.')[0].replaceAll(p.separator, '_');
         return "import '$dartPath' as $name;";
       })
@@ -45,5 +45,5 @@ void main() {
     }
 """;
 
-  File('integration_test/all_tests.dart').writeAsStringSync(code);
+  File('all_tests.dart').writeAsStringSync(code);
 }
