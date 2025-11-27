@@ -572,15 +572,15 @@ jobs:
 
   integration_test_ios:
     name: Integration Test iOS
-    runs-on: macos-13
+    runs-on: macos-14
     needs: assemble_ios_xcframework
     steps:
       - uses: actions/checkout@v4
       
       - name: Start simulator
-        uses: futureware-tech/simulator-action@v2
+        uses: futureware-tech/simulator-action@v4
         with:
-          model: iPhone 14
+          model: iPhone 15
       
       - uses: subosito/flutter-action@v2
         with:
@@ -615,21 +615,11 @@ jobs:
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       
-      - name: Prepare iOS build environment
-        run: |
-          echo "Killing any hanging Xcode processes..."
-          killall -9 xcodebuild 2>/dev/null || true
-          echo "Cleaning Xcode derived data..."
-          rm -rf ~/Library/Developer/Xcode/DerivedData
-          echo "Cleaning Flutter build cache..."
-          flutter clean
-        working-directory: packages/isar_plus_test
-      
       - name: Run Flutter Integration tests
         run: |
           # List available devices for debugging
           flutter devices
           # Run tests on iOS simulator
-          flutter test -d iPhone integration_test/isar_test.dart --dart-define STRESS=true -v
+          flutter test -d iPhone integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
