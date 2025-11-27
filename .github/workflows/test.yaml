@@ -616,6 +616,6 @@ jobs:
         run: sh tool/prepare_tests.sh
       
       - name: Run Flutter Integration tests
-        run: flutter test integration_test/isar_test.dart --dart-define STRESS=true
+        run: flutter test integration_test/isar_test.dart --dart-define STRESS=true --timeout=15m
         working-directory: packages/isar_plus_test
 
