@@ -615,6 +615,16 @@ jobs:
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       
+      - name: Prepare iOS build environment
+        run: |
+          echo "Killing any hanging Xcode processes..."
+          killall -9 xcodebuild 2>/dev/null || true
+          echo "Cleaning Xcode derived data..."
+          rm -rf ~/Library/Developer/Xcode/DerivedData
+          echo "Cleaning Flutter build cache..."
+          flutter clean
+        working-directory: packages/isar_plus_test
+      
       - name: Run Flutter Integration tests
         run: |
           # List available devices for debugging
