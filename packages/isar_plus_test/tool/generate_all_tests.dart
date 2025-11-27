@@ -11,11 +11,11 @@ void main() {
 
 void _recreateIntegrationTestDirectory() {
   final integrationTestDir = Directory('integration_test/test');
-  
+
   if (integrationTestDir.existsSync()) {
     integrationTestDir.deleteSync(recursive: true);
   }
-  
+
   _copyDirectory(Directory('test'), integrationTestDir);
 }
 
@@ -30,7 +30,7 @@ List<File> _discoverTestFiles() {
 String _generateTestRunner(List<File> testFiles) {
   final imports = _generateImports(testFiles);
   final calls = _generateTestCalls(testFiles);
-  
+
   return '''
 // ignore_for_file: directives_ordering
 
@@ -47,27 +47,32 @@ $calls
 }
 
 String _generateImports(List<File> testFiles) {
-  return testFiles.map((file) {
-    final dartPath = file.path.replaceAll(p.separator, '/');
-    final alias = _generateImportAlias(file.path);
-    return "import '$dartPath' as $alias;";
-  }).join('\n');
+  return testFiles
+      .map((file) {
+        final dartPath = file.path.replaceAll(p.separator, '/');
+        final alias = _generateImportAlias(file.path);
+        return "import '$dartPath' as $alias;";
+      })
+      .join('\n');
 }
 
 String _generateTestCalls(List<File> testFiles) {
-  return testFiles.map((file) {
-    final alias = _generateImportAlias(file.path);
-    final call = '$alias.main();';
-    
-    return _wrapCallWithConditionals(file, call);
-  }).map((call) => '  $call').join('\n');
+  return testFiles
+      .map((file) {
+        final alias = _generateImportAlias(file.path);
+        final call = '$alias.main();';
+
+        return _wrapCallWithConditionals(file, call);
+      })
+      .map((call) => '  $call')
+      .join('\n');
 }
 
 String _wrapCallWithConditionals(File file, String call) {
   final content = file.readAsStringSync();
   final isStressTest = file.path.contains('stress');
   final isVmOnly = content.startsWith("@TestOn('vm')");
-  
+
   if (isStressTest && isVmOnly) {
     return 'if (stress && !kIsWeb) $call';
   } else if (isStressTest) {
@@ -94,10 +99,10 @@ void _writeTestRunner(String content) {
 
 void _copyDirectory(Directory source, Directory destination) {
   destination.createSync(recursive: true);
-  
-  for (final entity in source.listSync(recursive: false)) {
+
+  for (final entity in source.listSync()) {
     final destinationPath = p.join(destination.path, p.basename(entity.path));
-    
+
     if (entity is Directory) {
       _copyDirectory(entity, Directory(destinationPath));
     } else if (entity is File) {
