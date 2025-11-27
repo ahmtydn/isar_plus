@@ -8,9 +8,7 @@
 <p align="center">
   <a href="https://pub.dev/packages/isar_plus"><img src="https://img.shields.io/pub/v/isar_plus?label=pub.dev&labelColor=333940&logo=dart"></a>
   <a href="https://pub.dev/packages/isar_plus/score"><img src="https://img.shields.io/pub/points/isar_plus?label=score&labelColor=333940&logo=dart"></a>
-    <a href="https://app.codecov.io/gh/ahmtydn/isar_plus">
-    <img src="https://img.shields.io/codecov/c/github/ahmtydn/isar_plus?logo=codecov&logoColor=fff&labelColor=333940&flag=isar">
-  </a>
+  <a href="https://app.codecov.io/gh/ahmtydn/isar_plus"><img src="https://img.shields.io/codecov/c/github/ahmtydn/isar_plus?logo=codecov&logoColor=fff&labelColor=333940&flag=isar"></a>
   <a href="https://github.com/ahmtydn/isar_plus"><img src="https://img.shields.io/github/stars/ahmtydn/isar_plus?style=social"></a>
 </p>
 
