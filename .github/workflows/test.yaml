@@ -236,7 +236,7 @@ jobs:
           dart tool/generate_long_double_test.dart
           dart tool/generate_all_tests.dart
           flutter pub run build_runner build
-          flutter drive --driver=integration_driver.dart  --target=integration_test.dart -d web-server --browser-name chrome
+          flutter drive --driver=integration_driver.dart  --target=integration_test/isar_test.dart -d web-server --browser-name chrome
         working-directory: packages/isar_plus_test
 
   integration_test_firefox:
@@ -271,7 +271,7 @@ jobs:
           dart tool/generate_long_double_test.dart
           flutter pub run build_runner build
           dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name firefox
+          flutter drive --driver=integration_driver.dart --target=integration_test/isar_test.dart -d web-server --browser-name firefox
         working-directory: packages/isar_plus_test
 
   integration_test_safari:
@@ -318,7 +318,7 @@ jobs:
           dart tool/generate_long_double_test.dart
           flutter pub run build_runner build
           dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name safari
+          flutter drive --driver=integration_driver.dart --target=integration_test/isar_test.dart -d web-server --browser-name safari
         working-directory: packages/isar_plus_test
 
   integration_test_android:
@@ -450,7 +450,6 @@ jobs:
           flutter config --enable-windows-desktop 
           flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
-  
   
   build_ios_targets:
     name: Build iOS Target (${{ matrix.target.name }})
