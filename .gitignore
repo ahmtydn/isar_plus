@@ -80,3 +80,6 @@ local.properties
 packages/hive_plus
 
 co*.md
+
+coverage/*
+coverage_local.sh
