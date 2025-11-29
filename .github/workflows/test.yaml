@@ -576,11 +576,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Find latest iPhone
+        id: find_device
+        run: |
+          # Find the latest iPhone model available
+          # List device types, filter for iPhone, exclude SE/Pro/Max/Plus for base model, sort version, take last
+          MODEL=$(xcrun simctl list devicetypes | grep "iPhone" | grep -v "SE" | grep -v "Pro" | grep -v "Max" | grep -v "Plus" | sort -V | tail -n 1 | sed 's/ (.*//' | xargs)
+          if [ -z "$MODEL" ]; then
+            echo "Could not find an iPhone model, defaulting to iPhone 15"
+            MODEL="iPhone 15"
+          fi
+          echo "Found latest model: $MODEL"
+          echo "model=$MODEL" >> $GITHUB_OUTPUT
+
       - name: Start simulator
         uses: futureware-tech/simulator-action@v4
         id: simulator
         with:
-          model: iPhone 15
+          model: ${{ steps.find_device.outputs.model }}
       
       - uses: subosito/flutter-action@v2
         with:
