@@ -92,7 +92,7 @@ jobs:
         run: cargo test
 
   test:
-    name: Dart Test
+    name: Dart Test (${{ matrix.os }})
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
@@ -125,7 +125,7 @@ jobs:
         with:
           cache: true
       - name: Cache npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-serve
@@ -214,7 +214,7 @@ jobs:
         with:
           cache: true
       - name: Cache npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-serve
@@ -249,7 +249,7 @@ jobs:
         with:
           cache: true
       - name: Cache npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-serve
@@ -276,7 +276,7 @@ jobs:
 
   integration_test_safari:
     name: Integration Test Safari
-    runs-on: macos-13
+    runs-on: macos-latest
     # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
@@ -284,14 +284,14 @@ jobs:
         with:
           cache: true
       - name: Cache npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-serve
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Cache CocoaPods
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/isar_plus_test/macos/Pods
@@ -335,7 +335,7 @@ jobs:
         with:
           cache: true
       - name: Cache Gradle
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -366,7 +366,7 @@ jobs:
 
   integration_test_macos:
     name: Integration Test macOS
-    runs-on: macos-13
+    runs-on: macos-latest
     # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
@@ -374,7 +374,7 @@ jobs:
         with:
           cache: true
       - name: Cache CocoaPods
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/isar_plus_test/macos/Pods
@@ -453,7 +453,7 @@ jobs:
   
   build_ios_targets:
     name: Build iOS Target (${{ matrix.target.name }})
-    runs-on: macos-13
+    runs-on: macos-latest
     strategy:
       matrix:
         target:
@@ -504,7 +504,7 @@ jobs:
 
   assemble_ios_xcframework:
     name: Assemble iOS XCFramework
-    runs-on: macos-13
+    runs-on: macos-latest
     needs: build_ios_targets
     steps:
       - uses: actions/checkout@v4
@@ -571,13 +571,14 @@ jobs:
 
   integration_test_ios:
     name: Integration Test iOS
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: assemble_ios_xcframework
     steps:
       - uses: actions/checkout@v4
       
       - name: Start simulator
         uses: futureware-tech/simulator-action@v4
+        id: simulator
         with:
           model: iPhone 15
       
@@ -586,7 +587,7 @@ jobs:
           cache: true
       
       - name: Cache CocoaPods
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             packages/isar_plus_test/ios/Pods
@@ -618,7 +619,10 @@ jobs:
         run: |
           # List available devices for debugging
           flutter devices
-          # Run tests on iOS simulator
-          flutter test -d iPhone integration_test/isar_test.dart --dart-define STRESS=true
+          # Get the specific device ID from the simulator action
+          DEVICE_ID="${{ steps.simulator.outputs.udid }}"
+          echo "Using device ID: $DEVICE_ID"
+          # Run tests on the specific iOS simulator using device ID
+          flutter test -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
