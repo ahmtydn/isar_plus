@@ -12,6 +12,7 @@
         "relationships",
         "transactions",
         "watchers",
+        "backup",
         "---Advanced---",
         "limitations",
         "faq",
