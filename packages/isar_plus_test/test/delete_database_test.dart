@@ -25,10 +25,7 @@ void main() {
       final directory = isar.directory;
 
       final dbFile = File(
-        path.join(
-          directory,
-          isSQLite ? '$name.sqlite' : '$name.isar',
-        ),
+        path.join(directory, isSQLite ? '$name.sqlite' : '$name.isar'),
       );
       final lockFile = File(path.join(directory, '$name.lock'));
 
