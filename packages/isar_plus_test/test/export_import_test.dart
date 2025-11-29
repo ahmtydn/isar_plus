@@ -246,10 +246,9 @@ void main() {
     });
 
     isarTest('Export: .copyToFile() with empty database', () async {
-      final emptyIsar = await openTempIsar(
-        [UserSchema],
-        maxSizeMiB: isSQLite ? 0 : 20,
-      );
+      final emptyIsar = await openTempIsar([
+        UserSchema,
+      ], maxSizeMiB: isSQLite ? 0 : 20);
 
       final backupName = getRandomName();
       final backupPath = path.join(
