@@ -49,17 +49,17 @@ void main() {
       final name = isar.name;
       final directory = isar.directory;
       try {
-         Isar.deleteDatabase(
+        Isar.deleteDatabase(
           name: name,
           directory: directory,
           engine: isSQLite ? IsarEngine.sqlite : IsarEngine.isar,
         );
-      } catch (e) {
+      } on Object catch (e) {
         expect(e, isA<IsarError>());
-        await isar.close();
+        isar.close();
         return;
       }
-      await isar.close();
+      isar.close();
     });
   });
 }
