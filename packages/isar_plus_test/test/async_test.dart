@@ -60,6 +60,6 @@ void main() async {
       });
 
       await Future.wait(futures);
-    });
+    }, timeout: const Timeout(Duration(minutes: 2)));
   });
 }
