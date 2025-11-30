@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns, unused_imports)]
+
 use isar_core::core::{
     error::IsarError,
     instance::IsarInstance,

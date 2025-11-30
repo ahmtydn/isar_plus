@@ -135,6 +135,7 @@ impl ChangeSet {
         self.detailed_changes.push(change);
     }
 
+    #[allow(dead_code)]
     pub fn register_detailed_changes_for_watchers<Q: QueryMatches>(&mut self, cw: &CollectionWatchers<Q>) {
         let w = cw.col_watchers.load();
         for watcher in &w.detailed_watchers {
@@ -175,6 +176,7 @@ impl ChangeSet {
         }
     }
 
+    #[allow(dead_code)]
     pub fn register_all<Q: QueryMatches>(&mut self, cw: &CollectionWatchers<Q>) {
         let w = cw.col_watchers.load();
         self.mark_watchers_changed(&w.watchers);
@@ -296,6 +298,7 @@ impl<Q: QueryMatches + 'static> CollectionWatchers<Q> {
         }))
     }
 
+    #[allow(dead_code)]
     pub fn has_query_watchers(&self) -> bool {
         !self.col_watchers.load().query_watchers.is_empty()
     }

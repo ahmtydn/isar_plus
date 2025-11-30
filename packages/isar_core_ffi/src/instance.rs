@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)]
+
 use crate::{
     dart_fast_hash, i64_to_isar, isar_to_i64, CIsarCursor, CIsarInstance, CIsarTxn, IsarI64,
 };

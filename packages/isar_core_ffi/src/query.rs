@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)]
+
 use crate::{CIsarInstance, CIsarQuery, CIsarQueryBuilder, CIsarQueryCursor, CIsarTxn};
 use isar_core::core::error::IsarError;
 use isar_core::core::filter::Filter;
