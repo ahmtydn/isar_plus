@@ -130,5 +130,21 @@ void main() {
       );
       query.close();
     });
+
+    isarTest(
+      'Async operations not supported on web',
+      isar: false,
+      sqlite: false,
+      () async {
+        expect(
+          () => isar.readAsyncWith<void, void>(null, (_, _) {}),
+          throwsUnsupportedError,
+        );
+        expect(
+          () => isar.writeAsyncWith<void, void>(null, (_, _) {}),
+          throwsUnsupportedError,
+        );
+      },
+    );
   });
 }
