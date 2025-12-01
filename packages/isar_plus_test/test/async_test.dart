@@ -42,6 +42,7 @@ void main() async {
         name: isarName,
         directory: isarDir,
         engine: isSQLite ? IsarEngine.sqlite : IsarEngine.isar,
+        inspector: false,
       );
 
       expect(isar2.models.get(1), Model(1, 'abc'));

@@ -353,6 +353,13 @@ jobs:
           mv libisar_android_x64.so packages/isar_plus_flutter_libs/android/src/main/jniLibs/x86_64/libisar.so
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android/sdk/ndk
+          df -h
       - name: Run Flutter Integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -360,6 +367,9 @@ jobs:
           arch: x86_64
           profile: pixel
           target: default
+          disk-size: 6000M
+          ram-size: 2048M
+          heap-size: 512M
           working-directory: packages/isar_plus_test
           script: flutter test integration_test/isar_test.dart --dart-define STRESS=true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim

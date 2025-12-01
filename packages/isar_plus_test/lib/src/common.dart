@@ -40,6 +40,7 @@ Future<Isar> openTempIsar(
     maxSizeMiB: maxSizeMiB,
     encryptionKey: encryptionKey,
     compactOnLaunch: compactOnLaunch,
+    inspector: false,
   );
 
   if (closeAutomatically) {
