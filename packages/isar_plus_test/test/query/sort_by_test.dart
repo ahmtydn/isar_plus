@@ -224,5 +224,28 @@ void main() {
         modelC2,
       ]);
     });
+
+    isarTest('.distinctBy() with single property', () {
+      final results = col.where().distinctByName().findAll();
+
+      expect(results.length, 3);
+
+      final names = results.map((m) => m.name).toSet();
+      expect(names, {'a', 'b', 'c'});
+    });
+
+    isarTest('.distinctBy() on bool property', () {
+      final results = col.where().distinctByActive().findAll();
+
+      expect(results.length, 2);
+    });
+
+    isarTest('.distinctBy() case insensitive', () {
+      final results = col
+          .where()
+          .distinctByName(caseSensitive: false)
+          .findAll();
+      expect(results.length, 3);
+    });
   });
 }

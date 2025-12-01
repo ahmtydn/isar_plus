@@ -132,5 +132,23 @@ void main() {
         [david, emma, simon],
       );
     });
+    isarTest('AndGroup with single filter', () {
+      expect(
+        users.where().group((q) => q.ageEqualTo(20)).findAll(),
+        [david],
+      );
+    });
+
+    isarTest('OrGroup with single filter in nested group', () {
+      expect(
+        users
+            .where()
+            .ageEqualTo(20)
+            .or()
+            .group((q) => q.ageEqualTo(40))
+            .findAll(),
+        [david, tina, bjorn],
+      );
+    });
   });
 }

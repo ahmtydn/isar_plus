@@ -544,5 +544,64 @@ void main() {
         null,
       ]);
     });
+
+    isarTest('Query with 2 properties', () {
+      isar.write(
+        (isar) => isar.intModels.putAll([
+          IntModel(0)..value = 10,
+          IntModel(1)..value = 20,
+          IntModel(2)..value = 30,
+        ]),
+      );
+
+      final results = isar.intModels
+          .where()
+          .idProperty()
+          .valueProperty()
+          .findAll();
+
+      expect(results, [
+        (0, 10),
+        (1, 20),
+        (2, 30),
+      ]);
+    });
+    isarTest('Query with 3 properties', () {
+      isar.write(
+        (isar) => isar.intModels.putAll([
+          IntModel(0)
+            ..value = 10
+            ..nValue = 100,
+          IntModel(1)
+            ..value = 20
+            ..nValue = 200,
+          IntModel(2)
+            ..value = 30
+            ..nValue = null,
+        ]),
+      );
+
+      final results = isar.intModels
+          .where()
+          .idProperty()
+          .valueProperty()
+          .nValueProperty()
+          .findAll();
+
+      expect(results, [
+        (0, 10, 100),
+        (1, 20, 200),
+        (2, 30, null),
+      ]);
+    });
+
+    isarTest('Query with more than 3 properties throws', () {
+      expect(
+        () => isar.intModels.buildQuery<(int, int, int, int)>(
+          properties: [0, 1, 2, 3],
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }

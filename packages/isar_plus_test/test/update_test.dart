@@ -210,5 +210,25 @@ void main() {
         );
       });
     });
+    group('query updateProperties()', () {
+      isarTest('updates matching documents', () {
+        final count = isar.write(
+          (isar) =>
+              isar.models.where().longPropEqualTo(3).updateAll(longProp: 999),
+        );
+        expect(count, 1);
+        expect(isar.models.get(model.id)?.longProp, 999);
+      });
+
+      isarTest('returns 0 when no match', () {
+        final count = isar.write(
+          (isar) => isar.models
+              .where()
+              .longPropEqualTo(9999)
+              .updateAll(longProp: 100),
+        );
+        expect(count, 0);
+      });
+    });
   });
 }

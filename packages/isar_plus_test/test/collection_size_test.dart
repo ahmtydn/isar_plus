@@ -179,5 +179,45 @@ void main() {
       expect(sizeA3, greaterThan(sizeA2));
       expect(sizeB3, sizeB2);
     });
+    isarTest(
+      'Isar getSize returns total size of all collections',
+      sqlite: false,
+      web: false,
+      () {
+        isar.write((isar) {
+          isar.modelAs.putAll([objA0, objA1, objA2]);
+          isar.modelBs.putAll([objB0, objB1]);
+        });
+
+        final totalSize = isar.getSize();
+        final sizeA = isar.modelAs.getSize();
+        final sizeB = isar.modelBs.getSize();
+
+        expect(totalSize, sizeA + sizeB);
+
+        final totalSizeWithIndexes = isar.getSize(includeIndexes: true);
+        expect(totalSizeWithIndexes, greaterThanOrEqualTo(totalSize));
+      },
+    );
+
+    isarTest(
+      'Isar clear removes all data from all collections',
+      sqlite: false,
+      web: false,
+      () {
+        isar.write((isar) {
+          isar.modelAs.putAll([objA0, objA1, objA2]);
+          isar.modelBs.putAll([objB0, objB1]);
+        });
+
+        expect(isar.modelAs.count(), 3);
+        expect(isar.modelBs.count(), 2);
+
+        isar.write((isar) => isar.clear());
+
+        expect(isar.modelAs.count(), 0);
+        expect(isar.modelBs.count(), 0);
+      },
+    );
   });
 }

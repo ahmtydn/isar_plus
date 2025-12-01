@@ -295,5 +295,76 @@ void main() {
         );
       });
     });
+
+    group('dateTime', () {
+      late IsarCollection<int, DateTimeModel> col;
+
+      setUp(() async {
+        final isar = await openTempIsar([DateTimeModelSchema]);
+        col = isar.dateTimeModels;
+
+        final now = DateTime.now();
+        isar.write(
+          (isar) => col.putAll([
+            DateTimeModel(0)..value = now.subtract(const Duration(days: 10)),
+            DateTimeModel(1)..value = now.subtract(const Duration(days: 5)),
+            DateTimeModel(2)..value = now,
+          ]),
+        );
+      });
+
+      isarTest('min', () {
+        final min = col.where().valueProperty().min();
+        expect(min, isNotNull);
+        expect(min, isA<DateTime>());
+      });
+
+      isarTest('max', () {
+        final max = col.where().valueProperty().max();
+        expect(max, isNotNull);
+        expect(max, isA<DateTime>());
+      });
+
+      isarTest('nullable min returns null when all null', () {
+        expect(col.where().nValueProperty().min(), null);
+      });
+
+      isarTest('nullable max returns null when all null', () {
+        expect(col.where().nValueProperty().max(), null);
+      });
+    });
+
+    group('string', () {
+      late IsarCollection<int, StringModel> col;
+
+      setUp(() async {
+        final isar = await openTempIsar([StringModelSchema]);
+        col = isar.stringModels;
+
+        isar.write(
+          (isar) => col.putAll([
+            StringModel(0)..value = 'apple',
+            StringModel(1)..value = 'banana',
+            StringModel(2)..value = 'cherry',
+          ]),
+        );
+      });
+
+      isarTest('min', () {
+        expect(col.where().valueProperty().min(), 'apple');
+      });
+
+      isarTest('max', () {
+        expect(col.where().valueProperty().max(), 'cherry');
+      });
+
+      isarTest('nullable min returns null when all null', () {
+        expect(col.where().nValueProperty().min(), null);
+      });
+
+      isarTest('nullable max returns null when all null', () {
+        expect(col.where().nValueProperty().max(), null);
+      });
+    });
   });
 }

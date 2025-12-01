@@ -58,5 +58,32 @@ void main() {
       }
       isar.close();
     });
+
+    isarTest('Accessing closed Isar throws IsarNotReadyError', () async {
+      final isar = await openTempIsar(
+        [ModelSchema],
+        closeAutomatically: false,
+      );
+      isar.close();
+
+      expect(
+        () => isar.models.count(),
+        throwsA(isA<IsarNotReadyError>()),
+      );
+    });
+
+    isarTest(
+      'Isar.get throws when instance not opened',
+      sqlite: false,
+      () async {
+        expect(
+          () => Isar.get(
+            schemas: [ModelSchema],
+            name: 'nonexistent_${DateTime.now().millisecondsSinceEpoch}',
+          ),
+          throwsA(isA<IsarNotReadyError>()),
+        );
+      },
+    );
   });
 }
