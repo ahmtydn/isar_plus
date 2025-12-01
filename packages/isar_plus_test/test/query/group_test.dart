@@ -150,5 +150,30 @@ void main() {
         [david, tina, bjorn],
       );
     });
+
+    isarTest('AndGroup with exactly one filter via buildQuery', () {
+      final query = users.buildQuery<Model>(
+        filter: AndGroup([const EqualCondition(property: 2, value: 20)]),
+      );
+      expect(query.findAll(), [david]);
+      query.close();
+    });
+
+    isarTest('OrGroup with exactly one filter via buildQuery', () {
+      final query = users.buildQuery<Model>(
+        filter: OrGroup([const EqualCondition(property: 2, value: 40)]),
+      );
+      expect(query.findAll(), [tina, bjorn]);
+      query.close();
+    });
+
+    isarTest('Unsupported filter value type throws ArgumentError', () {
+      expect(
+        () => users.buildQuery<Model>(
+          filter: const EqualCondition(property: 2, value: [1, 2, 3]),
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }
