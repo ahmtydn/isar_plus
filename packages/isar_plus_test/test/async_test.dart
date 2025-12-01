@@ -1,6 +1,8 @@
 @TestOn('vm')
 library;
 
+import 'dart:io';
+
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
@@ -62,5 +64,54 @@ void main() async {
 
       await Future.wait(futures);
     }, timeout: const Timeout(Duration(minutes: 2)));
+
+    isarTest(
+      'openAsync with encryption on Isar engine throws exception',
+      sqlite: false,
+      () async {
+        final tempDir = Directory.systemTemp.createTempSync('isar_async_test_');
+        addTearDown(() {
+          if (tempDir.existsSync()) {
+            tempDir.deleteSync(recursive: true);
+          }
+        });
+        await expectLater(
+          Isar.openAsync(
+            schemas: [ModelSchema],
+            name: 'async_error_test_${DateTime.now().millisecondsSinceEpoch}',
+            directory: tempDir.path,
+            encryptionKey: 'test_encryption_key_1234567890',
+            inspector: false,
+          ),
+          throwsException,
+        );
+      },
+    );
+
+    isarTest(
+      'openAsync with compactOnLaunch on SQLite throws exception',
+      isar: false,
+      () async {
+        final tempDir = Directory.systemTemp.createTempSync(
+          'isar_compact_test_',
+        );
+        addTearDown(() {
+          if (tempDir.existsSync()) {
+            tempDir.deleteSync(recursive: true);
+          }
+        });
+        await expectLater(
+          Isar.openAsync(
+            schemas: [ModelSchema],
+            name: 'async_compact_test_${DateTime.now().millisecondsSinceEpoch}',
+            directory: tempDir.path,
+            engine: IsarEngine.sqlite,
+            compactOnLaunch: const CompactCondition(minRatio: 2),
+            inspector: false,
+          ),
+          throwsException,
+        );
+      },
+    );
   });
 }
