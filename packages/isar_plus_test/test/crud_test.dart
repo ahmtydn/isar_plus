@@ -403,10 +403,7 @@ void main() {
     });
 
     isarTest('collection() throws for unregistered type', () {
-      expect(
-        () => isar.collection<String, IntModel>(),
-        throwsArgumentError,
-      );
+      expect(() => isar.collection<String, IntModel>(), throwsArgumentError);
     });
 
     isarTest('collectionByIndex() returns correct collection', () {

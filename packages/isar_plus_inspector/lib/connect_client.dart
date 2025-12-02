@@ -8,11 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 export 'package:isar_plus/src/isar_connect_api.dart';
 
-enum InspectorConnectionState {
-  connected,
-  disconnected,
-  reconnecting,
-}
+enum InspectorConnectionState { connected, disconnected, reconnecting }
 
 class ConnectClient {
   ConnectClient._({
@@ -20,8 +16,8 @@ class ConnectClient {
     required this.secret,
     required VmService vmService,
     required String isolateId,
-  })  : _vmService = vmService,
-        _isolateId = isolateId;
+  }) : _vmService = vmService,
+       _isolateId = isolateId;
 
   static const kNormalTimeout = Duration(seconds: 4);
   static const kLongTimeout = Duration(seconds: 10);
@@ -128,8 +124,10 @@ class ConnectClient {
 
   void _initializeHealthCheck() {
     _healthCheckTimer?.cancel();
-    _healthCheckTimer =
-        Timer.periodic(kHealthCheckInterval, (_) => _performHealthCheck());
+    _healthCheckTimer = Timer.periodic(
+      kHealthCheckInterval,
+      (_) => _performHealthCheck(),
+    );
   }
 
   Future<void> _performHealthCheck() async {
