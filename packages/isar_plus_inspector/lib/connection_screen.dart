@@ -82,7 +82,8 @@ class _ConnectionPageState extends State<ConnectionScreen> {
           return _InspectorConnectionStateHandler(
             client: snapshot.data!,
             onDisconnected: () {
-              // When client reports final disconnect, restart connection process
+              // When client reports final disconnect,
+              // restart connection process
               _retryCount = 0;
               _connect();
             },
