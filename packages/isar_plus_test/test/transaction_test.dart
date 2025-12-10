@@ -124,10 +124,7 @@ void main() {
     isarTest('Query deleteAll requires write transaction', () {
       isar.write((isar) => isar.models.put(Model(1, 'test')));
       final query = isar.models.where().build();
-      expect(
-        query.deleteAll,
-        throwsWriteTxnError(),
-      );
+      expect(query.deleteAll, throwsWriteTxnError());
       query.close();
     });
 

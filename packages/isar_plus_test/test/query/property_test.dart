@@ -560,11 +560,7 @@ void main() {
           .valueProperty()
           .findAll();
 
-      expect(results, [
-        (0, 10),
-        (1, 20),
-        (2, 30),
-      ]);
+      expect(results, [(0, 10), (1, 20), (2, 30)]);
     });
     isarTest('Query with 3 properties', () {
       isar.write(
@@ -588,11 +584,7 @@ void main() {
           .nValueProperty()
           .findAll();
 
-      expect(results, [
-        (0, 10, 100),
-        (1, 20, 200),
-        (2, 30, null),
-      ]);
+      expect(results, [(0, 10, 100), (1, 20, 200), (2, 30, null)]);
     });
 
     isarTest('Query with more than 3 properties throws', () {
