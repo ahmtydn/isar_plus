@@ -32,8 +32,6 @@ String _generateTestRunner(List<File> testFiles) {
   final calls = _generateTestCalls(testFiles);
 
   return '''
-// ignore_for_file: directives_ordering
-
 import 'package:isar_plus_test/isar_plus_test.dart';
 
 $imports

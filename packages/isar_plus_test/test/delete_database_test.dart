@@ -79,5 +79,35 @@ void main() {
         );
       },
     );
+
+    isarTest(
+      'Isar.get throws when instance not opened (SQLite)',
+      isar: false,
+      () async {
+        expect(
+          () => Isar.get(
+            schemas: [ModelSchema],
+            name: 'nonexistent_sqlite_${DateTime.now().millisecondsSinceEpoch}',
+          ),
+          throwsA(isA<IsarNotReadyError>()),
+        );
+      },
+    );
+
+    isarTest('Query on closed Isar throws IsarNotReadyError', () async {
+      final isar = await openTempIsar([ModelSchema], closeAutomatically: false);
+      isar.write((isar) {
+        isar.models.put(Model(1));
+      });
+
+      // Get a query reference while Isar is still open
+      final query = isar.models.where().build();
+
+      // Close the Isar instance
+      isar.close();
+
+      // Using the query after closing should throw IsarNotReadyError
+      expect(query.findAll, throwsA(isA<IsarNotReadyError>()));
+    });
   });
 }

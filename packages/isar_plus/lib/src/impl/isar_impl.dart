@@ -172,7 +172,7 @@ class _IsarImpl extends Isar {
         await receivePort.first;
         isar.close();
         sendPort.send('closed');
-      } on Exception catch (e) {
+      } on Object catch (e) {
         sendPort.send(e);
       }
     });
@@ -350,10 +350,6 @@ class _IsarImpl extends Isar {
     T Function(Isar isar, P param) callback, {
     String? debugName,
   }) {
-    if (IsarCore.kIsWeb) {
-      throw UnsupportedError('Watchers are not supported on the web');
-    }
-
     _checkNotInTxn();
 
     final instance = instanceId;
@@ -378,10 +374,6 @@ class _IsarImpl extends Isar {
     T Function(Isar isar, P param) callback, {
     String? debugName,
   }) async {
-    if (IsarCore.kIsWeb) {
-      throw UnsupportedError('Watchers are not supported on the web');
-    }
-
     _checkNotInTxn();
 
     final instance = instanceId;

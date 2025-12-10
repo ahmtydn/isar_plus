@@ -5,14 +5,14 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
+      - "**.md"
+      - "docs/**"
   pull_request:
     branches:
       - main
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
+      - "**.md"
+      - "docs/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -152,10 +152,19 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: sh tool/build.sh
+      - name: Build WASM
+        run: bash tool/build_wasm.sh
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Add packages
@@ -168,20 +177,45 @@ jobs:
           flutter pub add isar_plus_test --path ../isar_plus_test
           flutter pub get
         working-directory: packages/isar_plus
-      - name: Collect isar_plus_test Coverage
+      - name: Collect isar_plus_test Coverage (Native)
         run: |
           flutter test --coverage ../isar_plus_test/test --coverage-path lcov_isar_plus_test.info
         working-directory: packages/isar_plus
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Wait for serve
+        run: sleep 3
+      - name: Collect isar_plus_test Coverage (Web)
+        run: |
+          dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s test/all_tests.dart || true
+          if [ -d "coverage_web" ]; then
+            dart pub global activate coverage
+            dart pub global run coverage:format_coverage \
+              --lcov \
+              --in=coverage_web \
+              --out=../isar_plus/lcov_isar_plus_test_web.info \
+              --report-on=../isar_plus/lib \
+              --packages=.dart_tool/package_config.json || true
+            rm -rf coverage_web
+          fi
+        working-directory: packages/isar_plus_test
       - name: Collect isar_core Coverage
         run: |
           cargo install cargo-tarpaulin
           cargo tarpaulin -o Lcov --engine llvm
-      - name: Upload isar_plus_test Coverage
+      - name: Upload isar_plus_test Coverage (Native)
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/isar_plus/lcov_isar_plus_test.info
           flags: isar
+      - name: Upload isar_plus_test Coverage (Web)
+        uses: codecov/codecov-action@v3
+        if: ${{ hashFiles('packages/isar_plus/lcov_isar_plus_test_web.info') != '' }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/isar_plus/lcov_isar_plus_test_web.info
+          flags: isar-web
       - name: Upload isar_core Coverage
         uses: codecov/codecov-action@v3
         with:
@@ -460,7 +494,7 @@ jobs:
           flutter config --enable-windows-desktop 
           flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
-  
+
   build_ios_targets:
     name: Build iOS Target (${{ matrix.target.name }})
     runs-on: macos-latest
@@ -479,24 +513,24 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: subosito/flutter-action@v2
         with:
           cache: true
-      
+
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      
+
       - name: Add iOS target
         run: rustup target add ${{ matrix.target.arch }}
-      
+
       - name: Build for ${{ matrix.target.arch }}
         run: |
           set -e
           export IPHONEOS_DEPLOYMENT_TARGET=11.0
           echo "Building for ${{ matrix.target.arch }}..."
           cargo build --target ${{ matrix.target.arch }} --features sqlcipher --release
-      
+
       - name: Verify binary exists
         run: |
           if [[ ! -f "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a" ]]; then
@@ -504,7 +538,7 @@ jobs:
             exit 1
           fi
           ls -lh "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -518,32 +552,32 @@ jobs:
     needs: build_ios_targets
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download device binary
         uses: actions/download-artifact@v4
         with:
           name: isar-ios-device
           path: build/device
-      
+
       - name: Download simulator ARM binary
         uses: actions/download-artifact@v4
         with:
           name: isar-ios-simulator-arm
           path: build/simulator-arm
-      
+
       - name: Download simulator x86 binary
         uses: actions/download-artifact@v4
         with:
           name: isar-ios-simulator-x86
           path: build/simulator-x86
-      
+
       - name: Verify downloaded artifacts
         run: |
           echo "Checking downloaded artifacts..."
           ls -lh build/device/libisar.a
           ls -lh build/simulator-arm/libisar.a
           ls -lh build/simulator-x86/libisar.a
-      
+
       - name: Create universal simulator binary
         run: |
           echo "Creating universal simulator binary..."
@@ -554,7 +588,7 @@ jobs:
                -create
           echo "Universal binary created:"
           lipo -info build/simulator/libisar.a
-      
+
       - name: Create XCFramework
         run: |
           echo "Creating XCFramework..."
@@ -565,13 +599,13 @@ jobs:
             -output isar.xcframework
           echo "XCFramework created successfully"
           ls -lh isar.xcframework
-      
+
       - name: Create archive
         run: |
           echo "Creating archive..."
           zip -r isar_ios.xcframework.zip isar.xcframework
           ls -lh isar_ios.xcframework.zip
-      
+
       - name: Upload XCFramework
         uses: actions/upload-artifact@v4
         with:
@@ -585,17 +619,17 @@ jobs:
     needs: assemble_ios_xcframework
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Start simulator
         uses: futureware-tech/simulator-action@v4
         id: simulator
         with:
           model: iPhone 17 Pro
-      
+
       - uses: subosito/flutter-action@v2
         with:
           cache: true
-      
+
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
@@ -606,25 +640,25 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
-      
+
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      
+
       - name: Download XCFramework
         uses: actions/download-artifact@v4
         with:
           name: isar-ios-xcframework
           path: .
-      
+
       - name: Extract XCFramework
         run: |
           echo "Extracting XCFramework..."
           unzip -o isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
           ls -lh packages/isar_plus_flutter_libs/ios/
-      
+
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
-      
+
       - name: Run Flutter Integration tests
         run: |
           # List available devices for debugging
@@ -635,4 +669,3 @@ jobs:
           # Run tests on the specific iOS simulator using device ID
           flutter test -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
-
