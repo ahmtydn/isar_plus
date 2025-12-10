@@ -7,8 +7,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  isar_plus: ^1.1.7
-  isar_plus_flutter_libs: ^1.1.7
+  isar_plus: ^1.1.9
+  isar_plus_flutter_libs: ^1.1.9
   path_provider: ^2.1.5
 
 dev_dependencies:
