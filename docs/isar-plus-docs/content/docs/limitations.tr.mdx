@@ -49,19 +49,20 @@ Isar Plus; mobil, masaüstü ve web platformlarında çalışır. Her platformun
     ### Kısıtlar
     
     ```dart
-    // ❌ Senkron API'ler web'de desteklenmez
-    try {
-      final user = isar.users.getSync(1);
-    } catch (e) {
-      // Web'de UnsupportedError fırlatır
-    }
+    // ❌ Watcher'lar web'de desteklenmez
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
     
-    // ✅ Bunun yerine async API'leri kullanın
-    final user = await isar.users.get(1);
+    // ✅ Hem sync hem async API'ler web'de çalışır
+    final user = isar.users.get(1);
+    await isar.users.getAsync(1);
+    
+    isar.write((isar) => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     ```
     
-    <Callout type="error">
-      Web'de her zaman asenkron API'leri kullanın!
+    <Callout type="info">
+      Web'de async metodlar ana thread'de çalışır (isolate desteği yok).
     </Callout>
   </Tab>
   <Tab value="Tüm Platformlar">
@@ -121,44 +122,50 @@ class LargeDocument {
 <Tabs items={['Desteklenmez', 'Desteklenir']}>
   <Tab value="Desteklenmez">
     ```dart
-    // ❌ Senkron koleksiyon yardımcıları
-    isar.users.getSync(1);
-    isar.users.putSync(user);
-    isar.users.deleteSync(1);
+    // ❌ Watcher'lar (native isolate gerektirir)
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    isar.users.watchDetailed().listen((change) {});
     
-    // ❌ Metin yardımcıları
+    // ❌ Metin işlemleri
     Isar.splitWords('hello world');
-    isar.users.filter().nameMatches('pattern');
-    
-    // ❌ Bazı senkron transaction metodları
-    isar.write((isar) {
-      isar.users.put(user);
-    });
+    isar.users.filter().nameMatches('pattern*');
     ```
   </Tab>
   <Tab value="Desteklenir">
     ```dart
-    // ✅ Tüm async işlemler
-    await isar.users.getAsync(1);
+    // ✅ Senkron işlemler
+    final user = isar.users.get(1);
+    final users = isar.users.getAll([1, 2, 3]);
+    
+    isar.write((isar) => isar.users.put(user));
+    isar.read((isar) => isar.users.where().findAll());
+    
+    // ✅ Async işlemler (web'de ana thread'de çalışır)
     await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.readAsync((isar) => isar.users.get(1));
+    await isar.users.getAsync(1);
+    await isar.users.getAllAsync([1, 2, 3]);
     
     // ✅ Filtreler ve sorgular
-    await isar.users.filter()
+    isar.users.filter()
       .nameContains('John')
-      .findAllAsync();
+      .findAll();
     
     // ✅ Where cümleleri
-    await isar.users.where()
+    isar.users.where()
       .nameEqualTo('John')
-      .findAllAsync();
-    
-    // ✅ Watcher'lar
-    isar.users.watchObject(1).listen((user) {
-      print(user?.name);
-    });
+      .findAll();
     ```
   </Tab>
 </Tabs>
+
+<Callout type="warning">
+  **Web Async Davranışı:** Web'de `writeAsync`, `readAsync`, `getAsync` vb. 
+  ana thread'de çalışır (ayrı isolate'de değil). Bu, native platformlardaki 
+  performans avantajlarını sağlamaz, ancak kodunuz tüm platformlarda 
+  değişiklik olmadan çalışır.
+</Callout>
 
 ### IndexedDB Yedek Kısıtları
 
@@ -272,14 +279,14 @@ final document = Document()
 ### Web Async Deseni
 
 ```dart
-// Platforma özel kod
+// Platform-özgü kod
 class IsarHelper {
   static Future<User?> getUser(Isar isar, int id) async {
     if (kIsWeb) {
-      // Web'de daima async
-      return await isar.users.get(id);
+      // Web'de her zaman sync kullan
+      return isar.users.get(id);
     } else {
-      // Native'de sync kullanılabilir
+      // Native'de sync veya async kullanılabilir
       return isar.users.getSync(id);
     }
   }
@@ -344,11 +351,22 @@ void configureIsar() {
 
 1. **Platformlar Arası Kod Yazın**
    ```dart
-   // ✅ Her yerde çalışır
-   await isar.writeAsync((isar) => isar.users.put(user));
-   
-   // ❌ Web'de çalışmaz
+   // ✅ Sync her yerde çalışır
    isar.write((isar) => isar.users.put(user));
+   final user = isar.users.get(1);
+   
+   // ⚠️ Async sadece native'de çalışır (mobil/masaüstü)
+   // Web'de UnsupportedError fırlatır
+   await isar.writeAsync((isar) => isar.users.put(user));
+   ```
+   
+   ```dart
+   // Platform-farkında desen
+   if (kIsWeb) {
+     isar.write((isar) => isar.users.put(user));
+   } else {
+     await isar.writeAsync((isar) => isar.users.put(user));
+   }
    ```
 
 2. **Hedef Platformlarda Test Edin**

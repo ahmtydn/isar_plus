@@ -49,19 +49,20 @@ Isar Plus works across mobile, desktop, and web platforms. Each platform has dif
     ### Limitations
     
     ```dart
-    // ❌ Synchronous APIs not supported on web
-    try {
-      final user = isar.users.getSync(1);
-    } catch (e) {
-      // Throws UnsupportedError on web
-    }
+    // ❌ Watchers not supported on web
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
     
-    // ✅ Use async APIs instead
-    final user = await isar.users.get(1);
+    // ✅ Both sync and async APIs work on web
+    final user = isar.users.get(1);
+    await isar.users.getAsync(1);
+    
+    isar.write((isar) => isar.users.put(user));
+    await isar.writeAsync((isar) => isar.users.put(user));
     ```
     
-    <Callout type="error">
-      Always use asynchronous APIs on web!
+    <Callout type="info">
+      On web, async methods run on the main thread (no isolate support).
     </Callout>
   </Tab>
   <Tab value="All Platforms">
@@ -121,44 +122,51 @@ class LargeDocument {
 <Tabs items={['Not Supported', 'Supported']}>
   <Tab value="Not Supported">
     ```dart
-    // ❌ Synchronous collection helpers
-    isar.users.getSync(1);
-    isar.users.putSync(user);
-    isar.users.deleteSync(1);
+    // ❌ Watchers (require native isolates)
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    isar.users.watchDetailed().listen((change) {});
     
-    // ❌ Text helpers
+    // ❌ Text operations
     Isar.splitWords('hello world');
-    isar.users.filter().nameMatches('pattern');
-    
-    // ❌ Some synchronous transaction methods
-    isar.write((isar) {
-      isar.users.put(user);
-    });
+    isar.users.filter().nameMatches('pattern*');
     ```
   </Tab>
   <Tab value="Supported">
     ```dart
-    // ✅ All async operations
-    await isar.users.getAsync(1);
+    // ✅ Synchronous operations
+    final user = isar.users.get(1);
+    final users = isar.users.getAll([1, 2, 3]);
+    
+    isar.write((isar) => isar.users.put(user));
+    isar.read((isar) => isar.users.where().findAll());
+    
+    // ✅ Async operations (run on main thread on web)
     await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.readAsync((isar) => isar.users.get(1));
+    await isar.users.getAsync(1);
+    await isar.users.getAllAsync([1, 2, 3]);
     
     // ✅ Filters and queries
-    await isar.users.filter()
+    isar.users.filter()
       .nameContains('John')
-      .findAllAsync();
+      .findAll();
     
     // ✅ Where clauses
-    await isar.users.where()
+    isar.users.where()
       .nameEqualTo('John')
-      .findAllAsync();
-    
-    // ✅ Watchers
-    isar.users.watchObject(1).listen((user) {
-      print(user?.name);
-    });
+      .findAll();
     ```
   </Tab>
 </Tabs>
+
+<Callout type="warning">
+  **Web Async Behavior:** On web, `writeAsync`, `readAsync`, `getAsync`, etc. 
+  run on the main thread (not in a separate isolate). This means they won't 
+  provide the same performance benefits as on native platforms, but your code 
+  will work across all platforms without modification.
+</Callout>
+
 
 ### IndexedDB Fallback Limitations
 
@@ -269,19 +277,21 @@ final document = Document()
   ..fileSize = await file.length();
 ```
 
-### Web Async Pattern
+### Cross-Platform Async Pattern
 
 ```dart
-// Platform-specific code
+// Both sync and async work on all platforms
 class IsarHelper {
-  static Future<User?> getUser(Isar isar, int id) async {
-    if (kIsWeb) {
-      // Always async on web
-      return await isar.users.get(id);
-    } else {
-      // Can use sync on native
-      return isar.users.getSync(id);
-    }
+  // ✅ Sync - recommended for web (better performance)
+  static User? getUser(Isar isar, int id) {
+    return isar.users.get(id);
+  }
+  
+  // ✅ Async - works everywhere
+  // Native: runs in separate isolate (non-blocking)
+  // Web: runs on main thread (blocking)
+  static Future<User?> getUserAsync(Isar isar, int id) {
+    return isar.users.getAsync(id);
   }
 }
 ```
@@ -344,12 +354,20 @@ void configureIsar() {
 
 1. **Write Cross-Platform Code**
    ```dart
-   // ✅ Works everywhere
-   await isar.writeAsync((isar) => isar.users.put(user));
-   
-   // ❌ Won't work on web
+   // ✅ Sync works everywhere (recommended for web)
    isar.write((isar) => isar.users.put(user));
+   final user = isar.users.get(1);
+   
+   // ✅ Async also works everywhere
+   // Native: runs in isolate (non-blocking)
+   // Web: runs on main thread (blocking)
+   await isar.writeAsync((isar) => isar.users.put(user));
    ```
+   
+   <Callout type="info">
+     For best web performance, prefer sync APIs. Async APIs are provided for 
+     code compatibility but don't offer performance benefits on web.
+   </Callout>
 
 2. **Test on Target Platforms**
    - Test web builds in different browsers
