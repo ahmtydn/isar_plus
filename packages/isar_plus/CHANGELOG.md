@@ -1,17 +1,3 @@
-## 1.1.9
-
-<!-- Release notes generated using configuration in .github/release.yml at 1.1.9 -->
-
-## What's Changed
-### Other Changes
-* Fix React Server Components RCE vulnerability by @vercel[bot] in https://github.com/ahmtydn/isar_plus/pull/64
-* enable synchronous APIs on web, clarify async behavior, and document watcher limitations. by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/66
-
-## New Contributors
-* @vercel[bot] made their first contribution in https://github.com/ahmtydn/isar_plus/pull/64
-
-**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.8...1.1.9
-
 ## 1.1.8
 
 
