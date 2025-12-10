@@ -135,8 +135,9 @@ class _InspectorConnectionStateHandlerState
   void initState() {
     super.initState();
     _connectionState = widget.client.connectionState;
-    _connectionSubscription =
-        widget.client.connectionStateChanged.listen((state) {
+    _connectionSubscription = widget.client.connectionStateChanged.listen((
+      state,
+    ) {
       if (mounted) {
         setState(() => _connectionState = state);
 
@@ -182,10 +183,7 @@ class _ReconnectingOverlay extends StatelessWidget {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text(
-                  'Reconnecting...',
-                  style: TextStyle(fontSize: 16),
-                ),
+                Text('Reconnecting...', style: TextStyle(fontSize: 16)),
                 SizedBox(height: 8),
                 Text(
                   'Hot reload/restart detected',
@@ -222,10 +220,7 @@ class _ConnectingOverlay extends StatelessWidget {
               children: [
                 const CircularProgressIndicator(),
                 const SizedBox(height: 16),
-                const Text(
-                  'Connecting...',
-                  style: TextStyle(fontSize: 16),
-                ),
+                const Text('Connecting...', style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 8),
                 Text(
                   'Attempt $retryCount of $maxRetries',

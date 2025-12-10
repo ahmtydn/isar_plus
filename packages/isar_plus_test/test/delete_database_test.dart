@@ -60,16 +60,10 @@ void main() {
     });
 
     isarTest('Accessing closed Isar throws IsarNotReadyError', () async {
-      final isar = await openTempIsar(
-        [ModelSchema],
-        closeAutomatically: false,
-      );
+      final isar = await openTempIsar([ModelSchema], closeAutomatically: false);
       isar.close();
 
-      expect(
-        () => isar.models.count(),
-        throwsA(isA<IsarNotReadyError>()),
-      );
+      expect(() => isar.models.count(), throwsA(isA<IsarNotReadyError>()));
     });
 
     isarTest(
