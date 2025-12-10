@@ -94,29 +94,20 @@ void main() {
       },
     );
 
-    isarTest(
-      'Query on closed Isar throws IsarNotReadyError',
-      () async {
-        final isar = await openTempIsar(
-          [ModelSchema],
-          closeAutomatically: false,
-        );
-        isar.write((isar) {
-          isar.models.put(Model(1));
-        });
+    isarTest('Query on closed Isar throws IsarNotReadyError', () async {
+      final isar = await openTempIsar([ModelSchema], closeAutomatically: false);
+      isar.write((isar) {
+        isar.models.put(Model(1));
+      });
 
-        // Get a query reference while Isar is still open
-        final query = isar.models.where().build();
+      // Get a query reference while Isar is still open
+      final query = isar.models.where().build();
 
-        // Close the Isar instance
-        isar.close();
+      // Close the Isar instance
+      isar.close();
 
-        // Using the query after closing should throw IsarNotReadyError
-        expect(
-          query.findAll,
-          throwsA(isA<IsarNotReadyError>()),
-        );
-      },
-    );
+      // Using the query after closing should throw IsarNotReadyError
+      expect(query.findAll, throwsA(isA<IsarNotReadyError>()));
+    });
   });
 }
