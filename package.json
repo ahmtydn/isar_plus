@@ -1,6 +1,10 @@
 {
   "name": "isar_plus",
   "version": "0.0.0-placeholder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmtydn/isar_plus"
+  },
   "files": [
     "isar.wasm",
     "isar.js"

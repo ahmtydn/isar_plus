@@ -145,6 +145,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download Binaries (for pub.dev)
+        run: sh tool/download_binaries.sh
+      - name: Adjust Version
+        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
+      - name: Update npm
+        run: npm install -g npm@latest
+      - name: Publish to npm
+        run: npm publish --provenance
+
       - name: Update CHANGELOG files
         run: |
           # Wait a moment for the release to be fully created
@@ -172,15 +181,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download Binaries (for pub.dev)
-        run: sh tool/download_binaries.sh
-      - name: Adjust Version
-        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
-      - name: Update npm
-        run: npm install -g npm@latest
-      - name: Publish to npm
-        run: npm publish --provenance
       - name: pub.dev credentials
         run: |
           mkdir -p $HOME/.config/dart
