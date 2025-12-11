@@ -48,9 +48,10 @@ class _IsarImpl extends Isar {
     final namePtr = IsarCore._toNativeString(name);
     final directoryPtr = IsarCore._toNativeString(directory);
     final schemaPtr = IsarCore._toNativeString(schemaJson);
-    final encryptionKeyPtr = encryptionKey != null
-        ? IsarCore._toNativeString(encryptionKey)
-        : nullptr;
+    final encryptionKeyPtr =
+        encryptionKey != null
+            ? IsarCore._toNativeString(encryptionKey)
+            : nullptr;
 
     final isarPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarInstance>>();
     IsarCore.b
@@ -234,9 +235,8 @@ class _IsarImpl extends Isar {
   }();
 
   @override
-  late final List<IsarSchema> schemas = generatedSchemas
-      .map((e) => e.schema)
-      .toList();
+  late final List<IsarSchema> schemas =
+      generatedSchemas.map((e) => e.schema).toList();
 
   @override
   bool get isOpen => _ptr != null;
@@ -350,6 +350,17 @@ class _IsarImpl extends Isar {
     T Function(Isar isar, P param) callback, {
     String? debugName,
   }) {
+    if (IsarCore.kIsWeb) {
+      throw UnsupportedError(
+        'readAsync() is not supported on web '
+        'because isolates are not available. Use the synchronous read() method '
+        'instead:\n'
+        '  isar.read((isar) => ...);\n'
+        'Or use get()/getAll() directly:\n'
+        '  final user = isar.users.get(id);',
+      );
+    }
+
     _checkNotInTxn();
 
     final instance = instanceId;
@@ -374,6 +385,14 @@ class _IsarImpl extends Isar {
     T Function(Isar isar, P param) callback, {
     String? debugName,
   }) async {
+    if (IsarCore.kIsWeb) {
+      throw UnsupportedError(
+        'writeAsync() is not supported on web because isolates '
+        'are not available. Use the synchronous write() method instead:\n'
+        '  isar.write((isar) => isar.users.put(user));',
+      );
+    }
+
     _checkNotInTxn();
 
     final instance = instanceId;
