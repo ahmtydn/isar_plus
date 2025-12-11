@@ -49,20 +49,22 @@ Isar Plus works across mobile, desktop, and web platforms. Each platform has dif
     ### Limitations
     
     ```dart
+    // ❌ Async operations not supported on web (require isolates)
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    
     // ❌ Watchers not supported on web
     isar.users.watchLazy().listen((_) {});
     isar.users.watchObject(1).listen((user) {});
     
-    // ✅ Both sync and async APIs work on web
-    final user = isar.users.get(1);
-    await isar.users.getAsync(1);
-    
+    // ✅ Use sync APIs on web
     isar.write((isar) => isar.users.put(user));
-    await isar.writeAsync((isar) => isar.users.put(user));
+    final user = isar.users.get(1);
     ```
     
-    <Callout type="info">
-      On web, async methods run on the main thread (no isolate support).
+    <Callout type="error">
+      Async operations require isolates which are not available on web.
+      Use synchronous APIs instead!
     </Callout>
   </Tab>
   <Tab value="All Platforms">
@@ -122,6 +124,12 @@ class LargeDocument {
 <Tabs items={['Not Supported', 'Supported']}>
   <Tab value="Not Supported">
     ```dart
+    // ❌ Async transactions (require isolates)
+    await isar.readAsync((isar) => isar.users.get(1));
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    await isar.users.getAllAsync([1, 2, 3]);
+    
     // ❌ Watchers (require native isolates)
     isar.users.watchLazy().listen((_) {});
     isar.users.watchObject(1).listen((user) {});
@@ -134,18 +142,12 @@ class LargeDocument {
   </Tab>
   <Tab value="Supported">
     ```dart
-    // ✅ Synchronous operations
+    // ✅ Synchronous operations (use these on web)
     final user = isar.users.get(1);
     final users = isar.users.getAll([1, 2, 3]);
     
     isar.write((isar) => isar.users.put(user));
     isar.read((isar) => isar.users.where().findAll());
-    
-    // ✅ Async operations (run on main thread on web)
-    await isar.writeAsync((isar) => isar.users.put(user));
-    await isar.readAsync((isar) => isar.users.get(1));
-    await isar.users.getAsync(1);
-    await isar.users.getAllAsync([1, 2, 3]);
     
     // ✅ Filters and queries
     isar.users.filter()
@@ -159,13 +161,6 @@ class LargeDocument {
     ```
   </Tab>
 </Tabs>
-
-<Callout type="warning">
-  **Web Async Behavior:** On web, `writeAsync`, `readAsync`, `getAsync`, etc. 
-  run on the main thread (not in a separate isolate). This means they won't 
-  provide the same performance benefits as on native platforms, but your code 
-  will work across all platforms without modification.
-</Callout>
 
 
 ### IndexedDB Fallback Limitations
@@ -277,21 +272,19 @@ final document = Document()
   ..fileSize = await file.length();
 ```
 
-### Cross-Platform Async Pattern
+### Web Async Pattern
 
 ```dart
-// Both sync and async work on all platforms
+// Platform-specific code for async operations
 class IsarHelper {
-  // ✅ Sync - recommended for web (better performance)
-  static User? getUser(Isar isar, int id) {
-    return isar.users.get(id);
-  }
-  
-  // ✅ Async - works everywhere
-  // Native: runs in separate isolate (non-blocking)
-  // Web: runs on main thread (blocking)
-  static Future<User?> getUserAsync(Isar isar, int id) {
-    return isar.users.getAsync(id);
+  static Future<User?> getUser(Isar isar, int id) async {
+    if (kIsWeb) {
+      // Web: use sync API
+      return isar.users.get(id);
+    } else {
+      // Native: can use async for background processing
+      return isar.users.getAsync(id);
+    }
   }
 }
 ```
@@ -354,20 +347,23 @@ void configureIsar() {
 
 1. **Write Cross-Platform Code**
    ```dart
-   // ✅ Sync works everywhere (recommended for web)
+   // ✅ Sync works everywhere
    isar.write((isar) => isar.users.put(user));
    final user = isar.users.get(1);
    
-   // ✅ Async also works everywhere
-   // Native: runs in isolate (non-blocking)
-   // Web: runs on main thread (blocking)
+   // ⚠️ Async only works on native (mobile/desktop)
+   // Throws UnsupportedError on web
    await isar.writeAsync((isar) => isar.users.put(user));
    ```
    
-   <Callout type="info">
-     For best web performance, prefer sync APIs. Async APIs are provided for 
-     code compatibility but don't offer performance benefits on web.
-   </Callout>
+   ```dart
+   // Platform-aware pattern
+   if (kIsWeb) {
+     isar.write((isar) => isar.users.put(user));
+   } else {
+     await isar.writeAsync((isar) => isar.users.put(user));
+   }
+   ```
 
 2. **Test on Target Platforms**
    - Test web builds in different browsers

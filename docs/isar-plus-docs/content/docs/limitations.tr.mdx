@@ -49,20 +49,22 @@ Isar Plus; mobil, masaüstü ve web platformlarında çalışır. Her platformun
     ### Kısıtlar
     
     ```dart
+    // ❌ Async API'ler web'de desteklenmez (isolate gerektirir)
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    
     // ❌ Watcher'lar web'de desteklenmez
     isar.users.watchLazy().listen((_) {});
     isar.users.watchObject(1).listen((user) {});
     
-    // ✅ Hem sync hem async API'ler web'de çalışır
-    final user = isar.users.get(1);
-    await isar.users.getAsync(1);
-    
+    // ✅ Sync API'leri kullanın
     isar.write((isar) => isar.users.put(user));
-    await isar.writeAsync((isar) => isar.users.put(user));
+    final user = isar.users.get(1);
     ```
     
-    <Callout type="info">
-      Web'de async metodlar ana thread'de çalışır (isolate desteği yok).
+    <Callout type="error">
+      Async işlemler isolate gerektirir ve web'de mevcut değildir.
+      Senkron API'leri kullanın!
     </Callout>
   </Tab>
   <Tab value="Tüm Platformlar">
