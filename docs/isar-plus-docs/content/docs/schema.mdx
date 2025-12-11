@@ -1,0 +1,313 @@
+---
+title: Schema
+description: Define your data models with Isar collections
+icon: Database
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Schema
+
+When you use Isar to store your app's data, you're dealing with collections. A collection is like a database table and can only contain a single type of Dart object.
+
+## Anatomy of a Collection
+
+You define each Isar collection by annotating a class with `@collection` or `@Collection()`.
+
+```dart
+@collection
+class User {
+  Id? id;
+
+  String? firstName;
+
+  String? lastName;
+}
+```
+
+<Callout>
+  To persist a field, Isar must have access to it. Make it public or provide getter and setter methods.
+</Callout>
+
+## Data Types
+
+Isar supports the following data types:
+
+### Primitive Types
+
+```dart
+@collection
+class PrimitiveTypes {
+  PrimitiveTypes(this.id);
+
+  final int id;
+
+  bool? boolValue;
+  int? intValue;
+  double? doubleValue;
+  DateTime? dateValue;
+  String? stringValue;
+}
+```
+
+### Lists
+
+```dart
+@collection
+class ListTypes {
+  ListTypes(this.id);
+
+  final int id;
+
+  List<bool>? boolList;
+  List<int>? intList;
+  List<double>? doubleList;
+  List<DateTime>? dateList;
+  List<String>? stringList;
+}
+```
+
+<Callout type="warning">
+  Lists cannot contain null values. Use nullable types instead.
+</Callout>
+
+### Enums
+
+```dart
+enum Status { active, inactive, pending }
+
+@collection
+class Task {
+  Task(this.id);
+
+  final int id;
+
+  @enumerated
+  Status? status;
+
+  @Enumerated(EnumType.ordinal)
+  Status? ordinalStatus;
+
+  @Enumerated(EnumType.name)
+  Status? namedStatus;
+}
+```
+
+<Tabs items={['EnumType.ordinal', 'EnumType.name', 'EnumType.value']}>
+  <Tab value="EnumType.ordinal">
+    Stores the index of the enum value (default).
+    ```dart
+    // Status.active = 0
+    // Status.inactive = 1
+    // Status.pending = 2
+    ```
+  </Tab>
+  <Tab value="EnumType.name">
+    Stores the name of the enum value as String.
+    ```dart
+    // Status.active = 'active'
+    // Status.inactive = 'inactive'
+    ```
+  </Tab>
+  <Tab value="EnumType.value">
+    Stores a custom value defined in the enum.
+    ```dart
+    enum Status {
+      @EnumValue(1) active,
+      @EnumValue(2) inactive,
+      @EnumValue(3) pending,
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Embedded Objects
+
+```dart
+@embedded
+class Address {
+  String? street;
+  String? city;
+  String? country;
+}
+
+@collection
+class Person {
+  Person(this.id);
+
+  final int id;
+
+  String? name;
+
+  Address? address;
+
+  List<Address>? addresses;
+}
+```
+
+## Ids
+
+Every collection needs an `Id` field to uniquely identify objects.
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id;
+
+  String? name;
+}
+```
+
+<Callout type="info">
+  For auto-incrementing IDs, use the `collection.autoIncrement()` method when inserting:
+  ```dart
+  isar.write((isar) {
+    final user = User(isar.users.autoIncrement());
+    isar.users.put(user);
+  });
+  ```
+</Callout>
+
+### Custom IDs
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id; // You manage the ID
+
+  String? name;
+}
+```
+
+## Field Annotations
+
+### @Index
+
+Create indexes for better query performance:
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id;
+
+  @Index()
+  String? email;
+
+  @Index(type: IndexType.value)
+  String? username;
+
+  @Index(caseSensitive: false)
+  String? name;
+}
+```
+
+### @Ignore
+
+Exclude fields from storage:
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id;
+
+  String? name;
+
+  @ignore
+  String? temporaryData; // Not stored
+}
+```
+
+### @Name
+
+Rename fields in the database:
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id;
+
+  @Name("user_name")
+  String? name;
+}
+```
+
+### @Size
+
+Limit string size:
+
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id;
+
+  @Size(max: 100)
+  String? shortText;
+
+  @Size(max: 1000)
+  String? longText;
+}
+```
+
+## Composite Indexes
+
+Create indexes on multiple fields:
+
+```dart
+@collection
+@Index(composite: ['lastName', 'age'])
+class User {
+  User(this.id);
+
+  final int id;
+
+  String? firstName;
+
+  String? lastName;
+
+  int? age;
+}
+```
+
+## Modeling Relationships
+
+Isar Plus v4 models relationships with embedded objects or manual ID fields instead of runtime link types. See the dedicated [Relationships](./relationships) page for concrete examples lifted from the codebase.
+
+## Migration
+
+Isar handles schema migrations automatically in most cases:
+
+- Adding new fields
+- Removing fields
+- Changing field types (with data loss)
+- Adding/removing indexes
+
+<Callout type="error">
+  Changing the type of an existing field will result in data loss for that field.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card title="CRUD Operations" href="/docs/crud">
+    Learn how to create, read, update, and delete data
+  </Card>
+  <Card title="Indexes" href="/docs/indexes">
+    Optimize your queries with indexes
+  </Card>
+  <Card title="Queries" href="/docs/queries">
+    Build powerful queries
+  </Card>
+</Cards>

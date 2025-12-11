@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)]
+
 use crate::{isar_to_i64, CIsarInstance, CIsarTxn, CIsarWriter, IsarI64};
 use isar_core::core::error::IsarError;
 use isar_core::core::insert::IsarInsert;

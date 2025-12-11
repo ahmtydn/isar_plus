@@ -1,0 +1,187 @@
+---
+title: Data Migration
+description: Implement data migration strategies for schema changes and version updates
+icon: Database
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Data Migration
+
+Isar automatically migrates your database schemas if you add or remove collections, fields, or indexes. Sometimes you might want to migrate your data as well. Isar does not offer a built-in solution because it would impose arbitrary migration restrictions. It is easy to implement migration logic that fits your needs.
+
+We want to use a single version for the entire database in this example. We use shared preferences to store the current version and compare it to the version we want to migrate to. If the versions do not match, we migrate the data and update the version.
+
+<Callout type="info" title="Flexible Versioning">
+You could also give each collection its own version and migrate them individually.
+</Callout>
+
+## Schema Evolution Example
+
+Imagine we have a user collection with a birthday field. In version 2 of our app, we need an additional birth year field to query users based on age.
+
+<Tabs items={['Version 1', 'Version 2']}>
+<Tab value="Version 1">
+```dart title="user_v1.dart"
+@collection
+class User {
+  Id? id;
+
+  late String name;
+
+  late DateTime birthday;
+}
+```
+</Tab>
+<Tab value="Version 2">
+```dart title="user_v2.dart"
+@collection
+class User {
+  Id? id;
+
+  late String name;
+
+  late DateTime birthday;
+
+  short get birthYear => birthday.year;
+}
+```
+</Tab>
+</Tabs>
+
+The problem is the existing user models will have an empty `birthYear` field because it did not exist in version 1. We need to migrate the data to set the `birthYear` field.
+
+## Implementation
+
+<Steps>
+### Check Current Version
+
+Use SharedPreferences to track the database version and determine if migration is needed.
+
+### Perform Migration
+
+Loop through all records and update them with the new field values.
+
+### Update Version
+
+Mark the migration as complete by updating the stored version number.
+</Steps>
+
+```dart title="main.dart"
+import 'package:isar_plus/isar_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
+  final dir = await getApplicationDocumentsDirectory();
+  
+  final isar = Isar.open(
+    schemas: [UserSchema],
+    directory: dir.path,
+  );
+
+  await performMigrationIfNeeded(isar);
+
+  runApp(MyApp(isar: isar));
+}
+
+Future<void> performMigrationIfNeeded(Isar isar) async {
+  final prefs = await SharedPreferences.getInstance();
+  final currentVersion = prefs.getInt('version') ?? 2;
+  
+  switch(currentVersion) {
+    case 1:
+      await migrateV1ToV2(isar);
+      break;
+    case 2:
+      // If the version is not set (new installation) or already 2, 
+      // we do not need to migrate
+      return;
+    default:
+      throw Exception('Unknown version: $currentVersion');
+  }
+
+  // Update version
+  await prefs.setInt('version', 2);
+}
+
+Future<void> migrateV1ToV2(Isar isar) async {
+  final userCount = await isar.users.count();
+
+  // We paginate through the users to avoid loading all users 
+  // into memory at once
+  for (var i = 0; i < userCount; i += 50) {
+    final users = await isar.users
+      .where()
+      .offset(i)
+      .limit(50)
+      .findAll();
+      
+    await isar.writeAsync((isar) async {
+      // We don't need to update anything since the birthYear 
+      // getter is used
+      await isar.users.putAll(users);
+    });
+  }
+}
+```
+
+## Best Practices
+
+<Callout type="warn" title="Performance Consideration">
+If you have to migrate a lot of data, consider using a background isolate to prevent strain on the UI thread.
+</Callout>
+
+### Pagination
+
+Always process records in batches (50-100 records) to avoid memory issues:
+
+```dart
+for (var i = 0; i < totalCount; i += batchSize) {
+  final batch = await collection.where().offset(i).limit(batchSize).findAll();
+  // Process batch...
+}
+```
+
+### Error Handling
+
+Wrap migration logic in try-catch blocks and consider rollback strategies:
+
+```dart
+try {
+  await migrateV1ToV2(isar);
+  await prefs.setInt('version', 2);
+} catch (e) {
+  // Log error and keep old version
+  print('Migration failed: $e');
+  // Don't update version number
+}
+```
+
+### Version Management
+
+Consider using an enum for version tracking:
+
+```dart
+enum DatabaseVersion {
+  v1(1),
+  v2(2),
+  v3(3);
+
+  const DatabaseVersion(this.value);
+  final int value;
+}
+```
+
+### Testing Migrations
+
+Test migration logic thoroughly before deployment:
+
+```dart
+void testMigration() async {
+  // Create test database with v1 data
+  // Run migration
+  // Verify v2 data integrity
+}
+```

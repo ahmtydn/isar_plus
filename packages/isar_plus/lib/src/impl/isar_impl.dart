@@ -153,6 +153,7 @@ class _IsarImpl extends Isar {
     final library = IsarCore._library;
 
     final receivePort = ReceivePort();
+    final responses = StreamIterator(receivePort);
     final sendPort = receivePort.sendPort;
     final isolate = runIsolate('Isar open async', () async {
       try {
@@ -171,18 +172,29 @@ class _IsarImpl extends Isar {
         sendPort.send(receivePort.sendPort);
         await receivePort.first;
         isar.close();
-      } on Exception catch (e) {
+        sendPort.send('closed');
+      } on Object catch (e) {
         sendPort.send(e);
       }
     });
 
-    final response = await receivePort.first;
+    await responses.moveNext();
+    final response = responses.current;
     if (response is SendPort) {
       final isar = Isar.get(schemas: schemas, name: name);
       response.send(null);
+      await responses.moveNext();
+      final closeConfirmation = responses.current;
+      await responses.cancel();
+      receivePort.close();
+      if (closeConfirmation != 'closed') {
+        throw Exception('Unexpected response from background isolate');
+      }
       unawaited(isolate);
       return isar;
     } else {
+      await responses.cancel();
+      receivePort.close();
       throw Exception(response);
     }
   }
@@ -339,7 +351,14 @@ class _IsarImpl extends Isar {
     String? debugName,
   }) {
     if (IsarCore.kIsWeb) {
-      throw UnsupportedError('Watchers are not supported on the web');
+      throw UnsupportedError(
+        'readAsync() is not supported on web '
+        'because isolates are not available. Use the synchronous read() method '
+        'instead:\n'
+        '  isar.read((isar) => ...);\n'
+        'Or use get()/getAll() directly:\n'
+        '  final user = isar.users.get(id);',
+      );
     }
 
     _checkNotInTxn();
@@ -367,7 +386,11 @@ class _IsarImpl extends Isar {
     String? debugName,
   }) async {
     if (IsarCore.kIsWeb) {
-      throw UnsupportedError('Watchers are not supported on the web');
+      throw UnsupportedError(
+        'writeAsync() is not supported on web because isolates '
+        'are not available. Use the synchronous write() method instead:\n'
+        '  isar.write((isar) => isar.users.put(user));',
+      );
     }
 
     _checkNotInTxn();

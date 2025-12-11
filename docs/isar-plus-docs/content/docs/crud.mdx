@@ -1,0 +1,366 @@
+---
+title: Create, Read, Update, Delete
+description: Master CRUD operations with Isar Plus
+icon: Pencil
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Create, Read, Update, Delete
+
+Learn how to manipulate your Isar collections with CRUD operations.
+
+## Opening Isar
+
+Before you can do anything, you need an Isar instance. Each instance requires a directory with write permission.
+
+```dart title="main.dart" {5-9}
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path_provider/path_provider.dart';
+
+void main() async {
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = Isar.open(
+    schemas: [RecipeSchema, UserSchema],
+    directory: dir.path,
+  );
+}
+```
+
+<Callout>
+  You can open multiple instances with different names using the `name` parameter.
+</Callout>
+
+### Configuration Options
+
+| Config | Description |
+| --- | --- |
+| `name` | Open multiple instances with distinct names. Default: `"default"` |
+| `directory` | Storage location. Use `Isar.sqliteInMemory` for in-memory database |
+| `maxSizeMib` | Maximum size in MiB. Default: `2048` |
+| `relaxedDurability` | Trade durability for performance |
+
+<Tabs items={['Default Config', 'Custom Config', 'In-Memory']}>
+  <Tab value="Default Config">
+    ```dart
+    final isar = Isar.open(schemas: [UserSchema]);
+    ```
+  </Tab>
+  <Tab value="Custom Config">
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      name: 'myInstance',
+      directory: '/custom/path',
+      maxSizeMiB: 512,
+    );
+    ```
+  </Tab>
+  <Tab value="In-Memory">
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      directory: Isar.sqliteInMemory,
+    );
+    ```
+  </Tab>
+</Tabs>
+
+## Create (Insert)
+
+<Steps>
+
+### Create an Object
+
+```dart
+final user = User()
+  ..name = 'Jane Doe'
+  ..age = 28
+  ..email = 'jane@example.com';
+```
+
+### Insert with Write Transaction
+
+```dart
+await isar.writeAsync((isar) async {
+  isar.users.put(user);
+});
+```
+
+<Callout type="success">
+  Use `collection.autoIncrement()` to get an auto-incrementing ID when creating objects.
+</Callout>
+
+### Bulk Insert
+
+```dart
+final users = [
+  User()..name = 'Alice'..age = 25,
+  User()..name = 'Bob'..age = 30,
+  User()..name = 'Charlie'..age = 35,
+];
+
+await isar.writeAsync((isar) async {
+  isar.users.putAll(users);
+});
+```
+
+</Steps>
+
+<Callout type="warning">
+  Always use write transactions for data modifications!
+</Callout>
+
+## Read (Query)
+
+### Get by ID
+
+```dart
+final user = await isar.users.get(1);
+if (user != null) {
+  print('Found: ${user.name}');
+}
+```
+
+### Get Multiple by IDs
+
+```dart
+final users = await isar.users.getAll([1, 2, 3]);
+```
+
+### Get All
+
+```dart
+final allUsers = await isar.users.where().findAll();
+```
+
+### Find First
+
+```dart
+final firstUser = await isar.users.where().findFirst();
+```
+
+### Count
+
+```dart
+final count = await isar.users.count();
+print('Total users: $count');
+```
+
+## Update
+
+<Tabs items={['Update Object', 'Update Fields', 'Conditional Update']}>
+  <Tab value="Update Object">
+    ```dart
+    // Get the object
+    final user = await isar.users.get(1);
+    
+    if (user != null) {
+      // Modify it
+      user.name = 'Updated Name';
+      user.age = 30;
+      
+      // Save changes
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
+      });
+    }
+    ```
+  </Tab>
+  <Tab value="Update Fields">
+    ```dart
+    await isar.writeAsync((isar) async {
+      final user = await isar.users.get(1);
+      if (user != null) {
+        user.age = (user.age ?? 0) + 1;
+        isar.users.put(user);
+      }
+    });
+    ```
+  </Tab>
+  <Tab value="Conditional Update">
+    ```dart
+    await isar.writeAsync((isar) async {
+      final adults = await isar.users
+        .filter()
+        .ageGreaterThan(18)
+        .findAll();
+      
+      for (var user in adults) {
+        user.verified = true;
+        isar.users.put(user);
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  The `put` method acts as upsert - it inserts if the ID doesn't exist, updates if it does.
+</Callout>
+
+## Delete
+
+### Delete by ID
+
+```dart
+await isar.writeAsync((isar) async {
+  final success = isar.users.delete(1);
+  print('Deleted: $success');
+});
+```
+
+### Delete Multiple by IDs
+
+```dart
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
+  print('Deleted $count users');
+});
+```
+
+### Delete Object
+
+```dart
+await isar.writeAsync((isar) async {
+  final user = await isar.users.get(1);
+  if (user != null) {
+    isar.users.delete(user.id);
+  }
+});
+```
+
+### Delete All
+
+```dart
+await isar.writeAsync((isar) async {
+  isar.users.clear();
+});
+```
+
+<Callout type="error">
+  Be careful with `clear()` - it deletes all records in the collection!
+</Callout>
+
+### Delete with Filter
+
+```dart
+await isar.writeAsync((isar) async {
+  final deletedCount = await isar.users
+    .filter()
+    .ageLessThan(18)
+    .deleteAll();
+  print('Deleted $deletedCount users');
+});
+```
+
+## Transactions
+
+All write operations must be wrapped in a transaction:
+
+```dart
+await isar.writeAsync((isar) async {
+  // Create
+  final user = User()..name = 'Test';
+  isar.users.put(user);
+  
+  // Update
+  user.name = 'Updated';
+  isar.users.put(user);
+  
+  // Delete
+  isar.users.delete(user.id);
+  
+  // All operations are atomic
+});
+```
+
+<Callout type="success">
+  If an error occurs, all changes in the transaction are rolled back automatically.
+</Callout>
+
+### Read Transactions
+
+For better performance with multiple reads:
+
+```dart
+final results = await isar.readAsync((isar) async {
+  final users = await isar.users.where().findAll();
+  final count = isar.users.count();
+  return {'users': users, 'count': count};
+});
+```
+
+## Best Practices
+
+1. **Use Bulk Operations**
+   ```dart
+   // ✅ Good - Single transaction
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(manyUsers);
+   });
+   
+   // ❌ Bad - Multiple transactions
+   for (var user in manyUsers) {
+     await isar.writeAsync((isar) async {
+       isar.users.put(user);
+     });
+   }
+   ```
+
+2. **Minimize Transaction Scope**
+   ```dart
+   // ✅ Good
+   final data = prepareData();
+   await isar.writeAsync((isar) async {
+     isar.users.putAll(data);
+   });
+   
+   // ❌ Bad
+   await isar.writeAsync((isar) async {
+     final data = prepareData(); // Heavy operation in transaction
+     isar.users.putAll(data);
+   });
+   ```
+
+3. **Check Before Delete**
+   ```dart
+   await isar.writeAsync((isar) async {
+     final exists = await isar.users.get(id) != null;
+     if (exists) {
+       isar.users.delete(id);
+     }
+   });
+   ```
+
+## Error Handling
+
+```dart
+try {
+  await isar.writeAsync((isar) async {
+    isar.users.put(user);
+  });
+} catch (e) {
+  print('Error: $e');
+  // Transaction is automatically rolled back
+}
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Queries" href="/docs/queries">
+    Learn how to query your data efficiently
+  </Card>
+  <Card title="Indexes" href="/docs/indexes">
+    Optimize query performance with indexes
+  </Card>
+  <Card title="Transactions" href="/docs/transactions">
+    Deep dive into transactions
+  </Card>
+  <Card title="Watchers" href="/docs/watchers">
+    React to data changes in real-time
+  </Card>
+</Cards>

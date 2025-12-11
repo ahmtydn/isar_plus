@@ -1,0 +1,169 @@
+---
+title: Quick Start
+description: Get started with Isar Plus in your Flutter project
+icon: Rocket
+---
+
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Quick Start
+
+This guide will help you get started with Isar Plus in just a few minutes.
+
+<Callout type="success">
+  Isar Plus works on iOS, Android, Desktop, and Web with persistent storage via OPFS/IndexedDB.
+</Callout>
+
+## Installation
+
+<Steps>
+
+### Add Dependencies
+
+Add Isar Plus to your project:
+
+<Tabs items={['Flutter', 'Dart CLI']}>
+  <Tab value="Flutter">
+    ```yaml
+    dependencies:
+      isar_plus: {versions.isar_plus}
+      isar_plus_flutter_libs: {versions.isar_plus_flutter_libs}
+      path_provider: {versions.path_provider}
+
+    dev_dependencies:
+      build_runner: {versions.build_runner}
+    ```
+  </Tab>
+  <Tab value="Dart CLI">
+    ```yaml
+    dependencies:
+      isar_plus: {versions.isar_plus}
+
+    dev_dependencies:
+      build_runner: {versions.build_runner}
+    ```
+  </Tab>
+</Tabs>
+
+### Define Your Schema
+
+Create your first collection:
+
+```dart title="lib/models/user.dart"
+import 'package:isar_plus/isar_plus.dart';
+
+part 'user.g.dart';
+
+@collection
+class User {
+  User({required this.id});
+
+  final int id;
+
+  late String name;
+
+  int? age;
+
+  late String email;
+}
+```
+
+<Callout>
+  The `part` directive is required for code generation.
+</Callout>
+
+### Generate Code
+
+Run the code generator:
+
+```bash
+flutter pub run build_runner build
+```
+
+Or watch for changes:
+
+```bash
+flutter pub run build_runner watch
+```
+
+### Open Isar Instance
+
+Initialize Isar in your app:
+
+```dart title="lib/main.dart" {5-9}
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = Isar.open(
+    schemas: [UserSchema],
+    directory: dir.path,
+  );
+
+  runApp(MyApp(isar: isar));
+}
+```
+
+### Use Your Database
+
+Start storing and querying data:
+
+```dart
+// Create
+await isar.writeAsync((isar) async {
+  final user = User(id: isar.users.autoIncrement())
+    ..name = 'John Doe'
+    ..age = 25
+    ..email = 'john@example.com';
+  
+  isar.users.put(user);
+});
+
+// Read
+final allUsers = await isar.users.where().findAll();
+
+// Query
+final youngUsers = await isar.users
+  .filter()
+  .ageLessThan(30)
+  .findAll();
+
+// Update
+await isar.writeAsync((isar) async {
+  user.age = 26;
+  isar.users.put(user);
+});
+
+// Delete
+await isar.writeAsync((isar) async {
+  isar.users.delete(user.id);
+});
+```
+
+</Steps>
+
+## Next Steps
+
+<Cards>
+  <Card title="Schema" href="/docs/schema">
+    Learn about defining collections and fields
+  </Card>
+  <Card title="CRUD Operations" href="/docs/crud">
+    Master data manipulation
+  </Card>
+  <Card title="Queries" href="/docs/queries">
+    Build powerful queries
+  </Card>
+  <Card title="Indexes" href="/docs/indexes">
+    Optimize query performance
+  </Card>
+</Cards>
+
+<Callout type="warning">
+  Remember to always use write transactions for modifying data!
+</Callout>

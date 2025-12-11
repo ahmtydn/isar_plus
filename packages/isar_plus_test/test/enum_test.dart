@@ -99,6 +99,7 @@ class EnumModel {
 }
 
 void main() {
+  // TODO(ahmtydn): implement enum tests
   group('Enum', () {
     isarTest('Verify property types', () {});
 

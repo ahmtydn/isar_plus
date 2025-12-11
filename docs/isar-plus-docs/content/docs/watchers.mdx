@@ -1,0 +1,494 @@
+---
+title: Watchers
+description: React to database changes in real-time
+icon: Eye
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Watchers
+
+Watchers allow you to subscribe to changes in your database and react efficiently. Perfect for real-time UI updates and sync operations.
+
+<Callout type="success">
+  Watchers notify you after a transaction commits successfully and the target actually changes.
+</Callout>
+
+## Overview
+
+You can watch:
+- **Specific objects** - Get notified when one object changes
+- **Collections** - Get notified when any object in a collection changes
+- **Queries** - Get notified when query results change
+
+## Watching Objects
+
+Watch a specific object by its ID:
+
+```dart
+@collection
+class User {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+<Tabs items={['Full Object', 'Lazy']}>
+  <Tab value="Full Object">
+    ```dart
+    // Get the updated object
+    Stream<User?> userStream = isar.users.watchObject(5);
+    
+    userStream.listen((user) {
+      if (user == null) {
+        print('User deleted');
+      } else {
+        print('User changed: ${user.name}');
+      }
+    });
+    
+    // Trigger changes
+    final user = User()..id = 5..name = 'David'..age = 25;
+    await isar.writeAsync((isar) => isar.users.put(user));
+    // Output: User changed: David
+    
+    user.name = 'Mark';
+    await isar.writeAsync((isar) => isar.users.put(user));
+    // Output: User changed: Mark
+    
+    await isar.writeAsync((isar) => isar.users.delete(5));
+    // Output: User deleted
+    ```
+  </Tab>
+  <Tab value="Lazy">
+    ```dart
+    // Just get notified, don't fetch object
+    Stream<void> userStream = isar.users.watchObjectLazy(5);
+    
+    userStream.listen((_) {
+      print('User 5 changed');
+    });
+    
+    final user = User()..id = 5..name = 'David'..age = 25;
+    await isar.writeAsync((isar) => isar.users.put(user));
+    // Output: User 5 changed
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+  The object doesn't need to exist yet. The watcher will notify you when it's created.
+</Callout>
+
+### Fire Immediately
+
+Get the current value immediately:
+
+```dart
+Stream<User?> userStream = isar.users.watchObject(
+  5,
+  fireImmediately: true,
+);
+
+userStream.listen((user) {
+  print('User: ${user?.name}');
+});
+// Immediately outputs current value (or null)
+```
+
+## Watching Collections
+
+Watch all changes in a collection:
+
+<Tabs items={['Lazy', 'Full Objects']}>
+  <Tab value="Lazy">
+    ```dart
+    // Just get notified
+    Stream<void> usersStream = isar.users.watchLazy();
+    
+    usersStream.listen((_) {
+      print('A user changed');
+    });
+    
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
+    });
+    // Output: A user changed
+    ```
+  </Tab>
+  <Tab value="Full Objects">
+    ```dart
+    // Get all objects on each change
+    Stream<List<User>> usersStream = isar.users.watch();
+    
+    usersStream.listen((users) {
+      print('Users: ${users.map((u) => u.name).join(', ')}');
+    });
+    
+    await isar.writeAsync((isar) async {
+      isar.users.put(User()..name = 'Alice');
+    });
+    // Output: Users: Alice
+    ```
+    
+    <Callout type="warning">
+      Watching collections with full objects can be expensive for large collections!
+    </Callout>
+  </Tab>
+</Tabs>
+
+## Watching Queries
+
+Watch specific query results:
+
+```dart
+@collection
+class User {
+  Id? id;
+  late String name;
+  late int age;
+}
+```
+
+```dart
+// Build a query
+final adultsQuery = isar.users
+  .filter()
+  .ageGreaterThan(18)
+  .build();
+
+// Watch query results
+Stream<List<User>> adultsStream = adultsQuery.watch(
+  fireImmediately: true,
+);
+
+adultsStream.listen((adults) {
+  print('Adults: ${adults.map((u) => u.name).join(', ')}');
+});
+// Immediately outputs current results
+
+// Add a child (no notification)
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Child'..age = 10);
+});
+// No output - doesn't match query
+
+// Add an adult (triggers notification)
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Alice'..age = 25);
+});
+// Output: Adults: Alice
+
+// Add another adult
+await isar.writeAsync((isar) async {
+  isar.users.put(User()..name = 'Bob'..age = 30);
+});
+// Output: Adults: Alice, Bob
+```
+
+<Callout type="success">
+  Query watchers only notify when results actually change!
+</Callout>
+
+### Lazy Query Watching
+
+```dart
+final adultsQuery = isar.users
+  .filter()
+  .ageGreaterThan(18)
+  .build();
+
+Stream<void> adultsStream = adultsQuery.watchLazy();
+
+adultsStream.listen((_) {
+  print('Adult users changed');
+});
+```
+
+### Query Watcher Limitations
+
+<Callout type="warning">
+  When using `offset`, `limit`, or `distinct`, watchers may notify even when visible results haven't changed.
+</Callout>
+
+```dart
+// May over-notify
+final topUsers = isar.users
+  .where()
+  .sortByAge()
+  .limit(10)
+  .build();
+
+topUsers.watch().listen((users) {
+  // Might trigger even if top 10 didn't change
+});
+```
+
+## Real-World Examples
+
+### Flutter UI Updates
+
+```dart
+class UserListWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<User>>(
+      stream: isar.users.where().watch(fireImmediately: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return CircularProgressIndicator();
+        }
+        
+        final users = snapshot.data!;
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+            return ListTile(
+              title: Text(user.name),
+              subtitle: Text('Age: ${user.age}'),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+### User Profile
+
+```dart
+class UserProfileWidget extends StatelessWidget {
+  final int userId;
+  
+  const UserProfileWidget({required this.userId});
+  
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: isar.users.watchObject(userId, fireImmediately: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Text('User not found');
+        }
+        
+        final user = snapshot.data!;
+        return Column(
+          children: [
+            Text('Name: ${user.name}'),
+            Text('Age: ${user.age}'),
+          ],
+        );
+      },
+    );
+  }
+}
+```
+
+### Search Results
+
+```dart
+class SearchWidget extends StatefulWidget {
+  @override
+  _SearchWidgetState createState() => _SearchWidgetState();
+}
+
+class _SearchWidgetState extends State<SearchWidget> {
+  String searchQuery = '';
+  
+  @override
+  Widget build(BuildContext context) {
+    final query = isar.users
+      .filter()
+      .nameContains(searchQuery, caseSensitive: false)
+      .build();
+    
+    return Column(
+      children: [
+        TextField(
+          onChanged: (value) {
+            setState(() {
+              searchQuery = value;
+            });
+          },
+        ),
+        Expanded(
+          child: StreamBuilder<List<User>>(
+            stream: query.watch(fireImmediately: true),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return SizedBox();
+              
+              final users = snapshot.data!;
+              return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(users[index].name),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Sync to Server
+
+```dart
+class SyncService {
+  void startWatching() {
+    isar.users.watchLazy().listen((_) async {
+      await syncUsersToServer();
+    });
+  }
+  
+  Future<void> syncUsersToServer() async {
+    final users = await isar.users.where().findAll();
+    // Send to server...
+  }
+}
+```
+
+### Cache Invalidation
+
+```dart
+class CacheService {
+  final _cache = <int, User>{};
+  
+  void startWatching() {
+    isar.users.watchLazy().listen((_) {
+      _cache.clear();
+      print('Cache invalidated');
+    });
+  }
+  
+  Future<User?> getUser(int id) async {
+    if (_cache.containsKey(id)) {
+      return _cache[id];
+    }
+    
+    final user = await isar.users.get(id);
+    if (user != null) {
+      _cache[id] = user;
+    }
+    return user;
+  }
+}
+```
+
+## Performance Considerations
+
+<Tabs items={['Best Practices', 'Anti-Patterns']}>
+  <Tab value="Best Practices">
+    ```dart
+    // ✅ Use lazy watchers when you don't need data
+    isar.users.watchLazy().listen((_) {
+      // Just invalidate cache or flag for refresh
+      needsRefresh = true;
+    });
+    
+    // ✅ Watch specific queries, not entire collections
+    isar.users
+      .filter()
+      .statusEqualTo('active')
+      .watch()
+      .listen((activeUsers) {
+        // Handle active users
+      });
+    
+    // ✅ Cancel subscriptions when done
+    final subscription = isar.users.watchLazy().listen((_) {});
+    // Later...
+    subscription.cancel();
+    ```
+  </Tab>
+  <Tab value="Anti-Patterns">
+    ```dart
+    // ❌ Don't watch large collections with full data
+    isar.users.watch().listen((allUsers) {
+      // This refetches ALL users on ANY change
+    });
+    
+    // ❌ Don't perform heavy operations in listener
+    isar.users.watchLazy().listen((_) async {
+      // Heavy operation
+      await processAllUsers();
+    });
+    
+    // ❌ Don't forget to cancel subscriptions
+    isar.users.watchLazy().listen((_) {
+      // This keeps running forever if not cancelled
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Combining with StreamBuilder
+
+```dart
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<User>>(
+      stream: isar.users
+        .filter()
+        .ageGreaterThan(18)
+        .build()
+        .watch(fireImmediately: true),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        }
+        
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No users found');
+        }
+        
+        final users = snapshot.data!;
+        return ListView(
+          children: users.map((user) => 
+            ListTile(title: Text(user.name))
+          ).toList(),
+        );
+      },
+    );
+  }
+}
+```
+
+## Best Practices
+
+1. **Use Lazy Watchers** when you only need notifications
+2. **Watch Specific Queries** instead of entire collections
+3. **Cancel Subscriptions** when widgets are disposed
+4. **Avoid Heavy Operations** in watcher callbacks
+5. **Use fireImmediately** for initial UI state
+
+<Callout type="info">
+  Watchers are efficient and lightweight. Use them freely to create reactive UIs!
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card title="Queries" href="/docs/queries">
+    Learn how to build queries for watching
+  </Card>
+  <Card title="Transactions" href="/docs/transactions">
+    Understand when watchers trigger
+  </Card>
+  <Card title="Multi-Isolate" href="/docs/recipes/multi_isolate">
+    Use watchers across isolates
+  </Card>
+</Cards>

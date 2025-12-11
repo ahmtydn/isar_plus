@@ -1,0 +1,497 @@
+---
+title: FAQ
+description: Frequently asked questions about Isar Plus
+icon: HelpCircle
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Frequently Asked Questions
+
+Common questions about Isar Plus and Flutter databases.
+
+## General Questions
+
+<Accordions>
+  <Accordion title="Why do I need a database?">
+    Even with a backend database, local storage is essential for:
+    
+    - **Offline functionality** - Work without internet (subway, plane, rural areas)
+    - **Performance** - Instant data access without network latency
+    - **User experience** - Smooth app operation regardless of connection
+    - **Data caching** - Reduce server load and bandwidth usage
+    - **Privacy** - Keep sensitive data on device
+    
+    <Callout type="success">
+      Users expect apps to work seamlessly even with poor or no connection!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus vs Isar?">
+    Isar Plus is a community-maintained fork of the original Isar database:
+    
+    **Isar Plus Advantages:**
+    - ✅ Active maintenance and updates
+    - ✅ SQLite backend for better web support
+    - ✅ Community-driven development
+    - ✅ Regular bug fixes and improvements
+    - ✅ Enhanced web performance with OPFS
+    
+    **Migration:**
+    Most code is compatible. See the [Migration Guide](/docs/recipes/migrate_from_isar3).
+    
+    <Callout>
+      We recommend Isar Plus for all new projects and migrations from Isar 3.
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus vs Hive?">
+    Isar Plus is significantly more powerful:
+    
+    | Feature | Isar Plus | Hive |
+    | --- | --- | --- |
+    | Queries | ✅ Advanced | ❌ Limited |
+    | Indexes | ✅ Multi-type | ❌ Basic |
+    | Relationships | ✅ Yes | ❌ No |
+    | Transactions | ✅ ACID | ⚠️ Basic |
+    | Type Safety | ✅ Full | ⚠️ Partial |
+    | Performance | ⚡ Excellent | ✅ Good |
+    | Web Support | ✅ Full | ✅ Full |
+    
+    <Callout type="success">
+      Isar Plus was originally created as a Hive replacement and is now production-ready!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus vs SQLite?">
+    Both are excellent choices:
+    
+    **Isar Plus:**
+    - 🚀 Easier to use (no SQL)
+    - 💃 Type-safe queries
+    - ⚡ Often faster for complex queries
+    - 🎯 Built for Dart/Flutter
+    - 🔗 Native relationships
+    
+    **SQLite:**
+    - 📚 More established
+    - 🛠️ More tools available
+    - 💾 Smaller storage footprint
+    - 🌐 Universal compatibility
+    
+    <Callout>
+      Choose Isar Plus for Flutter-first development, SQLite for maximum compatibility.
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Performance Questions
+
+<Accordions>
+  <Accordion title="Is Isar Plus fast enough?">
+    Yes! Isar Plus is among the fastest mobile databases:
+    
+    **Benchmarks:**
+    - Insert: 50,000+ records/sec
+    - Query: Sub-millisecond for indexed queries
+    - Update: Similar to insert performance
+    
+    **Optimization Tips:**
+    - Use indexes for frequently queried fields
+    - Batch operations in single transactions
+    - Use lazy loading for large queries
+    
+    <Callout type="success">
+      Isar Plus is fast enough for 99% of use cases. If you have issues, you're probably doing something wrong!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="How do I optimize performance?">
+    Follow these best practices:
+    
+    ```dart
+    // ✅ Use indexes
+    @collection
+    class User {
+      Id? id;
+      @Index() late String email;
+    }
+    
+    // ✅ Bulk operations
+    await isar.writeAsync((isar) => isar.users.putAll(users));
+    
+    // ✅ Where clauses
+    await isar.users.where().emailEqualTo('x').findAllAsync();
+    
+    // ❌ Avoid
+    for (var user in users) {
+      await isar.writeAsync((isar) => isar.users.put(user));
+    }
+    ```
+    
+    See [Indexes](/docs/indexes) and [Transactions](/docs/transactions) for details.
+  </Accordion>
+
+  <Accordion title="Why are where clauses better than filters?">
+    Where clauses use indexes for direct lookups:
+    
+    ```dart
+    // ⚡ Fast - uses index (O(log n))
+    await isar.users.where()
+      .emailEqualTo('john@example.com')
+      .findAll();
+    
+    // 🐌 Slow - scans all records (O(n))
+    await isar.users.filter()
+      .emailEqualTo('john@example.com')
+      .findAll();
+    ```
+    
+    **When to use each:**
+    - Where: Indexed fields, large datasets
+    - Filter: Non-indexed fields, complex conditions
+    
+    <Callout type="info">
+      You choose which index to use. You know your data best!
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Usage Questions
+
+<Accordions>
+  <Accordion title="Do I need to use indexes?">
+    No, but they're highly recommended:
+    
+    **Without indexes:**
+    - ✅ Simpler schema
+    - ✅ Faster writes
+    - ❌ Slower queries
+    - ❌ No where clauses
+    
+    **With indexes:**
+    - ⚡ Much faster queries
+    - ✅ Where clause support
+    - ✅ Efficient sorting
+    - ⚠️ Slightly slower writes
+    
+    <Callout>
+      For small collections (&lt;1000 items), indexes might not be necessary. For larger collections, they're essential!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Can I use Isar Plus with multiple isolates?">
+    Yes! Isar Plus has excellent multi-isolate support:
+    
+    ```dart
+    // Main isolate
+    final isar = Isar.open(schemas:[UserSchema]);
+    
+    // Background isolate
+    await compute((schemas) async {
+      final isar = Isar.open(schemas:[UserSchema]);
+      // Use same instance
+      await isar.users.where().findAll();
+    }, [UserSchema]);
+    ```
+    
+    See the [Multi-Isolate Recipe](/docs/recipes/multi_isolate) for details.
+  </Accordion>
+
+  <Accordion title="How do I handle migrations?">
+    Isar Plus handles most migrations automatically:
+    
+    **Automatic:**
+    - Adding new fields
+    - Removing fields
+    - Adding/removing indexes
+    - Changing field types (with data loss)
+    
+    **Manual handling needed:**
+    - Complex data transformations
+    - Preserving data when changing types
+    
+    ```dart
+    // Data migrations
+    final users = await isar.users.where().findAllAsync();
+    await isar.writeAsync((isar) async {
+      for (var user in users) {
+        // Transform data
+        user.newField = transformOldField(user.oldField);
+        isar.users.put(user);
+      }
+    });
+    ```
+    
+    See [Data Migration Recipe](/docs/recipes/data_migration).
+  </Accordion>
+
+  <Accordion title="Can I use Isar Plus on Web?">
+    Yes! Isar Plus has full web support:
+    
+    **Storage:**
+    - Chrome/Edge 102+: OPFS (fast)
+    - Safari/Firefox: IndexedDB (compatible)
+    
+    **Limitations:**
+    - Must use async APIs
+    - Some text helpers unavailable
+    
+    ```dart
+    // ✅ Works on all platforms
+    await isar.writeAsync((isar) => isar.users.put(user));
+    
+    // ❌ Won't work on web
+    isar.write((isar) => isar.users.put(user));
+    ```
+    
+    See [Limitations](/docs/limitations) for details.
+  </Accordion>
+
+  <Accordion title="Does Isar Plus support Android 16KB page size?">
+    Yes! Isar Plus fully supports Android 15+'s 16KB page size requirement:
+    
+    **Google Play Requirement:**
+    - **Deadline:** November 2025
+    - **Requirement:** All apps must support 16KB page sizes
+    - **Affects:** Android 15+ devices
+    
+    **Automatic Support:**
+    Isar Plus handles this automatically - no code changes needed!
+    
+    **For NDK Users:**
+    If your app uses other native libraries, ensure:
+    - NDK version r27 or higher
+    - Add linker flags to `android/app/build.gradle`:
+    
+    ```kotlin
+    android {
+        defaultConfig {
+            ndk {
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+            }
+        }
+        
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PAGE_SIZE=16384"
+                cFlags "-Wl,-z,max-page-size=16384"
+                cppFlags "-Wl,-z,max-page-size=16384"
+            }
+        }
+    }
+    ```
+    
+    <Callout type="success">
+      Isar Plus is ready for Android 15 and Google Play's 16KB requirement!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="How do I debug Isar issues?">
+    Several debugging tools available:
+    
+    **Isar Inspector:**
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      inspector: true, // Enable in debug mode
+    );
+    ```
+    
+    **Logging:**
+    ```dart
+    // Log all operations
+    Isar.logger = (level, message) {
+      print('[$level] $message');
+    };
+    ```
+    
+    **Manual inspection:**
+    ```dart
+    // Count records
+    print('Users: ${await isar.users.count()}');
+    
+    // Check data
+    final users = await isar.users.where().findAll();
+    print('All users: $users');
+    ```
+  </Accordion>
+</Accordions>
+
+## Size & Storage Questions
+
+<Accordions>
+  <Accordion title="Does Isar Plus increase app size?">
+    Yes, but minimally:
+    
+    **Native apps:**
+    - iOS/Android: ~1-1.5 MB
+    - Desktop: Similar
+    
+    **Web:**
+    - isar.wasm: ~1 MB (optimized)
+    - isar.js: ~50 KB (loader)
+    
+    <Callout>
+      The functionality you get far outweighs the size cost!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="How much storage does Isar Plus use?">
+    Storage depends on your data:
+    
+    **Factors:**
+    - Number of records
+    - Size of each record
+    - Number of indexes
+    - List fields
+    
+    **Typical sizes:**
+    - 1000 small objects: ~100 KB
+    - 10,000 medium objects: ~2 MB
+    - 100,000 large objects: ~50 MB
+    
+    ```dart
+    // Check database size
+    final file = File(isar.path);
+    final sizeInBytes = await file.length();
+    print('DB size: ${sizeInBytes ~/ 1024} KB');
+    ```
+  </Accordion>
+
+  <Accordion title="Can I compact the database?">
+    Yes, using compact on launch:
+    
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      compactOnLaunch: CompactCondition(
+        minFileSize: 100 * 1024 * 1024, // 100 MB
+        minRatio: 3.0, // Compact if 3x larger than needed
+      ),
+    );
+    ```
+    
+    Manual compaction not supported, but SQLite handles this efficiently.
+  </Accordion>
+</Accordions>
+
+## Troubleshooting
+
+<Accordions>
+  <Accordion title="Code generation fails">
+    Common issues:
+    
+    ```bash
+    # Make sure dependencies are correct
+    flutter pub get
+    
+    # Clean and rebuild
+    flutter pub run build_runner clean
+    flutter pub run build_runner build --delete-conflicting-outputs
+    
+    # Check part directive
+    # Must match: user.dart -> user.g.dart
+    part 'user.g.dart';
+    ```
+    
+    See [Quick Start](/docs/quickstart) for setup.
+  </Accordion>
+
+  <Accordion title="Transaction errors">
+    ```dart
+    // ❌ Error: Transaction already completed
+    await isar.writeAsync((isar) async {
+      isar.users.put(user);
+      throw Exception('Error');
+      // Transaction ends here
+      isar.users.put(user2); // Won't work
+    });
+    
+    // ✅ Solution: Don't reuse failed transactions
+    try {
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
+      });
+    } catch (e) {
+      // Start new transaction
+      await isar.writeAsync((isar) async {
+        isar.users.put(userBackup);
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="'Cannot open database' error">
+    Possible causes:
+    
+    1. **Invalid directory:**
+       ```dart
+       // Get valid directory
+       final dir = await getApplicationDocumentsDirectory();
+       final isar = Isar.open(
+         schemas: [UserSchema],
+         directory: dir.path,
+       );
+       ```
+    
+    2. **Permissions issue:**
+       - Check app permissions
+       - Verify directory is writable
+    
+    3. **Corrupted database:**
+       ```dart
+       // Delete and recreate
+       final file = File('path/to/default.isar');
+       if (await file.exists()) {
+         await file.delete();
+       }
+       ```
+  </Accordion>
+</Accordions>
+
+## Contributing
+
+<Accordions>
+  <Accordion title="How can I contribute?">
+    We welcome contributions!
+    
+    **Ways to contribute:**
+    - 🐛 Report bugs on [GitHub](https://github.com/ahmtydn/isar_plus/issues)
+    - 💡 Suggest features
+    - 📝 Improve documentation
+    - 🔧 Submit pull requests
+    - ⭐ Star the repository
+    - 🗣️ Share with others
+    
+    <Callout type="success">
+      Every contribution helps make Isar Plus better!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="The docs have an error">
+    Please help us fix it!
+    
+    1. [Open an issue](https://github.com/ahmtydn/isar_plus/issues/new)
+    2. Or submit a PR with the fix
+    
+    <Callout>
+      Documentation improvements are always welcome! 💪
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Next Steps
+
+<Cards>
+  <Card title="Quick Start" href="/docs/quickstart">
+    Get started with Isar Plus
+  </Card>
+  <Card title="Recipes" href="/docs/recipes">
+    Advanced patterns and solutions
+  </Card>
+  <Card title="GitHub" href="https://github.com/ahmtydn/isar_plus" external>
+    View source code and issues
+  </Card>
+</Cards>

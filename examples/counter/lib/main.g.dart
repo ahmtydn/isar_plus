@@ -60,8 +60,10 @@ Count deserializeCount(IsarReader reader) {
     final objectReader = IsarCore.readObject(reader, 2);
     if (objectReader.isNull) {
       _metadata = StepMetadata(
-        recordedAt:
-            DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal(),
+        recordedAt: DateTime.fromMillisecondsSinceEpoch(
+          0,
+          isUtc: true,
+        ).toLocal(),
       );
     } else {
       final embedded = deserializeStepMetadata(objectReader);
@@ -85,8 +87,10 @@ dynamic deserializeCountProp(IsarReader reader, int property) {
         final objectReader = IsarCore.readObject(reader, 2);
         if (objectReader.isNull) {
           return StepMetadata(
-            recordedAt:
-                DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal(),
+            recordedAt: DateTime.fromMillisecondsSinceEpoch(
+              0,
+              isUtc: true,
+            ).toLocal(),
           );
         } else {
           final embedded = deserializeStepMetadata(objectReader);
@@ -472,11 +476,15 @@ StepMetadata deserializeStepMetadata(IsarReader reader) {
   {
     final value = IsarCore.readLong(reader, 1);
     if (value == -9223372036854775808) {
-      _recordedAt =
-          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+      _recordedAt = DateTime.fromMillisecondsSinceEpoch(
+        0,
+        isUtc: true,
+      ).toLocal();
     } else {
-      _recordedAt =
-          DateTime.fromMicrosecondsSinceEpoch(value, isUtc: true).toLocal();
+      _recordedAt = DateTime.fromMicrosecondsSinceEpoch(
+        value,
+        isUtc: true,
+      ).toLocal();
     }
   }
   final String _note;

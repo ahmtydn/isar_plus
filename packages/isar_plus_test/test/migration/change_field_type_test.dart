@@ -11,12 +11,19 @@ class Model1 {
 
   int id;
 
-  //@Index()
-  //@Index(composite: [CompositeIndex('str')])
   String? value;
 
-  //@Index(composite: [CompositeIndex('value')])
   String str;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Model1 &&
+      id == other.id &&
+      value == other.value &&
+      str == other.str;
+
+  @override
+  int get hashCode => Object.hash(id, value, str);
 }
 
 @collection
@@ -26,12 +33,18 @@ class Model2 {
 
   int id;
 
-  //@Index()
-  //@Index(composite: [CompositeIndex('str')])
   int? value;
-
-  //@Index(composite: [CompositeIndex('value')])
   String str;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Model2 &&
+      id == other.id &&
+      value == other.value &&
+      str == other.str;
+
+  @override
+  int get hashCode => Object.hash(id, value, str);
 }
 
 void main() {
@@ -46,13 +59,13 @@ void main() {
     expect(isar1.close(), true);
 
     final isar2 = await openTempIsar([Model2Schema], name: isarName);
-    //final obj2A = Model2(1, null, 'OBJ1');
-    //final obj2B = Model2(2, null, 'OBJ2');
-    //isar2.model2s.verify([obj2A, obj2B]);
+    final obj2A = Model2(1, null, 'OBJ1');
+    final obj2B = Model2(2, null, 'OBJ2');
+    isar2.model2s.verify([obj2A, obj2B]);
     final obj2C = Model2(1, 123, 'OBJ3');
     isar2.write((isar) {
       return isar.model2s.put(obj2C);
     });
-    //await isar2.model2s.verify([obj2C, obj2B]);
+    isar2.model2s.verify([obj2C, obj2B]);
   });
 }

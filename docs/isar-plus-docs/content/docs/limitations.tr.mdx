@@ -1,0 +1,421 @@
+---
+title: Kısıtlamalar
+description: Platforma özgü kısıtlar ve sınırlamalar
+icon: AlertTriangle
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Kısıtlamalar
+
+Isar Plus; mobil, masaüstü ve web platformlarında çalışır. Her platformun farklı özellikleri ve sınırlamaları vardır.
+
+## Platform Genel Bakış
+
+<Tabs items={['VM (Mobil & Masaüstü)', 'Web', 'Tüm Platformlar']}>
+  <Tab value="VM (Mobil & Masaüstü)">
+    **Platformlar:** iOS, Android, macOS, Linux, Windows
+    
+    ### Kısıtlar
+    
+    - String ön ek where cümleleri ilk 1024 baytla sınırlıdır
+    - Maksimum nesne boyutu: 16MB
+    
+    <Callout type="success">
+      VM platformlarında sınırlamalar minimum düzeydedir ve tüm özellikler desteklenir!
+    </Callout>
+  </Tab>
+  <Tab value="Web">
+    **Platformlar:** Chrome, Firefox, Safari, Edge
+    
+    ### Depolama Arka Uçları
+    
+    <Cards>
+      <Card title="OPFS (Modern)" icon="Zap">
+        Chrome, Edge (v102+)
+        - Hızlı, yerel seviyede performans
+        - Kalıcı depolama
+        - Tam SQLite uyumluluğu
+      </Card>
+      <Card title="IndexedDB (Yedek)" icon="Database">
+        Safari, Firefox, eski tarayıcılar
+        - Bazı kısıtlamalar geçerli
+        - OPFS'den daha yavaş
+        - İyi uyumluluk
+      </Card>
+    </Cards>
+    
+    ### Kısıtlar
+    
+    ```dart
+    // ❌ Async API'ler web'de desteklenmez (isolate gerektirir)
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    
+    // ❌ Watcher'lar web'de desteklenmez
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    
+    // ✅ Sync API'leri kullanın
+    isar.write((isar) => isar.users.put(user));
+    final user = isar.users.get(1);
+    ```
+    
+    <Callout type="error">
+      Async işlemler isolate gerektirir ve web'de mevcut değildir.
+      Senkron API'leri kullanın!
+    </Callout>
+  </Tab>
+  <Tab value="Tüm Platformlar">
+    ### Genel Kısıtlar
+    
+    - Çok büyük transaction'lar desteklenmez (100MB altında tutun)
+    - Link'ler lazy load edilir (ilk erişimde küçük bir ek yük)
+    - Gömülü nesneler başka gömülü nesneler içeremez (tek seviye)
+  </Tab>
+</Tabs>
+
+## VM Kısıtları
+
+### String İndeksleme
+
+Bir string'in yalnızca ilk 1024 baytı indekslenir:
+
+```dart
+@collection
+class Article {
+  Id? id;
+
+  @Index()
+  late String title; // ✅ Genellikle yeterli
+
+  @Index()
+  late String content; // ⚠️ Sadece ilk 1024 bayt indekslenir
+}
+```
+
+<Callout>
+  Uzun metinlerde tam metin araması için çok girişli indeks desenini kullanın.
+</Callout>
+
+### Nesne Boyutu
+
+Maksimum nesne boyutu 16MB'dir:
+
+```dart
+@collection
+class LargeDocument {
+  Id? id;
+
+  // ⚠️ Büyük veriyle dikkatli olun
+  late List<int> fileData;
+}
+```
+
+<Callout type="warning">
+  Büyük dosyaları Isar dışında saklayın ve veritabanında yalnızca referanslarını tutun.
+</Callout>
+
+## Web Kısıtları
+
+### API Uyumluluğu
+
+<Tabs items={['Desteklenmez', 'Desteklenir']}>
+  <Tab value="Desteklenmez">
+    ```dart
+    // ❌ Watcher'lar (native isolate gerektirir)
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    isar.users.watchDetailed().listen((change) {});
+    
+    // ❌ Metin işlemleri
+    Isar.splitWords('hello world');
+    isar.users.filter().nameMatches('pattern*');
+    ```
+  </Tab>
+  <Tab value="Desteklenir">
+    ```dart
+    // ✅ Senkron işlemler
+    final user = isar.users.get(1);
+    final users = isar.users.getAll([1, 2, 3]);
+    
+    isar.write((isar) => isar.users.put(user));
+    isar.read((isar) => isar.users.where().findAll());
+    
+    // ✅ Async işlemler (web'de ana thread'de çalışır)
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.readAsync((isar) => isar.users.get(1));
+    await isar.users.getAsync(1);
+    await isar.users.getAllAsync([1, 2, 3]);
+    
+    // ✅ Filtreler ve sorgular
+    isar.users.filter()
+      .nameContains('John')
+      .findAll();
+    
+    // ✅ Where cümleleri
+    isar.users.where()
+      .nameEqualTo('John')
+      .findAll();
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warning">
+  **Web Async Davranışı:** Web'de `writeAsync`, `readAsync`, `getAsync` vb. 
+  ana thread'de çalışır (ayrı isolate'de değil). Bu, native platformlardaki 
+  performans avantajlarını sağlamaz, ancak kodunuz tüm platformlarda 
+  değişiklik olmadan çalışır.
+</Callout>
+
+### IndexedDB Yedek Kısıtları
+
+OPFS mevcut olmadığında IndexedDB ek kısıtlamalara sahiptir:
+
+```dart
+// ⚠️ Dönen değerler farklı olabilir
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
+  // OPFS: kesin sayıyı döner
+  // IndexedDB: farklı değer dönebilir
+});
+
+// ⚠️ clear() auto-increment'i sıfırlamaz
+await isar.writeAsync((isar) async {
+  isar.users.clear();
+});
+// OPFS: sonraki ID 1 olur
+// IndexedDB: önceki değerden devam eder
+```
+
+### Şema Geçişleri
+
+```dart
+// ⚠️ Web'de doğrulama daha gevşek
+@collection
+class User {
+  Id? id;
+  
+  late String name;
+  
+  // Tür değişimi daha az kontrol edilir
+  late int age; // Önceden String idi
+}
+```
+
+<Callout type="warning">
+  Yayın öncesi web'de şema değişikliklerini iki kez kontrol edin!
+</Callout>
+
+### Metin İşlemleri
+
+```dart
+// ❌ Web'de yok
+final words = Isar.splitWords('Hello World');
+
+// ❌ Wildcard eşleşme yok
+await isar.users.filter()
+  .nameMatches('John*')
+  .findAll();
+
+// ✅ Alternatif desenler kullanın
+await isar.users.filter()
+  .nameStartsWith('John')
+  .findAllAsync();
+
+await isar.users.filter()
+  .nameContains('John')
+  .findAllAsync();
+```
+
+## Geçici Çözümler
+
+### Büyük String'ler
+
+```dart
+// İçeriğin tamamını indekslemek yerine
+@collection
+class Article {
+  Id? id;
+
+  late String title;
+
+  late String content;
+
+  // Aranabilir anahtar kelimeler üretin
+  @Index(type: IndexType.value)
+  late List<String> keywords;
+}
+
+// Kaydetmeden önce anahtar kelimeler oluşturun
+final article = Article()
+  ..title = 'My Article'
+  ..content = 'Long content...'
+  ..keywords = generateKeywords(content);
+```
+
+### Dosya Depolama
+
+```dart
+@collection
+class Document {
+  Id? id;
+
+  late String name;
+
+  // İçeriği değil yolu saklayın
+  late String filePath;
+
+  late int fileSize;
+}
+
+// Dosyayı ayrı saklayın
+final file = File('path/to/file.pdf');
+final document = Document()
+  ..name = 'Document'
+  ..filePath = file.path
+  ..fileSize = await file.length();
+```
+
+### Web Async Deseni
+
+```dart
+// Platform-özgü kod
+class IsarHelper {
+  static Future<User?> getUser(Isar isar, int id) async {
+    if (kIsWeb) {
+      // Web'de her zaman sync kullan
+      return isar.users.get(id);
+    } else {
+      // Native'de sync veya async kullanılabilir
+      return isar.users.getSync(id);
+    }
+  }
+}
+```
+
+### Platformlar Arası Metin Arama
+
+```dart
+@collection
+class Product {
+  Id? id;
+
+  late String name;
+
+  // Küçük harf kopyasını saklayın
+  @Index(caseSensitive: false)
+  late String searchName;
+}
+
+// Kaydetmeden önce
+product.name = 'iPhone 15 Pro';
+product.searchName = product.name.toLowerCase();
+
+// Sorgu tüm platformlarda çalışır
+await isar.products
+  .filter()
+  .searchNameContains('iphone')
+  .findAll();
+```
+
+## Platform Tespiti
+
+```dart
+import 'package:flutter/foundation.dart';
+
+void configureIsar() {
+  if (kIsWeb) {
+    print('Web üzerinde sınırlamalarla çalışıyor');
+    // Yalnızca async API'ler
+  } else {
+    print('Yerel platformda çalışıyor');
+    // Performans için sync API'ler kullanılabilir
+  }
+}
+```
+
+## Tarayıcı Desteği
+
+| Tarayıcı | Sürüm | Depolama | Performans |
+| --- | --- | --- | --- |
+| Chrome | 102+ | OPFS | Mükemmel |
+| Edge | 102+ | OPFS | Mükemmel |
+| Safari | Tümü | IndexedDB | İyi |
+| Firefox | Tümü | IndexedDB | İyi |
+
+<Callout type="info">
+  OPFS, Chromium tarayıcılarında neredeyse yerel performans sunar!
+</Callout>
+
+## En İyi Uygulamalar
+
+1. **Platformlar Arası Kod Yazın**
+   ```dart
+   // ✅ Sync her yerde çalışır
+   isar.write((isar) => isar.users.put(user));
+   final user = isar.users.get(1);
+   
+   // ⚠️ Async sadece native'de çalışır (mobil/masaüstü)
+   // Web'de UnsupportedError fırlatır
+   await isar.writeAsync((isar) => isar.users.put(user));
+   ```
+   
+   ```dart
+   // Platform-farkında desen
+   if (kIsWeb) {
+     isar.write((isar) => isar.users.put(user));
+   } else {
+     await isar.writeAsync((isar) => isar.users.put(user));
+   }
+   ```
+
+2. **Hedef Platformlarda Test Edin**
+   - Farklı tarayıcılarda web yapıları
+   - Mobil cihazlarda performans
+   - Masaüstü yapıları
+
+3. **Platform Farklarını Yönetin**
+   ```dart
+   if (kIsWeb) {
+     // Web'e özgü mantık
+   } else {
+     // Native'e özgü mantık
+   }
+   ```
+
+4. **Nesneleri Küçük Tutun**
+   ```dart
+   // Büyük veriyi değil referansı saklayın
+   @collection
+   class Photo {
+     Id? id;
+     late String url; // Görsel byte'ları değil
+     late String thumbnailUrl;
+   }
+   ```
+
+## Geçiş Notları
+
+Isar 3'ten geçerken:
+
+<Callout type="warning">
+  Isar Plus, LMDB yerine SQLite kullanır. Bazı davranışlar hafifçe farklı olabilir.
+</Callout>
+
+Ayrıntılar için [Geçiş Rehberi](/docs/recipes/migrate_from_isar3).
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="SSS" href="/docs/faq">
+    Yaygın sorular ve yanıtlar
+  </Card>
+  <Card title="Geçiş Rehberi" href="/docs/recipes/migrate_from_isar3">
+    Isar 3'ten geçiş yapın
+  </Card>
+  <Card title="Tarifler" href="/docs/recipes">
+    İleri düzey desenler ve çözümler
+  </Card>
+</Cards>

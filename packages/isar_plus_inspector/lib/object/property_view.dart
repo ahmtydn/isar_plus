@@ -36,13 +36,13 @@ class PropertyView extends StatelessWidget {
       value: value is List
           ? null
           : property.type.isList
-              ? const NullValue()
-              : PropertyValue(
-                  value,
-                  type: property.type,
-                  enumMap: property.enumMap,
-                  onUpdate: isId ? null : onUpdate,
-                ),
+          ? const NullValue()
+          : PropertyValue(
+              value,
+              type: property.type,
+              enumMap: property.enumMap,
+              onUpdate: isId ? null : onUpdate,
+            ),
       children: [
         if (value is List)
           for (var i = 0; i < value.length; i++) _buildListItem(i, value[i]),

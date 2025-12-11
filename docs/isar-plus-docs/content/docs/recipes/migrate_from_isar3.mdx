@@ -1,0 +1,451 @@
+---
+title: Migrate from Isar v3
+description: Complete guide to migrating from Isar 3.x to Isar Plus v4
+icon: ArrowRightLeft
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+
+# Migrate from Isar v3 to Isar Plus v4
+
+Upgrading from the legacy `isar` 3.x packages to `isar_plus` (v4) is a **breaking, file-format change**. The v4 core writes different metadata and cannot open a database that was written by v3, so you see errors such as:
+
+```
+VersionError: The database version is not compatible with this version of Isar.
+```
+
+The fix is to export your existing data with the legacy runtime and import it into a fresh Isar Plus database. The steps below walk you through the process.
+
+## Migration Overview
+
+<Steps>
+### Keep Legacy Build
+
+Ship (or keep) a build that still depends on `isar:^3.1.0+1` so you can read the legacy files.
+
+### Add Isar Plus
+
+Add `isar_plus` and `isar_plus_flutter_libs` next to the legacy packages while you migrate.
+
+### Regenerate Schemas
+
+Re-run the code generator so your schemas compile against the v4 APIs.
+
+### Copy Data
+
+Copy every record from the v3 instance into a brand-new Isar Plus instance.
+
+### Clean Up
+
+Delete the legacy files and remove the old dependencies once the copy succeeds.
+</Steps>
+
+<Callout type="info" title="Fresh Start">
+If you do **not** need the old data, you can simply delete the v3 directory and start with a fresh database. The remainder of this guide focuses on preserving existing records.
+</Callout>
+
+## Update Dependencies Side by Side
+
+Keep the old runtime until the copy finishes, then add the new one:
+
+```yaml title="pubspec.yaml"
+dependencies:
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  isar_generator: ^3.1.0+1
+  isar_plus: {versions.isar_plus}
+  isar_plus_flutter_libs: {versions.isar_plus}
+
+dev_dependencies:
+  build_runner: ^2.4.10
+```
+
+The two packages expose the same Dart symbols, so always import them with aliases during migration:
+
+```dart title="imports.dart"
+import 'package:isar/isar.dart' as legacy;
+import 'package:isar_plus/isar_plus.dart' as plus;
+```
+
+## Regenerate Your Schemas for v4
+
+Isar Plus ships its generator inside the main package. Re-run the builder so it emits the new helpers and adapters:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+Pause here and address any compilation errors (for example, nullable `Id?` fields must become non-nullable `int id`, and use `collection.autoIncrement()` for auto-generated IDs).
+
+### API Migration Guide Key Changes
+
+<Tabs items={['Transactions', 'IDs', 'Enums', 'Links']}>
+<Tab value="Transactions">
+**Old (v3):**
+```dart
+await isar.writeTxn(() async {
+  await isar.users.put(user);
+});
+```
+
+**New (v4):**
+```dart
+await isar.writeAsync((isar) async {
+  await isar.users.put(user);
+});
+```
+</Tab>
+
+<Tab value="IDs">
+**Old (v3):**
+```dart
+@collection
+class User {
+  Id id = Isar.autoIncrement; // ❌ This was valid in v3
+  String? name;
+}
+```
+
+**New (v4):**
+```dart
+@collection
+class User {
+  User(this.id);
+
+  final int id; // ✅ Non-nullable, managed by you
+  String? name;
+}
+```
+
+<Callout type="error" title="Breaking Change: Isar.autoIncrement Removed">
+The `Isar.autoIncrement` **constant no longer exists** in v4. You can no longer assign it directly in the class definition.
+
+Instead, call `collection.autoIncrement()` **when creating objects**:
+
+```dart
+// ✅ v4: Get auto-increment ID when creating
+isar.write((isar) {
+  final user = User(isar.users.autoIncrement())
+    ..name = 'John';
+  isar.users.put(user);
+});
+```
+
+The ID field must now be:
+- Non-nullable (`int`, not `Id?`)
+- Passed via constructor
+- Generated at creation time, not in class definition
+</Callout>
+</Tab>
+
+<Tab value="Enums">
+**Old (v3):**
+```dart
+@enumerated
+enum Status { active, inactive }
+```
+
+**New (v4):**
+```dart
+@enumValue
+enum Status { active, inactive }
+```
+</Tab>
+
+<Tab value="Links">
+**Old (v3):**
+```dart
+final posts = IsarLinks<Post>();
+```
+
+**New (v4):**
+```dart
+// Use embedded objects instead
+List<Post> posts = [];
+```
+</Tab>
+</Tabs>
+
+### Unique Indexes
+
+<Callout type="warning" title="`replace` flag removed">
+  In v3 you could opt into `@Index(unique: true, replace: true)` (plus automatic
+  `putBy*` helpers) to overwrite duplicates. Isar Plus v4 **always keeps the most
+  recent value** for a unique index key and there is no toggle to make it throw.
+  Guard your writes manually if you need hard errors:
+
+```dart
+await isar.writeAsync((isar) async {
+  final clash = await isar.users
+      .where()
+      .emailEqualTo(user.email)
+      .findFirst();
+  if (clash != null) {
+    throw StateError('email already registered');
+  }
+
+  await isar.users.put(user);
+});
+```
+
+  Remove legacy `putBy*` calls during migration and replace them with explicit
+  lookups or your own upsert helpers.
+</Callout>
+
+### Legacy Links Deep Dive
+
+If your project relied heavily on `IsarLink`, `IsarLinks`, or `@Backlink`, convert them **before** you start copying rows. The v4 core only understands regular Dart fields (scalars, embedded objects, `List<T>`) so each link must become either an embedded document or an explicit foreign-key ID that you manage yourself. Use the following workflow:
+
+#### 1. Inventory every legacy link
+
+- Search your v3 models for `IsarLink`, `IsarLinks`, or `@Backlink` annotations.
+- Record whether each relationship is one-to-one, one-to-many, or many-to-many.
+- Decide whether the related data should always travel with the parent (embed it) or live in its own collection (store IDs).
+
+#### 2. Rewrite the schema in v4 terms
+
+- **Embed** one-to-few relationships that you always load together. Replace the link field with a `List<YourEmbeddedType>` or a nullable embedded object.
+- **Store IDs** for relationships that span large collections or need independent lifecycle. Add `int authorId`, `List<int> memberIds`, etc. and use queries to load the related records.
+- For backlinks, expose the forward reference explicitly (for example, add `int authorId` instead of `@Backlink(to: 'posts')`).
+
+```dart title="Legacy vs v4 (simplified from packages/isar_plus_test/lib/src/twitter)"
+// v3
+@collection
+class LegacyTweet {
+  LegacyTweet({this.id});
+
+  Id? id;
+  late IsarLink<LegacyUser> author;
+  late IsarLinks<LegacyUser> likedBy;
+}
+
+// v4
+@collection
+class Tweet {
+  Tweet(this.id, this.authorId, {this.reactions = const []});
+
+  final int id;
+  final int authorId; // was author IsarLink
+  final List<TweetReaction> reactions; // replaces likedBy links
+}
+
+@embedded
+class TweetReaction {
+  TweetReaction({required this.userId, required this.createdAt});
+
+  final int userId;
+  final DateTime createdAt;
+}
+```
+
+See the dedicated [relationships guide](../schema/relationships) for more schema patterns and live references.
+
+#### 3. Migrate the existing data
+
+During the copy phase, materialize every link into the new structure yourself:
+
+```dart title="Copy links into embedded objects"
+Future<void> _copyTweets(
+  legacy.Isar legacyDb,
+  plus.Isar plusDb,
+) async {
+  final tweets = await legacyDb.legacyTweets.where().findAll();
+
+  await plusDb.writeAsync((isar) async {
+    for (final legacyTweet in tweets) {
+      final authorId = legacyTweet.author.value?.id;
+      if (authorId == null) {
+        continue; // or decide on a fallback
+      }
+
+      final reactions = legacyTweet.likedBy.map((user) {
+        return TweetReaction(
+          userId: user.id!,
+          createdAt: DateTime.now(), // capture metadata if you stored it elsewhere
+        );
+      }).toList();
+
+      await isar.tweets.put(
+        Tweet(
+          legacyTweet.id ?? isar.tweets.autoIncrement(),
+          authorId,
+          reactions: reactions,
+        ),
+      );
+    }
+  });
+}
+```
+
+For many-to-many tables where you previously used two `IsarLinks`, create an explicit join collection that stores both IDs. During migration, iterate over the legacy link pairs and insert rows into that join collection yourself. Backlinks become filtered queries: instead of `user.posts`, query `isar.posts.where().authorIdEqualTo(user.id)`.
+
+Once every link is expressed as data that your Dart code owns, the copy to Isar Plus becomes a normal insert, and you can delete all `IsarLink` APIs from the project.
+
+## Copy the Actual Data
+
+Create a one-off migration routine (for example in `main()` before initializing your app, or in a separate `bin/migrate.dart`). The pattern is:
+
+1. Open the legacy store with the v3 runtime
+2. Open a new v4 instance in a different directory or under a different name
+3. Page through each collection, map it to the new schema, and `put` it into the new database
+4. Mark the migration as finished so you do not run it twice
+
+```dart title="migration.dart"
+Future<void> migrateLegacyDb(String directoryPath) async {
+  final legacyDb = await legacy.Isar.open(
+    [LegacyUserSchema, LegacyTodoSchema],
+    directory: directoryPath,
+    inspector: false,
+    name: 'legacy',
+  );
+
+  final plusDb = plus.Isar.open(
+    schemas: [UserSchema, TodoSchema],
+    directory: directoryPath,
+    name: 'app_v4',
+    engine: plus.IsarEngine.sqlite, // or IsarEngine.isar for native
+    inspector: false,
+  );
+
+  await _copyUsers(legacyDb, plusDb);
+  await _copyTodos(legacyDb, plusDb);
+
+  await legacyDb.close();
+  await plusDb.close();
+}
+
+Future<void> _copyUsers(legacy.Isar legacyDb, plus.Isar plusDb) async {
+  const pageSize = 200;
+  final total = await legacyDb.legacyUsers.count();
+
+  for (var offset = 0; offset < total; offset += pageSize) {
+    final batch = await legacyDb.legacyUsers
+      .where()
+      .offset(offset)
+      .limit(pageSize)
+      .findAll();
+      
+    await plusDb.writeAsync((isar) async {
+      await isar.users.putAll(
+        batch.map((user) => User(
+          id: user.id ?? isar.users.autoIncrement(),
+          email: user.email,
+          status: _mapStatus(user.status),
+        )),
+      );
+    });
+  }
+}
+```
+
+<Callout type="info" title="Mapping Helper">
+Keep the mapping methods (`_mapStatus` in the snippet) next to the migration routine so you can handle enum renames, field removals, or any data cleanup in one place.
+</Callout>
+
+If you have very large collections, run the loop inside an isolate or background service to avoid blocking the UI. The same pattern works for embedded objects and links—load them with the legacy query API, then persist them with the new schema.
+
+## Make Sure It Only Runs Once
+
+Shipping both runtimes means every cold start could try to migrate again unless you gate it behind a flag. Persist a migration version so the copy runs only once per installation:
+
+```dart title="migration_tracker.dart"
+class MigrationTracker {
+  static const key = 'isarPlusMigration';
+
+  static Future<bool> needsMigration() async {
+    final prefs = await SharedPreferences.getInstance();
+    return !prefs.getBool(key).toString().contains('true');
+  }
+
+  static Future<void> markDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, true);
+  }
+}
+
+Future<void> bootstrapIsar(String dir) async {
+  if (await MigrationTracker.needsMigration()) {
+    await migrateLegacyDb(dir);
+    await MigrationTracker.markDone();
+  }
+
+  final isar = plus.Isar.open(
+    schemas: [UserSchema, TodoSchema],
+    directory: dir,
+  );
+
+  runApp(MyApp(isar: isar));
+}
+```
+
+<Callout type="info" title="Alternative Approaches">
+Instead of a boolean you can store a numeric schema version (for example `3` for legacy, `4` for Isar Plus) if you anticipate future migrations. On desktop or server builds you can also write a tiny `.migrated` file next to the database directory instead of using shared preferences.
+</Callout>
+
+## Clean Up
+
+After every collection finishes copying:
+
+<Steps>
+### Persist Flag
+
+Mark migration as complete:
+```dart
+await prefs.setBool('migratedToIsarPlus', true);
+```
+
+### Delete Legacy Files
+
+Remove old database files:
+```dart
+await plus.Isar.deleteDatabase(
+  name: 'legacy',
+  directory: directoryPath,
+  engine: plus.IsarEngine.isar,
+);
+```
+
+### Remove Dependencies
+
+Update `pubspec.yaml` to remove `isar` and `isar_flutter_libs`.
+
+### Rename Database
+
+Optionally rename the new database back to your original name.
+</Steps>
+
+Only when you are confident that users no longer open the legacy build should you ship an update that depends solely on `isar_plus`.
+
+## Troubleshooting
+
+### VersionError Persists
+
+<Callout type="error" title="Solution">
+Double-check that you deleted the v3 files before opening the v4 instance. Old WAL/LCK files can keep the legacy header around.
+</Callout>
+
+### Duplicate Primary Keys
+
+<Callout type="warn" title="ID Requirements">
+Remember that v4 IDs must be unique, non-null integers. Use `collection.autoIncrement()` method or generate your own deterministic keys while copying.
+</Callout>
+
+### Generator Fails
+
+Run cleanup before building:
+```bash
+dart pub clean
+dart run build_runner build --delete-conflicting-outputs
+```
+
+Ensure no `part '...g.dart';` directives are missing.
+
+### Need to Rollback
+
+<Callout type="info" title="Safe Migration">
+Because the migration writes into a separate database, you can safely discard the new files and keep the legacy ones until the copy completes.
+</Callout>
+
+Once these steps are in place, users can upgrade directly from an `isar` 3.x build to an `isar_plus` release without data loss.

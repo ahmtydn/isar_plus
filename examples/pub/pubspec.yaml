@@ -18,7 +18,7 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.0.3
   google_fonts: ^6.3.2
-  isar_plus: ^1.0.22
+  isar_plus: ^1.1.5
   isar_plus_flutter_libs: ^1.0.22
   json_annotation: ^4.9.0
   markdown: ^7.1.1

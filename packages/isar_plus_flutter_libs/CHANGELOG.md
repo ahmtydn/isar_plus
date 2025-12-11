@@ -1,4 +1,72 @@
+## 1.1.9
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.9 -->
+
+## What's Changed
+### Other Changes
+* Fix React Server Components RCE vulnerability by @vercel[bot] in https://github.com/ahmtydn/isar_plus/pull/64
+* enable synchronous APIs on web, clarify async behavior, and document watcher limitations. by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/66
+
+## New Contributors
+* @vercel[bot] made their first contribution in https://github.com/ahmtydn/isar_plus/pull/64
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.8...1.1.9
+
+## 1.1.9
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.9 -->
+
+## What's Changed
+### Other Changes
+* Fix React Server Components RCE vulnerability by @vercel[bot] in https://github.com/ahmtydn/isar_plus/pull/64
+* enable synchronous APIs on web, clarify async behavior, and document watcher limitations. by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/66
+
+## New Contributors
+* @vercel[bot] made their first contribution in https://github.com/ahmtydn/isar_plus/pull/64
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.8...1.1.9
+
+## 1.1.8
+
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.8 -->
+
+## What's Changed
+### Other Changes
+* fix: handle null values in serialization for various data types by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/61
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.7...1.1.8
+
+## 1.1.7
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.7 -->
+
+## What's Changed
+### Other Changes
+* fix: preserve nullable bools when importing JSON by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/60
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.6...1.1.7
+
+## 1.1.6
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.1.6 -->
+
+## What's Changed
+### Other Changes
+* docs: Update API examples to v4 and add Android 16KB support documentation by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/56
+* Update documentation image format from SVG to PNG for better compatibility by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/57
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.5...1.1.6
+
 ## 1.1.5
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.5 -->
 

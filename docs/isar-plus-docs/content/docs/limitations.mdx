@@ -1,0 +1,415 @@
+---
+title: Limitations
+description: Platform-specific limitations and constraints
+icon: AlertTriangle
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Limitations
+
+Isar Plus works across mobile, desktop, and web platforms. Each platform has different characteristics and limitations.
+
+## Platform Overview
+
+<Tabs items={['VM (Mobile & Desktop)', 'Web', 'All Platforms']}>
+  <Tab value="VM (Mobile & Desktop)">
+    **Platforms:** iOS, Android, macOS, Linux, Windows
+    
+    ### Limitations
+    
+    - String prefix where-clauses limited to first 1024 bytes
+    - Maximum object size: 16MB
+    
+    <Callout type="success">
+      VM platforms have minimal limitations and full feature support!
+    </Callout>
+  </Tab>
+  <Tab value="Web">
+    **Platforms:** Chrome, Firefox, Safari, Edge
+    
+    ### Storage Backends
+    
+    <Cards>
+      <Card title="OPFS (Modern)" icon="Zap">
+        Chrome, Edge (v102+)
+        - Fast, native-like performance
+        - Persistent storage
+        - Full SQLite compatibility
+      </Card>
+      <Card title="IndexedDB (Fallback)" icon="Database">
+        Safari, Firefox, older browsers
+        - Some limitations apply
+        - Slower than OPFS
+        - Good compatibility
+      </Card>
+    </Cards>
+    
+    ### Limitations
+    
+    ```dart
+    // ❌ Async operations not supported on web (require isolates)
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    
+    // ❌ Watchers not supported on web
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    
+    // ✅ Use sync APIs on web
+    isar.write((isar) => isar.users.put(user));
+    final user = isar.users.get(1);
+    ```
+    
+    <Callout type="error">
+      Async operations require isolates which are not available on web.
+      Use synchronous APIs instead!
+    </Callout>
+  </Tab>
+  <Tab value="All Platforms">
+    ### General Limitations
+    
+    - No support for very large transactions (keep under 100MB)
+    - Links are lazy-loaded (small overhead on first access)
+    - Embedded objects cannot contain other embedded objects (single level only)
+  </Tab>
+</Tabs>
+
+## VM Limitations
+
+### String Indexing
+
+Only the first 1024 bytes of a string are indexed:
+
+```dart
+@collection
+class Article {
+  Id? id;
+
+  @Index()
+  late String title; // ✅ Usually fine
+
+  @Index()
+  late String content; // ⚠️ Only first 1024 bytes indexed
+}
+```
+
+<Callout>
+  For full-text search on long strings, use the multi-entry index pattern.
+</Callout>
+
+### Object Size
+
+Maximum object size is 16MB:
+
+```dart
+@collection
+class LargeDocument {
+  Id? id;
+
+  // ⚠️ Be careful with large data
+  late List<int> fileData;
+}
+```
+
+<Callout type="warning">
+  Store large files outside of Isar and keep only references in the database.
+</Callout>
+
+## Web Limitations
+
+### API Compatibility
+
+<Tabs items={['Not Supported', 'Supported']}>
+  <Tab value="Not Supported">
+    ```dart
+    // ❌ Async transactions (require isolates)
+    await isar.readAsync((isar) => isar.users.get(1));
+    await isar.writeAsync((isar) => isar.users.put(user));
+    await isar.users.getAsync(1);
+    await isar.users.getAllAsync([1, 2, 3]);
+    
+    // ❌ Watchers (require native isolates)
+    isar.users.watchLazy().listen((_) {});
+    isar.users.watchObject(1).listen((user) {});
+    isar.users.watchDetailed().listen((change) {});
+    
+    // ❌ Text operations
+    Isar.splitWords('hello world');
+    isar.users.filter().nameMatches('pattern*');
+    ```
+  </Tab>
+  <Tab value="Supported">
+    ```dart
+    // ✅ Synchronous operations (use these on web)
+    final user = isar.users.get(1);
+    final users = isar.users.getAll([1, 2, 3]);
+    
+    isar.write((isar) => isar.users.put(user));
+    isar.read((isar) => isar.users.where().findAll());
+    
+    // ✅ Filters and queries
+    isar.users.filter()
+      .nameContains('John')
+      .findAll();
+    
+    // ✅ Where clauses
+    isar.users.where()
+      .nameEqualTo('John')
+      .findAll();
+    ```
+  </Tab>
+</Tabs>
+
+
+### IndexedDB Fallback Limitations
+
+When OPFS is not available, IndexedDB fallback has additional limitations:
+
+```dart
+// ⚠️ Return values may differ
+await isar.writeAsync((isar) async {
+  final count = isar.users.deleteAll([1, 2, 3]);
+  // OPFS: returns exact count
+  // IndexedDB: may return different value
+});
+
+// ⚠️ Auto-increment not reset by clear()
+await isar.writeAsync((isar) async {
+  isar.users.clear();
+});
+// On OPFS: next ID is 1
+// On IndexedDB: next ID continues from before
+```
+
+### Schema Migrations
+
+```dart
+// ⚠️ Less strict validation on web
+@collection
+class User {
+  Id? id;
+  
+  late String name;
+  
+  // Changing type is less validated
+  late int age; // was String before
+}
+```
+
+<Callout type="warning">
+  Double-check schema changes on web during releases!
+</Callout>
+
+### Text Operations
+
+```dart
+// ❌ Not available on web
+final words = Isar.splitWords('Hello World');
+
+// ❌ Wildcard matching not available
+await isar.users.filter()
+  .nameMatches('John*')
+  .findAll();
+
+// ✅ Use alternative patterns
+await isar.users.filter()
+  .nameStartsWith('John')
+  .findAll();
+
+await isar.users.filter()
+  .nameContains('John')
+  .findAll();
+```
+
+## Workarounds
+
+### Large Strings
+
+```dart
+// Instead of indexing entire content
+@collection
+class Article {
+  Id? id;
+
+  late String title;
+
+  late String content;
+
+  // Create searchable keywords
+  @Index(type: IndexType.value)
+  late List<String> keywords;
+}
+
+// Generate keywords before saving
+final article = Article()
+  ..title = 'My Article'
+  ..content = 'Long content...'
+  ..keywords = generateKeywords(content);
+```
+
+### File Storage
+
+```dart
+@collection
+class Document {
+  Id? id;
+
+  late String name;
+
+  // Store file path, not content
+  late String filePath;
+
+  late int fileSize;
+}
+
+// Store actual file separately
+final file = File('path/to/file.pdf');
+final document = Document()
+  ..name = 'Document'
+  ..filePath = file.path
+  ..fileSize = await file.length();
+```
+
+### Web Async Pattern
+
+```dart
+// Platform-specific code for async operations
+class IsarHelper {
+  static Future<User?> getUser(Isar isar, int id) async {
+    if (kIsWeb) {
+      // Web: use sync API
+      return isar.users.get(id);
+    } else {
+      // Native: can use async for background processing
+      return isar.users.getAsync(id);
+    }
+  }
+}
+```
+
+### Cross-Platform Text Search
+
+```dart
+@collection
+class Product {
+  Id? id;
+
+  late String name;
+
+  // Store lowercase for case-insensitive search
+  @Index(caseSensitive: false)
+  late String searchName;
+}
+
+// Before saving
+product.name = 'iPhone 15 Pro';
+product.searchName = product.name.toLowerCase();
+
+// Query works on all platforms
+await isar.products
+  .filter()
+  .searchNameContains('iphone')
+  .findAll();
+```
+
+## Platform Detection
+
+```dart
+import 'package:flutter/foundation.dart';
+
+void configureIsar() {
+  if (kIsWeb) {
+    print('Running on web with limitations');
+    // Use async-only APIs
+  } else {
+    print('Running on native platform');
+    // Can use sync APIs for performance
+  }
+}
+```
+
+## Browser Support
+
+| Browser | Version | Storage | Performance |
+| --- | --- | --- | --- |
+| Chrome | 102+ | OPFS | Excellent |
+| Edge | 102+ | OPFS | Excellent |
+| Safari | All | IndexedDB | Good |
+| Firefox | All | IndexedDB | Good |
+
+<Callout type="info">
+  OPFS provides near-native performance on Chromium browsers!
+</Callout>
+
+## Best Practices
+
+1. **Write Cross-Platform Code**
+   ```dart
+   // ✅ Sync works everywhere
+   isar.write((isar) => isar.users.put(user));
+   final user = isar.users.get(1);
+   
+   // ⚠️ Async only works on native (mobile/desktop)
+   // Throws UnsupportedError on web
+   await isar.writeAsync((isar) => isar.users.put(user));
+   ```
+   
+   ```dart
+   // Platform-aware pattern
+   if (kIsWeb) {
+     isar.write((isar) => isar.users.put(user));
+   } else {
+     await isar.writeAsync((isar) => isar.users.put(user));
+   }
+   ```
+
+2. **Test on Target Platforms**
+   - Test web builds in different browsers
+   - Verify performance on mobile devices
+   - Check desktop builds
+
+3. **Handle Platform Differences**
+   ```dart
+   if (kIsWeb) {
+     // Web-specific logic
+   } else {
+     // Native-specific logic
+   }
+   ```
+
+4. **Keep Objects Small**
+   ```dart
+   // Store references, not large data
+   @collection
+   class Photo {
+     Id? id;
+     late String url; // Not the image bytes
+     late String thumbnailUrl;
+   }
+   ```
+
+## Migration Notes
+
+When migrating from Isar 3:
+
+<Callout type="warning">
+  Isar Plus uses SQLite instead of LMDB. Some behaviors may differ slightly.
+</Callout>
+
+See the [Migration Guide](/docs/recipes/migrate_from_isar3) for details.
+
+## Next Steps
+
+<Cards>
+  <Card title="FAQ" href="/docs/faq">
+    Common questions and answers
+  </Card>
+  <Card title="Migration Guide" href="/docs/recipes/migrate_from_isar3">
+    Migrate from Isar 3
+  </Card>
+  <Card title="Recipes" href="/docs/recipes">
+    Advanced patterns and solutions
+  </Card>
+</Cards>

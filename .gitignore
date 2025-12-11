@@ -73,8 +73,13 @@ local.properties
 *.info
 *.profraw
 *.json
+!docs/isar-plus-docs/tsconfig.json
+!docs/isar-plus-docs/content/**/*.json
 !package.json
 
 packages/hive_plus
 
 co*.md
+
+coverage/*
+coverage_local.sh

@@ -1,0 +1,107 @@
+---
+title: Yedekleme
+description: Isar veritabanınızı nasıl yedekleyeceğinizi öğrenin
+icon: Database
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Veritabanı Yedeği
+
+Isar Plus, `copyToFile()` metodu ile veritabanınızın yedeğini almanın basit bir yolunu sunar.
+
+## Yedek Oluşturma
+
+Tüm veritabanınızın düzenlenmiş bir yedeğini oluşturmak için `copyToFile()` kullanın. Yedeği kaydetmek istediğiniz tam dosya yolunu belirtin:
+
+<Tabs items={['Isar Engine', 'SQLite Engine']}>
+  <Tab value="Isar Engine">
+    ```dart
+    // Isar engine için yedek
+    isar.copyToFile('/path/to/backup.isar');
+    ```
+  </Tab>
+  <Tab value="SQLite Engine">
+    ```dart
+    // SQLite engine için yedek
+    isar.copyToFile('/path/to/backup.sqlite');
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  `copyToFile()` metodu veritabanının **compacted** (sıkıştırılmış değil, düzenlenmiş) bir versiyonunu oluşturur. Veritabanınızı yedeklemenin önerilen yolu budur.
+</Callout>
+
+## Pratik Örnek
+
+Zaman damgalı bir yedek oluşturmayı gösteren tam bir örnek:
+
+```dart
+import 'dart:io';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+Future<String> createBackup(Isar isar) async {
+  // Uygulamanın dökümanlar dizinini al
+  final dir = await getApplicationDocumentsDirectory();
+  
+  // Zaman damgalı yedek dosya adı oluştur
+  final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+  final backupName = 'backup_$timestamp.isar';
+  
+  // Tam yedek yolu
+  final backupPath = path.join(dir.path, 'backups', backupName);
+  
+  // Yedekler dizini yoksa oluştur
+  final backupsDir = Directory(path.join(dir.path, 'backups'));
+  if (!backupsDir.existsSync()) {
+    backupsDir.createSync(recursive: true);
+  }
+  
+  // Yedeği oluştur
+  isar.copyToFile(backupPath);
+  
+  print('Yedek oluşturuldu: $backupPath');
+  return backupPath;
+}
+```
+
+## En İyi Uygulamalar
+
+<Callout type="warning">
+  Gereksiz veritabanı büyümesini önlemek için `copyToFile()` metodunu diğer transaction'lar aktifken çalıştırmaktan kaçının.
+</Callout>
+
+### Ne Zaman Yedek Alınmalı
+
+- Büyük veri taşıma işlemlerinden önce
+- Veritabanı şemasını değiştiren uygulama güncellemelerinden önce
+- Veri güvenliği için periyodik olarak
+- Toplu silme işlemlerinden önce
+
+## Yedekten Geri Yükleme
+
+Bir yedekten veritabanını geri yüklemek için:
+
+1. Mevcut Isar örneğini kapatın
+2. Yedek dosyasını veritabanı konumuna kopyalayın
+3. Bu dosyayı işaret eden yeni bir Isar örneği açın
+
+```dart
+// Mevcut örneği kapat
+isar.close();
+
+// Yedeği veritabanı konumuna kopyala
+final backupFile = File('/path/to/backup.isar');
+final dbPath = path.join(directory, 'default.isar');
+await backupFile.copy(dbPath);
+
+// Geri yüklenen veritabanını aç
+final restoredIsar = await Isar.openAsync(
+  schemas: [YourSchema],
+  directory: directory,
+);
+```

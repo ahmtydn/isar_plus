@@ -1,0 +1,107 @@
+---
+title: Backup
+description: Learn how to backup your Isar database
+icon: Database
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Database Backup
+
+Isar Plus provides a simple way to create backups of your database using the `copyToFile()` method.
+
+## Creating a Backup
+
+Use `copyToFile()` to create a compacted backup of your entire database. Provide the full file path where you want to save the backup:
+
+<Tabs items={['Isar Engine', 'SQLite Engine']}>
+  <Tab value="Isar Engine">
+    ```dart
+    // Backup for Isar engine
+    isar.copyToFile('/path/to/backup.isar');
+    ```
+  </Tab>
+  <Tab value="SQLite Engine">
+    ```dart
+    // Backup for SQLite engine
+    isar.copyToFile('/path/to/backup.sqlite');
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  The `copyToFile()` method creates a **compacted** (not compressed) version of the database. This is the recommended way to backup your database.
+</Callout>
+
+## Practical Example
+
+Here's a complete example showing how to create a timestamped backup:
+
+```dart
+import 'dart:io';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+Future<String> createBackup(Isar isar) async {
+  // Get the app's documents directory
+  final dir = await getApplicationDocumentsDirectory();
+  
+  // Create a timestamped backup filename
+  final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+  final backupName = 'backup_$timestamp.isar';
+  
+  // Full backup path
+  final backupPath = path.join(dir.path, 'backups', backupName);
+  
+  // Create backups directory if it doesn't exist
+  final backupsDir = Directory(path.join(dir.path, 'backups'));
+  if (!backupsDir.existsSync()) {
+    backupsDir.createSync(recursive: true);
+  }
+  
+  // Create the backup
+  isar.copyToFile(backupPath);
+  
+  print('Backup created: $backupPath');
+  return backupPath;
+}
+```
+
+## Best Practices
+
+<Callout type="warning">
+  Avoid running `copyToFile()` while other transactions are active to prevent unnecessary database growth.
+</Callout>
+
+### When to Create Backups
+
+- Before major data migrations
+- Before app updates that modify the database schema
+- Periodically for data safety
+- Before performing bulk delete operations
+
+## Restoring from Backup
+
+To restore a database from a backup:
+
+1. Close the current Isar instance
+2. Copy the backup file to the database location
+3. Open a new Isar instance pointing to that file
+
+```dart
+// Close current instance
+isar.close();
+
+// Copy backup to database location
+final backupFile = File('/path/to/backup.isar');
+final dbPath = path.join(directory, 'default.isar');
+await backupFile.copy(dbPath);
+
+// Open the restored database
+final restoredIsar = await Isar.openAsync(
+  schemas: [YourSchema],
+  directory: directory,
+);
+```

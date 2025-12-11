@@ -112,5 +112,20 @@ void main() {
       );
       expect(() => col.where().updateAll(value: 'test'), throwsWriteTxnError());
     });
+
+    isarTest('Query updateProperties requires write transaction', () {
+      isar.write((isar) => isar.models.put(Model(1, 'test')));
+      expect(
+        () => isar.models.where().updateAll(value: 'new'),
+        throwsWriteTxnError(),
+      );
+    });
+
+    isarTest('Query deleteAll requires write transaction', () {
+      isar.write((isar) => isar.models.put(Model(1, 'test')));
+      final query = isar.models.where().build();
+      expect(query.deleteAll, throwsWriteTxnError());
+      query.close();
+    });
   });
 }

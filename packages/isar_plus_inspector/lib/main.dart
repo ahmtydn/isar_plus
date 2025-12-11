@@ -3,12 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:isar_plus_inspector/connection_screen.dart';
 
 void main() async {
-  runApp(
-    DarkMode(
-      notifier: DarkModeNotifier(),
-      child: const App(),
-    ),
-  );
+  runApp(DarkMode(notifier: DarkModeNotifier(), child: const App()));
 }
 
 final _router = GoRouter(
@@ -73,11 +68,7 @@ class App extends StatelessWidget {
 }
 
 class DarkMode extends InheritedNotifier<DarkModeNotifier> {
-  const DarkMode({
-    required super.child,
-    super.key,
-    super.notifier,
-  });
+  const DarkMode({required super.child, super.key, super.notifier});
 
   static DarkModeNotifier of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<DarkMode>()!.notifier!;

@@ -1,0 +1,83 @@
+---
+title: Isar Plus
+description: The coolest Flutter database
+icon: Home
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { DynamicLink } from 'fumadocs-core/dynamic-link';
+import Image from 'next/image';
+import { buttonVariants } from 'fumadocs-ui/components/ui/button';
+
+<div className="flex flex-col items-center text-center" style={{ gap: 0 }}>
+  <Image
+    src="/isar.svg"
+    alt="Isar Plus Logo"
+    width={180}
+    height={180}
+    priority
+    className="drop-shadow-lg"
+    style={{ margin: 0 }}
+  />
+
+  <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 to-cyan-400 text-transparent bg-clip-text" style={{ margin: 0 }}>
+    Isar Plus
+  </h1>
+
+  <div className="text-xl text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed" style={{ margin: 0 }}>
+    The coolest Flutter database — engineered for performance, simplicity, and scalability.
+  </div>
+
+  <div className="not-prose flex justify-center" style={{ marginTop: '1rem', marginBottom: '3rem' }}>
+    <DynamicLink
+      href="/[lang]/docs/quickstart"
+      className={buttonVariants({ variant: 'primary', className: 'text-lg px-10 py-6 gap-2 rounded-2xl shadow-md hover:shadow-lg transition-all' })}
+    >
+      <span className="text-2xl">🚀</span>
+      <span>Let's Get Started!</span>
+    </DynamicLink>
+  </div>
+</div>
+
+<Cards className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+  <Card 
+    title="💙 Made for Flutter" 
+    description="Minimal setup, Easy to use, no config, no boilerplate. Just add a few lines of code to get started."
+  />
+  <Card 
+    title="🚀 Highly scalable" 
+    description="Store hundreds of thousands of records in a single NoSQL database and query them efficiently and asynchronously."
+  />
+  <Card 
+    title="🍭 Feature-rich" 
+    description="Isar has a rich set of features to help you manage your data. Composite & multi-entry indexes, query modifiers, JSON support, and more."
+  />
+  <Card 
+    title="🔎 Full-text search" 
+    description="Isar has built-in full-text search. Create a multi-entry index and search for records easily."
+  />
+  <Card 
+    title="🧪 ACID semantics" 
+    description="Isar is ACID compliant and handles transactions automatically. It rolls back changes if an error occurs."
+  />
+  <Card 
+    title="💃 Static typing" 
+    description="Isar's queries are statically typed and compile-time checked. No need to worry about runtime errors."
+  />
+  <Card 
+    title="📱 Multiplatform" 
+    description="iOS, Android, Desktop, and persistent Flutter Web storage via OPFS/IndexedDB."
+  />
+  <Card 
+    title="⏱ Asynchronous" 
+    description="Parallel query operations & multi-isolate support out-of-the-box"
+  />
+  <Card 
+    title="🦄 Open Source" 
+    description="Everything is open source and free forever!"
+  />
+</Cards>
+
+<div className="mt-12 text-center text-sm text-muted-foreground">
+  Isar Plus © 2025 Ahmet Aydın
+</div>

@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)]
+
 use crate::{isar_to_i64, CIsarInstance, CIsarQuery, CIsarTxn, CIsarUpdate, IsarI64};
 use isar_core::core::error::IsarError;
 use isar_core::core::instance::IsarInstance;

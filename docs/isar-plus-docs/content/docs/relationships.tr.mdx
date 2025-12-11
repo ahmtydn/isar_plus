@@ -1,0 +1,91 @@
+---
+title: İlişkiler
+description: İlişkili verileri gömülü nesneler ve açık ID alanlarıyla modelleyin
+icon: Link
+---
+
+# İlişkiler
+
+Isar Plus v4, `IsarLink` ve `IsarLinks` gibi çalışma zamanı link tiplerini tamamen kaldırdı. Derleyici artık modellerinizi incelerken yalnızca `@collection` ve `@embedded` anotasyonlarını kabul ediyor; bunu `packages/isar_plus/lib/src/generator/isar_analyzer.dart` dosyasındaki uyarılardan net biçimde görebilirsiniz. Desteklenmeyen bir tip kullanırsanız analizör aynı dosyada geçen "Unsupported type. Please add @embedded..." hatasını fırlatıyor. Aşağıdaki bölümlerde depodaki güncel desenleri özetliyoruz.
+
+## İlişkili Veriyi Gömülü Tutun
+
+Depodaki büyük şemalar (örneğin `packages/isar_plus_test/lib/src/twitter/tweet.dart`) ilişkili varlıkları doğrudan embed ediyor. `Tweet` koleksiyonu `User`, `Entities` ve diğer DTO'ları aynı kayıt içinde barındırıyor:
+
+```dart title="packages/isar_plus_test/lib/src/twitter/tweet.dart"
+@collection
+class Tweet {
+  Tweet();
+
+  @Id()
+  late String idStr;
+
+  User? user;                  // user.dart içindeki @embedded sınıf
+  Entities? entities;          // entities.dart içinde @embedded
+  Entities? extendedEntities;
+  CurrentUserRetweet? currentUserRetweet;
+}
+
+@embedded
+class CurrentUserRetweet {
+  CurrentUserRetweet();
+
+  String? idStr;
+}
+```
+
+`User`, `Entities` ve diğer DTO'lar `@embedded` olduğu için yaşam döngülerini ebeveyn `Tweet` ile paylaşırlar; ekstra sorgu veya koleksiyon gerekmez.
+
+## 1:n Verileri İçin Gömülü Listeler
+
+Bağımsız sorgu gerektirmeyen bire-çok verilerde, kod tabanı gömülü listelerden yararlanıyor. `examples/pub/lib/models/package.dart` dosyasındaki paket modeli, bağımlılık bilgilerini her paketin içinde tutuyor:
+
+```dart title="examples/pub/lib/models/package.dart"
+@collection
+class Package {
+  Package({
+    required this.name,
+    required this.version,
+    required this.dependencies,
+    required this.devDependencies,
+    required this.published,
+    required this.isLatest,
+  });
+
+  final String name;
+  final String version;
+  final bool isLatest;
+
+  final List<Dependency> dependencies;      // @embedded
+  final List<Dependency> devDependencies;   // @embedded
+}
+
+@embedded
+class Dependency {
+  Dependency({this.name = 'unknown', this.constraint = 'any'});
+
+  final String name;
+  final String constraint;
+}
+```
+
+Analiz kurallarının da belirttiği gibi gömülü sınıflar kendi indekslerine veya ID alanlarına sahip olamaz; ancak bir ebeveyn kaydın içinde tekrar eden çocukları temsil etmek için listeler halinde saklanabilirler.
+
+## ID Alanlarıyla Manuel Referanslar
+
+İki ayrı kaydın birbirini referanslaması gerektiğinde (örneğin bir tweet'in başka bir tweet'e yanıt vermesi), depo düz ID alanları kullanıyor. `Tweet` sınıfındaki `inReplyToStatusIdStr`, `quotedStatusIdStr` ve benzeri alanlar başka tweet'lerin `idStr` değerlerini tutuyor ve ilişkili kayıtları sorguyla bulmanızı sağlıyor:
+
+```dart title="packages/isar_plus_test/lib/src/twitter/tweet.dart"
+class Tweet {
+  // ...
+  String? inReplyToStatusIdStr;  // başka bir Tweet.idStr değerini işaret eder
+  String? quotedStatusIdStr;
+  String? inReplyToUserIdStr;
+}
+```
+
+Kendi uygulamanızda da aynı yöntemi uygulayabilirsiniz: yabancı anahtarı açıkça saklayın (`int` veya `String`), `where().filter().fieldEqualTo(...)` sorgularıyla çözümleyin ve referans bütünlüğünü korumak için her iki güncellemeyi aynı write transaction'ında gerçekleştirin.
+
+## Geçiş Notu
+
+Legacy `IsarLink`/`IsarLinks` API'sine dair kalan tek kaynak [Isar v3'ten Isar Plus v4'e geçiş](./recipes/migrate_from_isar3) rehberidir. Verilerinizi kopyalamadan önce her link'i ya gömülü yapılara ya da açık ID alanlarına dönüştürme adımları o bölümde ayrıntılanıyor.

@@ -50,26 +50,23 @@ Future<void> _loadWasmBindgenScript(String wasmUrl) async {
   final jsUrl = wasmUrl.replaceAll('.wasm', '.js');
 
   // Create and inject the script tag
-  final script =
-      web.document.createElement('script') as web.HTMLScriptElement
-        ..src = jsUrl
-        ..type = 'text/javascript'
-        ..onload =
-            (web.Event event) {
-              // Schedule async work without making the callback async
-              unawaited(_verifyWasmBindgenLoaded(jsUrl, completer));
-            }.toJS
-        ..onerror =
-            (web.Event event) {
-              completer.completeError(
-                Exception(
-                  'Failed to load isar.js from $jsUrl. '
-                  'Make sure both isar.wasm and isar.js are '
-                  'available at the same location. '
-                  'For local usage, copy both files to your web/ directory.',
-                ),
-              );
-            }.toJS;
+  final script = web.document.createElement('script') as web.HTMLScriptElement
+    ..src = jsUrl
+    ..type = 'text/javascript'
+    ..onload = (web.Event event) {
+      // Schedule async work without making the callback async
+      unawaited(_verifyWasmBindgenLoaded(jsUrl, completer));
+    }.toJS
+    ..onerror = (web.Event event) {
+      completer.completeError(
+        Exception(
+          'Failed to load isar.js from $jsUrl. '
+          'Make sure both isar.wasm and isar.js are '
+          'available at the same location. '
+          'For local usage, copy both files to your web/ directory.',
+        ),
+      );
+    }.toJS;
 
   web.document.head!.appendChild(script);
 

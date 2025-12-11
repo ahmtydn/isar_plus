@@ -1,0 +1,497 @@
+---
+title: SSS
+description: Isar Plus hakkında sık sorulan sorular
+icon: HelpCircle
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Sık Sorulan Sorular
+
+Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
+
+## Genel Sorular
+
+<Accordions>
+  <Accordion title="Neden bir veritabanına ihtiyacım var?">
+    Arka uç veritabanınız olsa bile yerel depolama şu durumlar için kritik önemdedir:
+    
+    - **Çevrimdışı çalışabilirlik** - İnternet olmadan (metro, uçak, kırsal alan) çalışma
+    - **Performans** - Ağ gecikmesi olmadan anında veri erişimi
+    - **Kullanıcı deneyimi** - Bağlantı durumundan bağımsız sorunsuz kullanım
+    - **Veri önbellekleme** - Sunucu yükü ve bant genişliğini azaltma
+    - **Gizlilik** - Hassas verileri cihazda tutma
+    
+    <Callout type="success">
+      Kullanıcılar uygulamanızın bağlantı zayıfken bile kusursuz çalışmasını bekler!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus mı Isar mı?">
+    Isar Plus, orijinal Isar veritabanının topluluk tarafından sürdürülen bir fork'udur:
+    
+    **Isar Plus Avantajları:**
+    - ✅ Aktif bakım ve güncellemeler
+    - ✅ Web için daha iyi destek sağlayan SQLite arka ucu
+    - ✅ Topluluk odaklı geliştirme
+    - ✅ Düzenli hata düzeltmeleri ve iyileştirmeler
+    - ✅ OPFS ile geliştirilmiş web performansı
+    
+    **Geçiş:**
+    Kodun büyük bölümü uyumludur. [Geçiş Rehberi](/docs/recipes/migrate_from_isar3)'ni inceleyin.
+    
+    <Callout>
+      Yeni projeler ve Isar 3'ten geçişler için Isar Plus'ı öneriyoruz.
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus mı Hive mı?">
+    Isar Plus çok daha güçlüdür:
+    
+    | Özellik | Isar Plus | Hive |
+    | --- | --- | --- |
+    | Sorgular | ✅ Gelişmiş | ❌ Sınırlı |
+    | İndeksler | ✅ Çoklu tür | ❌ Temel |
+    | İlişkiler | ✅ Var | ❌ Yok |
+    | İşlemler | ✅ ACID | ⚠️ Temel |
+    | Tip Güvenliği | ✅ Tam | ⚠️ Kısmi |
+    | Performans | ⚡ Mükemmel | ✅ İyi |
+    | Web Desteği | ✅ Tam | ✅ Tam |
+    
+    <Callout type="success">
+      Isar Plus başlangıçta Hive yerine kullanılmak üzere geliştirildi ve artık üretime hazır!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus mı SQLite mı?">
+    Her ikisi de harika seçimlerdir:
+    
+    **Isar Plus:**
+    - 🚀 Kullanımı daha kolay (SQL yok)
+    - 💃 Tip güvenli sorgular
+    - ⚡ Karmaşık sorgularda çoğu zaman daha hızlı
+    - 🎯 Dart/Flutter için tasarlandı
+    - 🔗 Yerleşik ilişkiler
+    
+    **SQLite:**
+    - 📚 Daha köklü
+    - 🛠️ Daha fazla araç
+    - 💾 Daha küçük depolama alanı
+    - 🌐 Evrensel uyumluluk
+    
+    <Callout>
+      Flutter odaklı projeler için Isar Plus, maksimum uyumluluk için SQLite seçin.
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Performans Soruları
+
+<Accordions>
+  <Accordion title="Isar Plus yeterince hızlı mı?">
+    Evet! Isar Plus en hızlı mobil veritabanlarından biridir:
+    
+    **Benchmark'lar:**
+    - Ekleme: Saniyede 50.000+ kayıt
+    - Sorgu: İndeksli sorgularda milisaniyenin altında
+    - Güncelleme: Ekleme ile benzer performans
+    
+    **Optimizasyon İpuçları:**
+    - Sıklıkla sorgulanan alanlar için indeks kullanın
+    - İşlemleri tek transaction içinde toplu çalıştırın
+    - Büyük sorgularda lazy loading kullanın
+    
+    <Callout type="success">
+      Isar Plus kullanım senaryolarının %99'u için fazlasıyla hızlıdır. Sorun yaşıyorsanız muhtemelen bir şeyi yanlış yapıyorsunuz!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Performansı nasıl optimize ederim?">
+    Şu en iyi uygulamaları takip edin:
+    
+    ```dart
+    // ✅ İndeks kullanın
+    @collection
+    class User {
+      Id? id;
+      @Index() late String email;
+    }
+    
+    // ✅ Toplu işlemler
+    await isar.writeAsync((isar) => isar.users.putAll(users));
+    
+    // ✅ Where cümleleri
+    await isar.users.where().emailEqualTo('x').findAllAsync();
+    
+    // ❌ Kaçının
+    for (var user in users) {
+      await isar.writeAsync((isar) => isar.users.put(user));
+    }
+    ```
+    
+    Ayrıntılar için [İndeksler](/docs/indexes) ve [İşlemler](/docs/transactions) belgelerine bakın.
+  </Accordion>
+
+  <Accordion title="Neden where cümleleri filtrelerden daha iyidir?">
+    Where cümleleri indeksleri kullanarak doğrudan arama yapar:
+    
+    ```dart
+    // ⚡ Hızlı - indeks kullanır (O(log n))
+    await isar.users.where()
+      .emailEqualTo('john@example.com')
+      .findAll();
+    
+    // 🐌 Yavaş - tüm kayıtları tarar (O(n))
+    await isar.users.filter()
+      .emailEqualTo('john@example.com')
+      .findAll();
+    ```
+    
+    **Ne zaman hangisi:**
+    - Where: İndeksli alanlar, büyük veri kümeleri
+    - Filter: İndekslenmemiş alanlar, karmaşık koşullar
+    
+    <Callout type="info">
+      Hangi indeksin kullanılacağını siz seçersiniz. Verinizi en iyi siz tanıyorsunuz!
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Kullanım Soruları
+
+<Accordions>
+  <Accordion title="İndeks kullanmak zorunda mıyım?">
+    Hayır, ancak şiddetle önerilir:
+    
+    **İndekssiz:**
+    - ✅ Daha basit şema
+    - ✅ Daha hızlı yazmalar
+    - ❌ Daha yavaş sorgular
+    - ❌ Where cümlesi yok
+    
+    **İndeksli:**
+    - ⚡ Çok daha hızlı sorgular
+    - ✅ Where desteği
+    - ✅ Verimli sıralama
+    - ⚠️ Biraz yavaş yazmalar
+    
+    <Callout>
+      Küçük koleksiyonlarda (&lt;1000 kayıt) indeks gerekmeyebilir. Daha büyük koleksiyonlarda zorunludur!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus'ı birden fazla izolatta kullanabilir miyim?">
+    Evet! Isar Plus çok iyi çoklu izolat desteğine sahiptir:
+    
+    ```dart
+    // Ana izolat
+    final isar = Isar.open(schemas:[UserSchema]);
+    
+    // Arka plan izolatı
+    await compute((schemas) async {
+      final isar = Isar.open(schemas:[UserSchema]);
+      // Aynı örneği kullan
+      await isar.users.where().findAll();
+    }, [UserSchema]);
+    ```
+    
+    Ayrıntılar için [Multi-Isolate Tarifi](/docs/recipes/multi_isolate).
+  </Accordion>
+
+  <Accordion title="Geçişleri nasıl yönetirim?">
+    Isar Plus çoğu şema değişikliğini otomatik yönetir:
+    
+    **Otomatik:**
+    - Yeni alan eklemek
+    - Alan kaldırmak
+    - İndeks ekleme/kaldırma
+    - Alan türlerini değiştirme (veri kaybıyla)
+    
+    **Manuel gerektiren:**
+    - Karmaşık veri dönüşümleri
+    - Tür değiştirirken veriyi koruma
+    
+    ```dart
+    // Veri migration'ları
+    final users = await isar.users.where().findAllAsync();
+    await isar.writeAsync((isar) async {
+      for (var user in users) {
+        // Veriyi dönüştür
+        user.newField = transformOldField(user.oldField);
+        isar.users.put(user);
+      }
+    });
+    ```
+    
+    [Veri Migration Tarifi](/docs/recipes/data_migration)'ne bakın.
+  </Accordion>
+
+  <Accordion title="Isar Plus'ı Web'de kullanabilir miyim?">
+    Evet! Isar Plus tam web desteğine sahiptir:
+    
+    **Depolama:**
+    - Chrome/Edge 102+: OPFS (hızlı)
+    - Safari/Firefox: IndexedDB (uyumlu)
+    
+    **Kısıtlamalar:**
+    - Asenkron API'ler kullanılmalı
+    - Bazı metin yardımcıları yok
+    
+    ```dart
+    // ✅ Tüm platformlarda çalışır
+    await isar.writeAsync((isar) => isar.users.put(user));
+    
+    // ❌ Web'de çalışmaz
+    isar.write((isar) => isar.users.put(user));
+    ```
+    
+    Ayrıntılar için [Kısıtlamalar](/docs/limitations).
+  </Accordion>
+
+  <Accordion title="Isar Plus Android 16KB sayfa boyutunu destekliyor mu?">
+    Evet! Isar Plus, Android 15+'ın 16KB sayfa boyutu gereksinimini tamamen destekler:
+    
+    **Google Play Gereksinimi:**
+    - **Son Tarih:** Kasım 2025
+    - **Gereksinim:** Tüm uygulamalar 16KB sayfa boyutunu desteklemeli
+    - **Etkiler:** Android 15+ cihazlar
+    
+    **Otomatik Destek:**
+    Isar Plus bunu otomatik olarak halleder - kod değişikliği gerekmez!
+    
+    **NDK Kullanıcıları İçin:**
+    Uygulamanız başka native kütüphaneler kullanıyorsa şunları sağlayın:
+    - NDK sürüm r27 veya daha yüksek
+    - `android/app/build.gradle` dosyasına linker flag'leri ekleyin:
+    
+    ```kotlin
+    android {
+        defaultConfig {
+            ndk {
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+            }
+        }
+        
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PAGE_SIZE=16384"
+                cFlags "-Wl,-z,max-page-size=16384"
+                cppFlags "-Wl,-z,max-page-size=16384"
+            }
+        }
+    }
+    ```
+    
+    <Callout type="success">
+      Isar Plus, Android 15 ve Google Play'in 16KB gereksinimi için hazır!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar sorunlarını nasıl debug ederim?">
+    Birkaç debug aracı var:
+    
+    **Isar Inspector:**
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      inspector: true, // Debug modunda etkinleştirin
+    );
+    ```
+    
+    **Loglama:**
+    ```dart
+    // Tüm işlemleri logla
+    Isar.logger = (level, message) {
+      print('[$level] $message');
+    };
+    ```
+    
+    **Manuel inceleme:**
+    ```dart
+    // Kayıt sayısı
+    print('Users: ${await isar.users.count()}');
+    
+    // Veriyi kontrol et
+    final users = await isar.users.where().findAll();
+    print('All users: $users');
+    ```
+  </Accordion>
+</Accordions>
+
+## Boyut ve Depolama Soruları
+
+<Accordions>
+  <Accordion title="Isar Plus uygulama boyutunu artırır mı?">
+    Evet, ancak minimum düzeyde:
+    
+    **Yerel uygulamalar:**
+    - iOS/Android: ~1-1.5 MB
+    - Masaüstü: Benzer
+    
+    **Web:**
+    - isar.wasm: ~1 MB (optimize)
+    - isar.js: ~50 KB (yükleyici)
+    
+    <Callout>
+      Elde ettiğiniz işlevsellik bu boyut maliyetine değer!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Isar Plus ne kadar depolama kullanır?">
+    Depolama verinize bağlıdır:
+    
+    **Faktörler:**
+    - Kayıt sayısı
+    - Her kaydın boyutu
+    - İndeks sayısı
+    - Liste alanları
+    
+    **Tipik boyutlar:**
+    - 1000 küçük nesne: ~100 KB
+    - 10.000 orta boy nesne: ~2 MB
+    - 100.000 büyük nesne: ~50 MB
+    
+    ```dart
+    // Veritabanı boyutunu ölç
+    final file = File(isar.path);
+    final sizeInBytes = await file.length();
+    print('DB size: ${sizeInBytes ~/ 1024} KB');
+    ```
+  </Accordion>
+
+  <Accordion title="Veritabanını sıkıştırabilir miyim?">
+    Evet, açılışta compact kullanarak:
+    
+    ```dart
+    final isar = Isar.open(
+      schemas: [UserSchema],
+      compactOnLaunch: CompactCondition(
+        minFileSize: 100 * 1024 * 1024, // 100 MB
+        minRatio: 3.0, // Gerekenden 3 kat büyükse compact et
+      ),
+    );
+    ```
+    
+    Manuel compact desteklenmez ancak SQLite bunu verimli şekilde halleder.
+  </Accordion>
+</Accordions>
+
+## Sorun Giderme
+
+<Accordions>
+  <Accordion title="Kod üretimi başarısız">
+    Yaygın problemler:
+    
+    ```bash
+    # Bağımlılıkların doğru olduğundan emin olun
+    flutter pub get
+    
+    # Temizle ve yeniden oluştur
+    flutter pub run build_runner clean
+    flutter pub run build_runner build --delete-conflicting-outputs
+    
+    # part yönergesini kontrol et
+    # user.dart -> user.g.dart olmalı
+    part 'user.g.dart';
+    ```
+    
+    Kurulum için [Hızlı Başlangıç](/docs/quickstart).
+  </Accordion>
+
+  <Accordion title="Transaction hataları">
+    ```dart
+    // ❌ Hata: Transaction zaten tamamlandı
+    await isar.writeAsync((isar) async {
+      isar.users.put(user);
+      throw Exception('Error');
+      // Transaction burada biter
+      isar.users.put(user2); // Çalışmaz
+    });
+    
+    // ✅ Çözüm: Başarısız transaction'ı yeniden kullanmayın
+    try {
+      await isar.writeAsync((isar) async {
+        isar.users.put(user);
+      });
+    } catch (e) {
+      // Yeni transaction başlat
+      await isar.writeAsync((isar) async {
+        isar.users.put(userBackup);
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="'Cannot open database' hatası">
+    Olası nedenler:
+    
+    1. **Geçersiz dizin:**
+       ```dart
+       // Geçerli dizin alın
+       final dir = await getApplicationDocumentsDirectory();
+       final isar = Isar.open(
+         schemas: [UserSchema],
+         directory: dir.path,
+       );
+       ```
+    
+    2. **İzin sorunu:**
+       - Uygulama izinlerini kontrol edin
+       - Dizin yazılabilir mi doğrulayın
+    
+    3. **Bozuk veritabanı:**
+       ```dart
+       // Sil ve yeniden oluştur
+       final file = File('path/to/default.isar');
+       if (await file.exists()) {
+         await file.delete();
+       }
+       ```
+  </Accordion>
+</Accordions>
+
+## Katkıda Bulunma
+
+<Accordions>
+  <Accordion title="Nasıl katkı sağlayabilirim?">
+    Katkılarınızı memnuniyetle karşılıyoruz!
+    
+    **Katkı yolları:**
+    - 🐛 [GitHub](https://github.com/ahmtydn/isar_plus/issues) üzerinden hata bildirin
+    - 💡 Özellik önerin
+    - 📝 Dokümantasyonu iyileştirin
+    - 🔧 Pull request gönderin
+    - ⭐ Depoyu yıldızlayın
+    - 🗣️ Çevrenizle paylaşın
+    
+    <Callout type="success">
+      Her katkı Isar Plus'ı daha iyi yapar!
+    </Callout>
+  </Accordion>
+
+  <Accordion title="Dokümanda hata var">
+    Lütfen düzeltmemize yardım edin!
+    
+    1. [Issue açın](https://github.com/ahmtydn/isar_plus/issues/new)
+    2. Ya da düzeltmeyle PR gönderin
+    
+    <Callout>
+      Dokümantasyon iyileştirmeleri her zaman hoş karşılanır! 💪
+    </Callout>
+  </Accordion>
+</Accordions>
+
+## Sonraki Adımlar
+
+<Cards>
+  <Card title="Hızlı Başlangıç" href="/docs/quickstart">
+    Isar Plus ile hemen başlayın
+  </Card>
+  <Card title="Tarifler" href="/docs/recipes">
+    İleri seviye desenler ve çözümler
+  </Card>
+  <Card title="GitHub" href="https://github.com/ahmtydn/isar_plus" external>
+    Kaynak koduna ve issue'lara göz atın
+  </Card>
+</Cards>

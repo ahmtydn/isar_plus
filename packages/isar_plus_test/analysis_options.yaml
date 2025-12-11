@@ -1,6 +1,9 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
+  exclude:
+    - integration_test/**
+    - test/filter/filter_double_test.dart
   errors:
     cascade_invocations: ignore
     avoid_positional_boolean_parameters: ignore
@@ -11,3 +14,4 @@ analyzer:
     hash_and_equals: ignore
     type_annotate_public_apis: ignore
     document_ignores: ignore
+    todo: ignore

@@ -1,0 +1,91 @@
+---
+title: Relationships
+description: Model related data with embedded objects and explicit IDs
+icon: Link
+---
+
+# Relationships
+
+Isar Plus v4 removed runtime link primitives such as `IsarLink` and `IsarLinks`. The compiler now accepts only two annotations—`@collection` and `@embedded`—when analyzing your models, as enforced in `packages/isar_plus/lib/src/generator/isar_analyzer.dart`. If a property uses an unsupported type, the analyzer literally throws the "Unsupported type. Please add @embedded to the type..." error you can see in that file. This page documents the supported patterns that are implemented in the source tree today.
+
+## Embed Related Data
+
+Large schemas in the repository, such as the Twitter fixture under `packages/isar_plus_test/lib/src/twitter/tweet.dart`, embed their related entities directly. The `Tweet` collection nests the `User`, `Entities`, and other DTOs inline, eliminating the need for separate collections:
+
+```dart title="packages/isar_plus_test/lib/src/twitter/tweet.dart"
+@collection
+class Tweet {
+  Tweet();
+
+  @Id()
+  late String idStr;
+
+  User? user;              // @embedded in user.dart
+  Entities? entities;      // @embedded in entities.dart
+  Entities? extendedEntities;
+  CurrentUserRetweet? currentUserRetweet; // @embedded below
+}
+
+@embedded
+class CurrentUserRetweet {
+  CurrentUserRetweet();
+
+  String? idStr;
+}
+```
+
+Because `User`, `Entities`, and the nested DTOs are all annotated with `@embedded`, they inherit the parent document lifecycle. No extra queries are required; reads and writes stay localized to the owning `Tweet` record.
+
+## Embed Lists for 1:n Data
+
+For one-to-many data that never needs to be queried independently, the codebase relies on embedded lists. The package index example in `examples/pub/lib/models/package.dart` keeps dependency metadata alongside each package:
+
+```dart title="examples/pub/lib/models/package.dart"
+@collection
+class Package {
+  Package({
+    required this.name,
+    required this.version,
+    required this.dependencies,
+    required this.devDependencies,
+    required this.published,
+    required this.isLatest,
+  });
+
+  final String name;
+  final String version;
+  final bool isLatest;
+
+  final List<Dependency> dependencies;      // @embedded
+  final List<Dependency> devDependencies;   // @embedded
+}
+
+@embedded
+class Dependency {
+  Dependency({this.name = 'unknown', this.constraint = 'any'});
+
+  final String name;
+  final String constraint;
+}
+```
+
+This pattern mirrors the analyzer rules—embedded classes cannot define indexes or their own IDs, but they can be stored in lists to represent repeated children inside a single parent document.
+
+## Manual References via IDs
+
+When two records must point at each other without embedding (for example, a tweet replying to another tweet), the repository uses plain ID fields. The Twitter fixture exposes `inReplyToStatusIdStr`, `quotedStatusIdStr`, and similar properties on the `Tweet` class, letting you resolve related records with a query:
+
+```dart title="packages/isar_plus_test/lib/src/twitter/tweet.dart"
+class Tweet {
+  // ...
+  String? inReplyToStatusIdStr;  // points to another Tweet.idStr
+  String? quotedStatusIdStr;     // same idea
+  String? inReplyToUserIdStr;    // references an embedded User id
+}
+```
+
+You can follow the same approach in your app: store the foreign key explicitly (`int` or `String`), create helper methods that run `where().filter().fieldEqualTo(...)`, and keep both updates inside a single write transaction to ensure referential consistency.
+
+## Migration Reference
+
+Legacy `IsarLink`/`IsarLinks` code only lives in the [Migrate from Isar v3](./recipes/migrate_from_isar3) guide. That chapter walks through flattening every link into either an embedded structure or a manual ID field before copying your data into an Isar Plus database.

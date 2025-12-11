@@ -132,5 +132,45 @@ void main() {
         [david, emma, simon],
       );
     });
+    isarTest('AndGroup with single filter', () {
+      expect(users.where().group((q) => q.ageEqualTo(20)).findAll(), [david]);
+    });
+
+    isarTest('OrGroup with single filter in nested group', () {
+      expect(
+        users
+            .where()
+            .ageEqualTo(20)
+            .or()
+            .group((q) => q.ageEqualTo(40))
+            .findAll(),
+        [david, tina, bjorn],
+      );
+    });
+
+    isarTest('AndGroup with exactly one filter via buildQuery', () {
+      final query = users.buildQuery<Model>(
+        filter: AndGroup([const EqualCondition(property: 2, value: 20)]),
+      );
+      expect(query.findAll(), [david]);
+      query.close();
+    });
+
+    isarTest('OrGroup with exactly one filter via buildQuery', () {
+      final query = users.buildQuery<Model>(
+        filter: OrGroup([const EqualCondition(property: 2, value: 40)]),
+      );
+      expect(query.findAll(), [tina, bjorn]);
+      query.close();
+    });
+
+    isarTest('Unsupported filter value type throws ArgumentError', () {
+      expect(
+        () => users.buildQuery<Model>(
+          filter: const EqualCondition(property: 2, value: [1, 2, 3]),
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }

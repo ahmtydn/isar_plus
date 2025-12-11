@@ -56,5 +56,18 @@ void main() {
         throwsA(isA<EncryptionError>()),
       );
     });
+
+    test('Isar engine does not support encryption', () async {
+      await prepareTest();
+      expect(
+        () => Isar.open(
+          schemas: [ModelSchema],
+          name: 'test_enc_${DateTime.now().millisecondsSinceEpoch}',
+          directory: testTempPath ?? '.',
+          encryptionKey: 'testkey',
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }

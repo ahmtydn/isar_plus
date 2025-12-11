@@ -41,11 +41,11 @@ static void isar_plus_flutter_libs_plugin_dispose(GObject* object) {
   G_OBJECT_CLASS(isar_plus_flutter_libs_plugin_parent_class)->dispose(object);
 }
 
-static void isar_plus_flutter_libs_plugin_class_init(IsarFlutterLibsPluginClass* klass) {
+static void isar_plus_flutter_libs_plugin_class_init(IsarPlusFlutterLibsPluginClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = isar_plus_flutter_libs_plugin_dispose;
 }
 
-static void isar_plus_flutter_libs_plugin_init(IsarFlutterLibsPlugin* self) {}
+static void isar_plus_flutter_libs_plugin_init(IsarPlusFlutterLibsPlugin* self) {}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {

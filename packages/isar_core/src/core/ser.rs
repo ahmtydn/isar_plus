@@ -31,54 +31,74 @@ impl<'a, R: IsarReader> Serialize for IsarObjectSerialize<'a, R> {
 
             match data_type {
                 DataType::Bool => {
-                    ser.serialize_entry(name, &self.reader.read_bool(index as u32))?;
+                    match self.reader.read_bool(index as u32) {
+                        Some(value) => ser.serialize_entry(name, &value)?,
+                        None => ser.serialize_entry(name, &Value::Null)?,
+                    }
                 }
                 DataType::Byte => {
-                    ser.serialize_entry(name, &self.reader.read_byte(index as u32))?;
+                    if self.reader.is_null(index as u32) {
+                        ser.serialize_entry(name, &Value::Null)?;
+                    } else {
+                        let value = self.reader.read_byte(index as u32);
+                        ser.serialize_entry(name, &value)?;
+                    }
                 }
                 DataType::Int => {
-                    let value = self.reader.read_int(index as u32);
-                    if value != i32::MIN {
+                    if self.reader.is_null(index as u32) {
+                        ser.serialize_entry(name, &Value::Null)?;
+                    } else {
+                        let value = self.reader.read_int(index as u32);
                         ser.serialize_entry(name, &value)?;
                     }
                 }
                 DataType::Float => {
-                    let value = self.reader.read_float(index as u32);
-                    if !value.is_nan() {
+                    if self.reader.is_null(index as u32) {
+                        ser.serialize_entry(name, &Value::Null)?;
+                    } else {
+                        let value = self.reader.read_float(index as u32);
                         ser.serialize_entry(name, &value)?;
                     }
                 }
                 DataType::Long => {
-                    let value = self.reader.read_long(index as u32);
-                    if value != i64::MIN {
+                    if self.reader.is_null(index as u32) {
+                        ser.serialize_entry(name, &Value::Null)?;
+                    } else {
+                        let value = self.reader.read_long(index as u32);
                         ser.serialize_entry(name, &value)?;
                     }
                 }
                 DataType::Double => {
-                    let value = self.reader.read_double(index as u32);
-                    if !value.is_nan() {
+                    if self.reader.is_null(index as u32) {
+                        ser.serialize_entry(name, &Value::Null)?;
+                    } else {
+                        let value = self.reader.read_double(index as u32);
                         ser.serialize_entry(name, &value)?;
                     }
                 }
                 DataType::String => {
                     if let Some(value) = self.reader.read_string(index as u32) {
                         ser.serialize_entry(name, &value)?;
+                    } else {
+                        ser.serialize_entry(name, &Value::Null)?;
                     }
                 }
                 DataType::Json => {
                     if let Some(value) = self.reader.read_string(index as u32) {
-                        let value = serde_json::from_str::<Value>(value);
-                        if let Ok(value) = value {
-                            if value != Value::Null {
-                                ser.serialize_entry(name, &value)?;
-                            }
+                        match serde_json::from_str::<Value>(value) {
+                            Ok(parsed) => ser.serialize_entry(name, &parsed)?,
+                            Err(_) => ser.serialize_entry(name, &Value::Null)?,
                         }
+                    } else {
+                        ser.serialize_entry(name, &Value::Null)?;
                     }
                 }
                 DataType::Object => {
                     if let Some(object) = self.reader.read_object(index as u32) {
                         let reader = IsarObjectSerialize::new(&object);
                         ser.serialize_entry(name, &reader)?;
+                    } else {
+                        ser.serialize_entry(name, &Value::Null)?;
                     }
                 }
                 _ => {
@@ -89,7 +109,9 @@ impl<'a, R: IsarReader> Serialize for IsarObjectSerialize<'a, R> {
                             let reader = IsarListSerialize::new(element_type, &list, length);
                             ser.serialize_entry(name, &reader)?;
                         }
-                        _ => {}
+                        _ => {
+                            ser.serialize_entry(name, &Value::Null)?;
+                        }
                     }
                 }
             }

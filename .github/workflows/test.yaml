@@ -3,33 +3,68 @@ name: Isar Plus CI
 on:
   push:
     branches:
-      - test
+      - main
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
     branches:
-      - test
+      - main
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   format:
     name: Check formatting
     runs-on: ubuntu-latest
+    # if: ${{ false }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
-      - name: Check formatting
-        run: dart format -o none . --set-exit-if-changed
+          cache: true
+      - name: Format code
+        run: dart format .
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit formatted files
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "style: auto-format code"
+          git push
 
   lint:
     name: Check lints
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
+          cache: true
       - run: dart pub get
         working-directory: packages/isar_plus
       - run: flutter pub get
@@ -48,6 +83,7 @@ jobs:
   test_core:
     name: Core Test
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - name: Prepare Build
@@ -56,16 +92,19 @@ jobs:
         run: cargo test
 
   test:
-    name: Dart Test
+    name: Dart Test (${{ matrix.os }})
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    # if: ${{ false }}
     steps:
       - run: echo "$OSTYPE"
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -79,15 +118,25 @@ jobs:
   test_web:
     name: Dart Web Test
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: bash tool/build_wasm.sh
       - name: Serve isar.wasm
-        run: npx --yes serve --cors &
+        run: npx --yes serve --cors -p 3000 &
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Dart Unit tests
@@ -97,83 +146,238 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: sh tool/build.sh
+      - name: Build WASM
+        run: bash tool/build_wasm.sh
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Add packages
         run: |
           flutter pub add json_annotation
+          echo "" >> pubspec.yaml
+          echo "dependency_overrides:" >> pubspec.yaml
+          echo "  isar_plus_flutter_libs:" >> pubspec.yaml
+          echo "    path: ../isar_plus_flutter_libs" >> pubspec.yaml
           flutter pub add isar_plus_test --path ../isar_plus_test
+          flutter pub get
         working-directory: packages/isar_plus
-      - name: Collect isar_plus_test Coverage
+      - name: Collect isar_plus_test Coverage (Native)
         run: |
           flutter test --coverage ../isar_plus_test/test --coverage-path lcov_isar_plus_test.info
         working-directory: packages/isar_plus
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Wait for serve
+        run: sleep 3
+      - name: Collect isar_plus_test Coverage (Web)
+        run: |
+          dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s test/all_tests.dart || true
+          if [ -d "coverage_web" ]; then
+            dart pub global activate coverage
+            dart pub global run coverage:format_coverage \
+              --lcov \
+              --in=coverage_web \
+              --out=../isar_plus/lcov_isar_plus_test_web.info \
+              --report-on=../isar_plus/lib \
+              --packages=.dart_tool/package_config.json || true
+            rm -rf coverage_web
+          fi
+        working-directory: packages/isar_plus_test
       - name: Collect isar_core Coverage
         run: |
           cargo install cargo-tarpaulin
           cargo tarpaulin -o Lcov --engine llvm
-      - name: Upload isar_plus_test Coverage
+      - name: Upload isar_plus_test Coverage (Native)
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/isar_plus/lcov_isar_plus_test.info
           flags: isar
+      - name: Upload isar_plus_test Coverage (Web)
+        uses: codecov/codecov-action@v3
+        if: ${{ hashFiles('packages/isar_plus/lcov_isar_plus_test_web.info') != '' }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/isar_plus/lcov_isar_plus_test_web.info
+          flags: isar-web
       - name: Upload isar_core Coverage
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           flags: core
 
   test_generator:
     name: Generator Test
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Run Generator Unit tests
         run: |
           dart pub get
           dart test
         working-directory: packages/isar_plus
 
-  integration_test_ios:
-    name: Integration Test iOS
-    runs-on: macos-13
+  integration_test_chrome:
+    name: Integration Test Chrome
+    runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
-      - name: Start simulator
-        uses: futureware-tech/simulator-action@v2
-        with:
-          model: iPhone 14
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      - name: Build Isar Core
+        run: bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Install chromedricer
+        uses: nanasess/setup-chromedriver@v2
+      - name: Prepare chromedricer
+        run: chromedriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          dart tool/generate_all_tests.dart
+          flutter pub run build_runner build
+          flutter drive --driver=integration_driver.dart  --target=integration_test/isar_test.dart -d web-server --browser-name chrome
+        working-directory: packages/isar_plus_test
+
+  integration_test_firefox:
+    name: Integration Test Firefox
+    runs-on: ubuntu-latest
+    # if: ${{ false }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+      - name: Build Isar Core
+        run: bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Install geckodriver
+        uses: browser-actions/setup-geckodriver@latest
+      - name: Prepare geckodriver
+        run: geckodriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          flutter pub run build_runner build
+          dart tool/generate_all_tests.dart
+          flutter drive --driver=integration_driver.dart --target=integration_test/isar_test.dart -d web-server --browser-name firefox
+        working-directory: packages/isar_plus_test
+
+  integration_test_safari:
+    name: Integration Test Safari
+    runs-on: macos-latest
+    # if: ${{ false }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-serve
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/isar_plus_test/macos/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: |
-          bash tool/build_ios.sh
-          unzip isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
-      - name: Prepare Tests
-        run: sh tool/prepare_tests.sh
-      - name: Run Flutter Integration tests
-        run: flutter test integration_test.dart --dart-define STRESS=true
+          brew install llvm
+          bash tool/build_wasm.sh
+      - name: Serve isar.wasm
+        run: npx --yes serve --cors -p 3000 &
+      - name: Prepare safaridriver
+        run: |
+          sudo safaridriver --enable
+          safaridriver --port=4444 &
+      - name: Run Dart tests in browser
+        run: |
+          flutter pub get
+          dart tool/generate_long_double_test.dart
+          flutter pub run build_runner build
+          dart tool/generate_all_tests.dart
+          flutter drive --driver=integration_driver.dart --target=integration_test/isar_test.dart -d web-server --browser-name safari
         working-directory: packages/isar_plus_test
 
   integration_test_android:
     name: Integration Test Android
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
-          java-version: "11"
+          java-version: "17"
           distribution: "zulu"
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -183,21 +387,46 @@ jobs:
           mv libisar_android_x64.so packages/isar_plus_flutter_libs/android/src/main/jniLibs/x86_64/libisar.so
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android/sdk/ndk
+          df -h
       - name: Run Flutter Integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           arch: x86_64
           profile: pixel
+          target: default
+          disk-size: 6000M
+          ram-size: 2048M
+          heap-size: 512M
           working-directory: packages/isar_plus_test
-          script: flutter test integration_test.dart --dart-define STRESS=true
+          script: flutter test integration_test/isar_test.dart --dart-define STRESS=true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
 
   integration_test_macos:
     name: Integration Test macOS
-    runs-on: macos-13
+    runs-on: macos-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/isar_plus_test/macos/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -210,22 +439,27 @@ jobs:
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-macos-desktop 
-          flutter test -d macos integration_test.dart --dart-define STRESS=true
+          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
   integration_test_linux:
     name: Integration Test Linux
-    if: ${{ false }}
     runs-on: ubuntu-latest
+    # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Install Linux requirements
-        run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-de
+        run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev
       - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v1
+        run: |
+          sudo apt-get install -y xvfb libgl1
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
       - name: Build Isar Core
         run: |
           bash tool/build_linux.sh x64
@@ -235,103 +469,203 @@ jobs:
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-linux-desktop 
-          flutter test -d linux integration_test.dart --dart-define STRESS=true
+          flutter test -d linux integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
   integration_test_windows:
     name: Integration Test Windows
-    runs-on: windows-2019
-    if: ${{ false }}
+    # if: ${{ false }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
         run: |
           bash tool/build_windows.sh x64
-          mv isar_windows_x64.dll packages/isar_plus_flutter_libs/windows/libisar.dll
+          mv isar_windows_x64.dll packages/isar_plus_flutter_libs/windows/isar.dll
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
           flutter config --enable-windows-desktop 
-          flutter test -d windows integration_test.dart --dart-define STRESS=true
+          flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
-  integration_test_chrome:
-    name: Integration Test Chrome
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Install chromedricer
-        uses: nanasess/setup-chromedriver@v2
-      - name: Prepare chromedricer
-        run: chromedriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          dart tool/generate_all_tests.dart
-          flutter pub run build_runner build
-          flutter drive --driver=integration_driver.dart  --target=integration_test.dart -d web-server --browser-name chrome
-        working-directory: packages/isar_plus_test
-
-  integration_test_safari:
-    name: Integration Test Safari
+  build_ios_targets:
+    name: Build iOS Target (${{ matrix.target.name }})
     runs-on: macos-latest
+    strategy:
+      matrix:
+        target:
+          - arch: aarch64-apple-ios
+            name: device
+            path: release
+          - arch: aarch64-apple-ios-sim
+            name: simulator-arm
+            path: release
+          - arch: x86_64-apple-ios
+            name: simulator-x86
+            path: release
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-      - name: Prepare Build
-        uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: |
-          brew install llvm
-          bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Prepare safaridricer
-        run: |
-          sudo safaridriver --enable
-          safaridriver --port=4444 &
-      - name: Run Dart tests in browser
-        run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name safari
-        working-directory: packages/isar_plus_test
 
-  integration_test_firefox:
-    name: Integration Test Firefox
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: bash tool/build_wasm.sh
-      - name: Serve isar.wasm
-        run: npx --yes serve --cors &
-      - name: Install geckodriver
-        uses: browser-actions/setup-geckodriver@latest
-      - name: Prepare geckodriver
-        run: geckodriver --port=4444 &
-      - name: Run Dart tests in browser
+
+      - name: Add iOS target
+        run: rustup target add ${{ matrix.target.arch }}
+
+      - name: Build for ${{ matrix.target.arch }}
         run: |
-          flutter pub get
-          dart tool/generate_long_double_test.dart
-          flutter pub run build_runner build
-          dart tool/generate_all_tests.dart
-          flutter drive --driver=integration_driver.dart --target=integration_test.dart -d web-server --browser-name firefox
+          set -e
+          export IPHONEOS_DEPLOYMENT_TARGET=11.0
+          echo "Building for ${{ matrix.target.arch }}..."
+          cargo build --target ${{ matrix.target.arch }} --features sqlcipher --release
+
+      - name: Verify binary exists
+        run: |
+          if [[ ! -f "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a" ]]; then
+            echo "Error: Binary not found at target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
+            exit 1
+          fi
+          ls -lh "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: isar-ios-${{ matrix.target.name }}
+          path: target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a
+          retention-days: 1
+
+  assemble_ios_xcframework:
+    name: Assemble iOS XCFramework
+    runs-on: macos-latest
+    needs: build_ios_targets
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download device binary
+        uses: actions/download-artifact@v4
+        with:
+          name: isar-ios-device
+          path: build/device
+
+      - name: Download simulator ARM binary
+        uses: actions/download-artifact@v4
+        with:
+          name: isar-ios-simulator-arm
+          path: build/simulator-arm
+
+      - name: Download simulator x86 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: isar-ios-simulator-x86
+          path: build/simulator-x86
+
+      - name: Verify downloaded artifacts
+        run: |
+          echo "Checking downloaded artifacts..."
+          ls -lh build/device/libisar.a
+          ls -lh build/simulator-arm/libisar.a
+          ls -lh build/simulator-x86/libisar.a
+
+      - name: Create universal simulator binary
+        run: |
+          echo "Creating universal simulator binary..."
+          mkdir -p build/simulator
+          lipo "build/simulator-arm/libisar.a" \
+               "build/simulator-x86/libisar.a" \
+               -output "build/simulator/libisar.a" \
+               -create
+          echo "Universal binary created:"
+          lipo -info build/simulator/libisar.a
+
+      - name: Create XCFramework
+        run: |
+          echo "Creating XCFramework..."
+          xcodebuild \
+            -create-xcframework \
+            -library build/device/libisar.a \
+            -library build/simulator/libisar.a \
+            -output isar.xcframework
+          echo "XCFramework created successfully"
+          ls -lh isar.xcframework
+
+      - name: Create archive
+        run: |
+          echo "Creating archive..."
+          zip -r isar_ios.xcframework.zip isar.xcframework
+          ls -lh isar_ios.xcframework.zip
+
+      - name: Upload XCFramework
+        uses: actions/upload-artifact@v4
+        with:
+          name: isar-ios-xcframework
+          path: isar_ios.xcframework.zip
+          retention-days: 1
+
+  integration_test_ios:
+    name: Integration Test iOS
+    runs-on: macos-latest
+    needs: assemble_ios_xcframework
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start simulator
+        uses: futureware-tech/simulator-action@v4
+        id: simulator
+        with:
+          model: iPhone 17 Pro
+
+      - uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/isar_plus_test/ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Prepare Build
+        uses: ./.github/actions/prepare-build
+
+      - name: Download XCFramework
+        uses: actions/download-artifact@v4
+        with:
+          name: isar-ios-xcframework
+          path: .
+
+      - name: Extract XCFramework
+        run: |
+          echo "Extracting XCFramework..."
+          unzip -o isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
+          ls -lh packages/isar_plus_flutter_libs/ios/
+
+      - name: Prepare Tests
+        run: sh tool/prepare_tests.sh
+
+      - name: Run Flutter Integration tests
+        run: |
+          # List available devices for debugging
+          flutter devices
+          # Get the specific device ID from the simulator action
+          DEVICE_ID="${{ steps.simulator.outputs.udid }}"
+          echo "Using device ID: $DEVICE_ID"
+          # Run tests on the specific iOS simulator using device ID
+          flutter test -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test

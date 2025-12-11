@@ -394,5 +394,33 @@ void main() {
       expect(isar.intModels.count(), 2);
       expect(isar.stringModels.count(), 0);
     });
+
+    isarTest('Accessing closed query throws StateError', () {
+      final query = isar.intModels.where().build();
+      query.close();
+
+      expect(query.findAll, throwsStateError);
+    });
+
+    isarTest('collection() throws for unregistered type', () {
+      expect(() => isar.collection<String, IntModel>(), throwsArgumentError);
+    });
+
+    isarTest('collectionByIndex() returns correct collection', () {
+      final col0 = isar.collectionByIndex<int, IntModel>(0);
+      expect(col0, isNotNull);
+      expect(col0.schema.name, 'IntModel');
+
+      final col1 = isar.collectionByIndex<String, StringModel>(1);
+      expect(col1, isNotNull);
+      expect(col1.schema.name, 'StringModel');
+    });
+
+    isarTest('collectionByIndex() throws for wrong type params', () {
+      expect(
+        () => isar.collectionByIndex<String, StringModel>(0),
+        throwsArgumentError,
+      );
+    });
   });
 }

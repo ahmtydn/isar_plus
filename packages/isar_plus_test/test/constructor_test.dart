@@ -1,8 +1,8 @@
 // ignore_for_file: non_nullable_equals_parameter
 
-import 'package:flutter/widgets.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
+import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 part 'constructor_test.g.dart';

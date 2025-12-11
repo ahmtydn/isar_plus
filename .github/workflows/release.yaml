@@ -88,6 +88,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          registry-url: 'https://registry.npmjs.org'
       - name: Set Isar Version
         run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
         
@@ -144,6 +145,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download Binaries (for pub.dev)
+        run: sh tool/download_binaries.sh
+      - name: Adjust Version
+        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
+      - name: Update npm
+        run: npm install -g npm@latest
+      - name: Publish to npm
+        run: npm publish --provenance
+
       - name: Update CHANGELOG files
         run: |
           # Wait a moment for the release to be fully created
@@ -171,16 +181,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download Binaries (for pub.dev)
-        run: sh tool/download_binaries.sh
-      - name: Adjust Version
-        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
-      - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v2
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: ${{ github.workspace }}/package.json
       - name: pub.dev credentials
         run: |
           mkdir -p $HOME/.config/dart

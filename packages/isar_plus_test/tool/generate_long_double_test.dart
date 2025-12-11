@@ -10,6 +10,7 @@ void main() {
       .replaceAll('intModels', 'longModels');
   File('test/filter/filter_long_test.dart').writeAsStringSync(longTest);
 
+  // TODO(ahmtydn): check
   /*final intListTestFile = File('test/filter/filter_int_list_test.dart');
   final intListTest = intListTestFile.readAsStringSync();
   final longListTest = intListTest
@@ -36,6 +37,7 @@ void main() {
       .replaceAll('float', 'double')
       .replaceAll('filter_float_test', 'filter_double_test')
       .replaceAll('floatModels', 'doubleModels');
-  File('test/filter/filter_double_list_test.dart')
-      .writeAsStringSync(doubleListTest);
+  File(
+    'test/filter/filter_double_list_test.dart',
+  ).writeAsStringSync(doubleListTest);
 }

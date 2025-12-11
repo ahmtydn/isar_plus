@@ -10,8 +10,10 @@ DateTime? convertTwitterDateTime(String? twitterDateString) {
   } on Exception {
     try {
       final dateString = formatTwitterDateString(twitterDateString);
-      return DateFormat('E MMM dd HH:mm:ss yyyy', 'en_US')
-          .parse(dateString, true);
+      return DateFormat(
+        'E MMM dd HH:mm:ss yyyy',
+        'en_US',
+      ).parse(dateString, true);
     } on Exception {
       return null;
     }

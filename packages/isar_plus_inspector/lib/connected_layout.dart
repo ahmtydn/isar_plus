@@ -66,8 +66,10 @@ class _ConnectedLayoutState extends State<ConnectedLayout> {
           if (mounted && selectedInstance == instance) {
             setState(() {
               schemas.addAll(newSchemas);
-              selectedCollection =
-                  schemas.where((e) => !e.embedded).firstOrNull?.name;
+              selectedCollection = schemas
+                  .where((e) => !e.embedded)
+                  .firstOrNull
+                  ?.name;
             });
           }
         }),
@@ -110,9 +112,7 @@ class _ConnectedLayoutState extends State<ConnectedLayout> {
                 instance: selectedInstance!,
                 collection: selectedCollection!,
                 client: widget.client,
-                schemas: {
-                  for (final schema in schemas) schema.name: schema,
-                },
+                schemas: {for (final schema in schemas) schema.name: schema},
               ),
             ),
         ],

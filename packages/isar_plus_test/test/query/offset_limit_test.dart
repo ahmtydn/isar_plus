@@ -86,5 +86,14 @@ void main() {
     isarTest('big offset and limit', () {
       expect(col.where().findAll(offset: 300, limit: 5), isEmpty);
     });
+
+    isarTest('deleteAll with 0 limit throws', () {
+      final query = col.where().build();
+      expect(
+        () => isar.write((isar) => query.deleteAll(limit: 0)),
+        throwsArgumentError,
+      );
+      query.close();
+    });
   });
 }

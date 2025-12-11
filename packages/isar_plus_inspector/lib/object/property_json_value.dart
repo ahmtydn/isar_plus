@@ -75,10 +75,7 @@ class _NullJsonValue extends StatelessWidget {
 }
 
 class _StringJsonValue extends StatefulWidget {
-  const _StringJsonValue({
-    required this.value,
-    this.onUpdate,
-  });
+  const _StringJsonValue({required this.value, this.onUpdate});
 
   final String value;
   final void Function(dynamic newValue)? onUpdate;
@@ -125,10 +122,7 @@ class _StringJsonValueState extends State<_StringJsonValue> {
 }
 
 class _NumJsonValue extends StatefulWidget {
-  const _NumJsonValue({
-    required this.value,
-    this.onUpdate,
-  });
+  const _NumJsonValue({required this.value, this.onUpdate});
 
   final num value;
   final void Function(dynamic newValue)? onUpdate;
@@ -244,10 +238,7 @@ class _NumJsonValueState extends State<_NumJsonValue> {
 }
 
 class _BoolJsonValue extends StatelessWidget {
-  const _BoolJsonValue({
-    required this.value,
-    this.onUpdate,
-  });
+  const _BoolJsonValue({required this.value, this.onUpdate});
 
   final bool value;
   final void Function(dynamic newValue)? onUpdate;
@@ -311,8 +302,9 @@ class _MapJsonValueState extends State<_MapJsonValue> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color:
-              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.3,
+          ),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
@@ -329,11 +321,8 @@ class _MapJsonValueState extends State<_MapJsonValue> {
             if (widget.onUpdate != null) ...[
               const SizedBox(width: 8),
               InkWell(
-                onTap: () => _showAddMapEntry(
-                  context,
-                  widget.value,
-                  widget.onUpdate!,
-                ),
+                onTap: () =>
+                    _showAddMapEntry(context, widget.value, widget.onUpdate!),
                 child: Icon(
                   Icons.add_circle_outline,
                   size: 16,
@@ -478,8 +467,9 @@ class _MapJsonValueState extends State<_MapJsonValue> {
                     onUpdate: widget.onUpdate == null
                         ? null
                         : (newValue) {
-                            final updatedMap =
-                                Map<String, dynamic>.from(widget.value);
+                            final updatedMap = Map<String, dynamic>.from(
+                              widget.value,
+                            );
                             if (newValue == null) {
                               updatedMap.remove(entry.key);
                             } else {
@@ -505,11 +495,7 @@ class _MapJsonValueState extends State<_MapJsonValue> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.close,
-                  size: 14,
-                  color: Colors.red[300],
-                ),
+                child: Icon(Icons.close, size: 14, color: Colors.red[300]),
               ),
             ),
         ],
@@ -544,8 +530,9 @@ class _ListJsonValueState extends State<_ListJsonValue> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color:
-              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.3,
+          ),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
@@ -562,11 +549,8 @@ class _ListJsonValueState extends State<_ListJsonValue> {
             if (widget.onUpdate != null) ...[
               const SizedBox(width: 8),
               InkWell(
-                onTap: () => _showAddListItem(
-                  context,
-                  widget.value,
-                  widget.onUpdate!,
-                ),
+                onTap: () =>
+                    _showAddListItem(context, widget.value, widget.onUpdate!),
                 child: Icon(
                   Icons.add_circle_outline,
                   size: 16,
@@ -728,22 +712,15 @@ class _ListJsonValueState extends State<_ListJsonValue> {
           ),
           if (widget.onUpdate != null)
             InkWell(
-              onTap: () => _confirmDelete(
-                context,
-                'Delete item at index $index?',
-                () {
-                  final updatedList = List<dynamic>.from(widget.value);
-                  updatedList.removeAt(index);
-                  widget.onUpdate?.call(updatedList);
-                },
-              ),
+              onTap: () =>
+                  _confirmDelete(context, 'Delete item at index $index?', () {
+                    final updatedList = List<dynamic>.from(widget.value);
+                    updatedList.removeAt(index);
+                    widget.onUpdate?.call(updatedList);
+                  }),
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.close,
-                  size: 14,
-                  color: Colors.red[300],
-                ),
+                child: Icon(Icons.close, size: 14, color: Colors.red[300]),
               ),
             ),
         ],
@@ -778,11 +755,7 @@ void _showJsonEditor(
         child: AlertDialog(
           title: Row(
             children: [
-              Icon(
-                Icons.code,
-                color: theme.colorScheme.primary,
-                size: 20,
-              ),
+              Icon(Icons.code, color: theme.colorScheme.primary, size: 20),
               const SizedBox(width: 8),
               const Text('Edit JSON Value'),
             ],

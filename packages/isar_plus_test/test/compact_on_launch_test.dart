@@ -161,5 +161,19 @@ void main() {
       final size4 = file.lengthSync();
       expect(size4, lessThan(size3));
     });
+
+    test('SQLite engine does not support compaction', () async {
+      await prepareTest();
+      expect(
+        () => Isar.open(
+          schemas: [ModelSchema],
+          name: 'test_compact_${DateTime.now().millisecondsSinceEpoch}',
+          directory: Isar.sqliteInMemory,
+          engine: IsarEngine.sqlite,
+          compactOnLaunch: const CompactCondition(minFileSize: 1024),
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }
