@@ -40,6 +40,10 @@ sh tool/prepare_tests.sh
 
 # --- Modify pubspec.yaml for Testing ---
 echo "Modifying isar_plus/pubspec.yaml for tests..."
+if [ -f "$ISAR_PLUS_DIR/pubspec.yaml.bak" ]; then
+  echo "Previous backup found, restoring..."
+  mv "$ISAR_PLUS_DIR/pubspec.yaml.bak" "$ISAR_PLUS_DIR/pubspec.yaml"
+fi
 cp "$ISAR_PLUS_DIR/pubspec.yaml" "$ISAR_PLUS_DIR/pubspec.yaml.bak"
 
 # Add temporary dependencies
@@ -67,10 +71,14 @@ npx --yes serve --cors -p 3000 &
 SERVER_PID=$!
 sleep 5 # Wait for server to start
 
+cd "$ISAR_PLUS_DIR"
+ABS_PACKAGE_DIR=$(pwd)
+cd ../..
+
 cd "$ISAR_PLUS_TEST_DIR"
 rm -rf coverage_web
 # Run tests with chrome driver
-dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s test/all_tests.dart || true
+dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s integration_test/all_tests.dart || true
 
 if [ -d "coverage_web" ]; then
   dart pub global activate coverage
@@ -81,6 +89,12 @@ if [ -d "coverage_web" ]; then
     --report-on=../isar_plus/lib \
     --packages=.dart_tool/package_config.json || true
   rm -rf coverage_web
+  
+  if [ -f "../isar_plus/lcov_isar_plus_test_web.info" ]; then
+    ESCAPED_PATH=$(echo "$ABS_PACKAGE_DIR/" | sed 's/\//\\\//g')
+    sed -i.bak "s/$ESCAPED_PATH//g" "../isar_plus/lcov_isar_plus_test_web.info"
+    rm "../isar_plus/lcov_isar_plus_test_web.info.bak"
+  fi
 fi
 cd ../..
 
