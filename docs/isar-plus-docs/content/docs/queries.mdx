@@ -18,10 +18,12 @@ Querying is how you find records that match certain conditions. Learn how to bui
 
 ## Overview
 
-There are two different methods of filtering your records:
+There are two different methods of filtering your records. Both start with `.where()` but work differently under the hood:
 
-1. **Filters** - Easy to use, work on any property
-2. **Where clauses** - More powerful, require indexes
+1. **Filters** - Easy to use, work on any property (scans all records)
+2. **Where clauses** - More powerful, require indexes (extremely fast)
+
+The API is unified: you always start with `.where()`. If you use a condition on an indexed property, it automatically becomes a fast "Where clause". If you use a condition on a non-indexed property, it becomes a "Filter".
 
 ## Filters
 
@@ -268,6 +270,31 @@ final shoes = await isar.shoes.where()
   )
   .findAllAsync();
 ```
+
+## Advanced: Custom Queries
+
+For complex scenarios where you need to build queries dynamically at runtime, you can use `buildQuery`. This is useful for creating custom query languages or dynamic filtering UIs.
+
+```dart
+// Manually construct a Filter
+final filter = AndGroup([
+  EqualCondition(property: 1, value: 46), // property 1 is 'size'
+  GreaterCondition(property: 2, value: 100), // property 2 is 'price'
+]);
+
+final query = isar.shoes.buildQuery(
+  filter: filter,
+  sortBy: [
+    SortProperty(property: 1, sort: Sort.desc), // Sort by size desc
+  ],
+);
+
+final results = await query.findAllAsync();
+```
+
+<Callout type="warning">
+  Using `buildQuery` requires intimate knowledge of your schema's property indices. It is recommended to use the generated `.where()` API whenever possible.
+</Callout>
 
 ## List Queries
 

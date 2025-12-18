@@ -18,10 +18,12 @@ Sorgulama, belirli koşulları sağlayan kayıtları bulma yöntemidir. Güçlü
 
 ## Genel Bakış
 
-Kayıtlarınızı filtrelemek için iki yöntem vardır:
+Kayıtlarınızı filtrelemek için iki farklı yöntem vardır. Her ikisi de `.where()` ile başlar ancak arka planda farklı çalışır:
 
-1. **Filtreler** - Kullanımı kolaydır, herhangi bir özellikte çalışır
-2. **Where cümleleri** - Daha güçlüdür, indeks gerektirir
+1. **Filtreler** - Kullanımı kolaydır, herhangi bir özellikte çalışır (tüm kayıtları tarar)
+2. **Where cümleleri** - Daha güçlüdür, indeks gerektirir (son derece hızlıdır)
+
+API birleşiktir: her zaman `.where()` ile başlarsınız. İndeksli bir özellik üzerinde koşul kullanırsanız, otomatik olarak hızlı bir "Where cümlesi" olur. İndeksli olmayan bir özellik kullanırsanız, bir "Filtre" olur.
 
 ## Filtreler
 
@@ -265,8 +267,32 @@ final shoes = await isar.shoes.where()
     ['Nike', 'Adidas'],
     (q, brand) => q.modelContains(brand)
   )
-  .findAll();
 ```
+
+## Gelişmiş: Özel Sorgular (Custom Queries)
+
+Sorguları çalışma zamanında dinamik olarak oluşturmanız gereken karmaşık senaryolar için `buildQuery` kullanabilirsiniz. Bu, özel sorgu dilleri veya dinamik filtreleme arayüzleri oluşturmak için yararlıdır.
+
+```dart
+// Filter nesnesini manuel oluşturma
+final filter = AndGroup([
+  EqualCondition(property: 1, value: 46), // özellik 1: 'size'
+  GreaterCondition(property: 2, value: 100), // özellik 2: 'price'
+]);
+
+final query = isar.shoes.buildQuery(
+  filter: filter,
+  sortBy: [
+    SortProperty(property: 1, sort: Sort.desc), // boyuta göre azalan sırala
+  ],
+);
+
+final results = await query.findAllAsync();
+```
+
+<Callout type="warning">
+  `buildQuery` kullanmak, şemanızın özellik indeksleri (property index) hakkında derin bilgi gerektirir. Mümkün olduğunda üretilen `.where()` API'sini kullanmanız önerilir.
+</Callout>
 
 ## Liste Sorguları
 
@@ -530,11 +556,11 @@ final uniqueSizes = await isar.shoes
 
 1. **İndeksli Where Cümleleri Kullanın**
    ```dart
-   // ✅ Hızlı - indeks kullanır
-   await isar.products.where().nameEqualTo('iPhone').findAll();
+   // ✅ Hızlı - indeks kullanır (price indekslidir)
+   await isar.products.where().priceEqualTo(500).findAllAsync();
    
-   // ❌ Yavaş - tüm kayıtları tarar
-   await isar.products.where().nameEqualTo('iPhone').findAll();
+   // ❌ Yavaş - tüm kayıtları tarar (name indeksli değildir)
+   await isar.products.where().nameEqualTo('iPhone').findAllAsync();
    ```
 
 2. **Where ve Filtreyi Birleştirin**
