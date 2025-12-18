@@ -23,9 +23,8 @@ class _IsarCollectionGenerator extends GeneratorForAnnotation<Collection> {
     BuildStep buildStep,
   ) async {
     final object = _IsarAnalyzer().analyzeCollection(element);
-    final idType = object.idProperty!.type == IsarType.string
-        ? 'String'
-        : 'int';
+    final idType =
+        object.idProperty!.type == IsarType.string ? 'String' : 'int';
     return '''
       // coverage:ignore-file
       // ignore_for_file: ${_ignoreLints.join(', ')}

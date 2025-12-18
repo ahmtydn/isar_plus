@@ -13,12 +13,10 @@ String _generateSortBy(ObjectInfo oi) {
       continue;
     }
 
-    final caseSensitiveParam = property.type.isString
-        ? '{bool caseSensitive = true}'
-        : '';
-    final caseSensitiveArg = property.type.isString
-        ? ', caseSensitive: caseSensitive,'
-        : '';
+    final caseSensitiveParam =
+        property.type.isString ? '{bool caseSensitive = true}' : '';
+    final caseSensitiveArg =
+        property.type.isString ? ', caseSensitive: caseSensitive,' : '';
 
     buffer.write('''
     ${prefix}sortBy${property.dartName.capitalize()}($caseSensitiveParam) {
@@ -46,12 +44,10 @@ String _generateSortBy(ObjectInfo oi) {
       continue;
     }
 
-    final caseSensitiveParam = property.type.isString
-        ? '{bool caseSensitive = true}'
-        : '';
-    final caseSensitiveArg = property.type.isString
-        ? ', caseSensitive: caseSensitive'
-        : '';
+    final caseSensitiveParam =
+        property.type.isString ? '{bool caseSensitive = true}' : '';
+    final caseSensitiveArg =
+        property.type.isString ? ', caseSensitive: caseSensitive' : '';
 
     buffer.write('''
     ${prefix}thenBy${property.dartName.capitalize()}($caseSensitiveParam) {

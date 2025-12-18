@@ -15,10 +15,10 @@ String _generateDeserialize(ObjectInfo object) {
     propertiesByMode[property.mode]!.add(property);
   }
 
-  final positional = propertiesByMode[DeserializeMode.positionalParam]!
-    ..sort(
-      (p1, p2) => p1.constructorPosition!.compareTo(p2.constructorPosition!),
-    );
+  final positional =
+      propertiesByMode[DeserializeMode.positionalParam]!..sort(
+        (p1, p2) => p1.constructorPosition!.compareTo(p2.constructorPosition!),
+      );
   final named = propertiesByMode[DeserializeMode.namedParam]!;
 
   for (final p in [...positional, ...named]) {
