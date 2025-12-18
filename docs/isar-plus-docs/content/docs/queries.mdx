@@ -50,7 +50,7 @@ class Shoe {
     // Find size 46 shoes
     final result = await isar.shoes.filter()
       .sizeEqualTo(46)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="Comparison">
@@ -58,12 +58,12 @@ class Shoe {
     // Find shoes smaller than size 40
     final result = await isar.shoes.filter()
       .sizeLessThan(40)
-      .findAll(); // -> [39, null]
+      .findAllAsync(); // -> [39, null]
     
     // Include the boundary
     final result2 = await isar.shoes.filter()
       .sizeLessThan(40, include: true)
-      .findAll(); // -> [39, null, 40]
+      .findAllAsync(); // -> [39, null, 40]
     ```
   </Tab>
   <Tab value="Range">
@@ -71,12 +71,12 @@ class Shoe {
     // Find shoes between size 39 and 46
     final result = await isar.shoes.filter()
       .sizeBetween(39, 46)
-      .findAll();
+      .findAllAsync();
     
     // Exclude lower bound
     final result2 = await isar.shoes.filter()
       .sizeBetween(39, 46, includeLower: false)
-      .findAll(); // -> [40, 46]
+      .findAllAsync(); // -> [40, 46]
     ```
   </Tab>
   <Tab value="Null Check">
@@ -84,12 +84,12 @@ class Shoe {
     // Find shoes with null size
     final nullSizes = await isar.shoes.filter()
       .sizeIsNull()
-      .findAll();
+      .findAllAsync();
     
     // Find shoes with non-null size
     final withSizes = await isar.shoes.filter()
       .sizeIsNotNull()
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
 </Tabs>
@@ -116,7 +116,7 @@ final result = await isar.shoes.filter()
   .sizeEqualTo(46)
   .and() // Optional
   .isUnisexEqualTo(true)
-  .findAll();
+  .findAllAsync();
 // Equivalent to: size == 46 && isUnisex == true
 ```
 
@@ -127,7 +127,7 @@ final result = await isar.shoes.filter()
       .sizeEqualTo(46)
       .and()
       .isUnisexEqualTo(true)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="OR">
@@ -136,7 +136,7 @@ final result = await isar.shoes.filter()
       .sizeEqualTo(46)
       .or()
       .sizeEqualTo(40)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="NOT">
@@ -145,7 +145,7 @@ final result = await isar.shoes.filter()
       .not().sizeEqualTo(46)
       .and()
       .not().isUnisexEqualTo(true)
-      .findAll();
+      .findAllAsync();
     // Equivalent to: size != 46 && isUnisex != true
     ```
   </Tab>
@@ -159,7 +159,7 @@ final result = await isar.shoes.filter()
         .or()
         .isUnisexEqualTo(false)
       )
-      .findAll();
+      .findAllAsync();
     // Equivalent to: size >= 43 && size <= 46 && 
     // (model.contains('Nike') || isUnisex == false)
     ```
@@ -183,26 +183,26 @@ class Product {
     ```dart
     final products = await isar.products.filter()
       .nameStartsWith('iPhone')
-      .findAll();
+      .findAllAsync();
     
     // Case insensitive
     final products2 = await isar.products.filter()
       .nameStartsWith('iphone', caseSensitive: false)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="Contains">
     ```dart
     final products = await isar.products.filter()
       .nameContains('Pro')
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="EndsWith">
     ```dart
     final products = await isar.products.filter()
       .nameEndsWith('Max')
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="Matches">
@@ -210,7 +210,7 @@ class Product {
     // Wildcard patterns: * (zero or more), ? (one char)
     final products = await isar.products.filter()
       .nameMatches('iPhone *Pro')
-      .findAll();
+      .findAllAsync();
     // Matches: "iPhone 14 Pro", "iPhone 15 Pro", etc.
     ```
   </Tab>
@@ -233,7 +233,7 @@ Future<List<Shoe>> findShoes(int? sizeFilter) {
       sizeFilter != null,
       (q) => q.sizeEqualTo(sizeFilter!),
     )
-    .findAll();
+    .findAllAsync();
 }
 ```
 
@@ -246,7 +246,7 @@ final shoes = await isar.shoes.filter()
     [38, 40, 42],
     (q, int size) => q.sizeEqualTo(size)
   )
-  .findAll();
+  .findAllAsync();
 
 // Equivalent to:
 final shoes2 = await isar.shoes.filter()
@@ -255,7 +255,7 @@ final shoes2 = await isar.shoes.filter()
   .sizeEqualTo(40)
   .or()
   .sizeEqualTo(42)
-  .findAll();
+  .findAllAsync();
 ```
 
 ### AllOf Modifier
@@ -266,7 +266,7 @@ final shoes = await isar.shoes.filter()
     ['Nike', 'Adidas'],
     (q, brand) => q.modelContains(brand)
   )
-  .findAll();
+  .findAllAsync();
 ```
 
 ## List Queries
@@ -288,7 +288,7 @@ class Tweet {
     // Tweets with many hashtags
     final tweets = await isar.tweets.filter()
       .hashtagsLengthGreaterThan(5)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="Contains">
@@ -296,7 +296,7 @@ class Tweet {
     // Find tweets with specific hashtag
     final flutterTweets = await isar.tweets.filter()
       .hashtagsElementEqualTo('flutter')
-      .findAll();
+      .findAllAsync();
     // Equivalent to: tweets.where((t) => 
     //   t.hashtags.contains('flutter'))
     ```
@@ -306,7 +306,7 @@ class Tweet {
     // Find tweets without hashtags
     final tweets = await isar.tweets.filter()
       .hashtagsIsEmpty()
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
 </Tabs>
@@ -337,7 +337,7 @@ final germanCars = await isar.cars.filter()
     .and()
     .countryEqualTo('Germany')
   )
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="success">
@@ -371,12 +371,12 @@ final students = await isar.students.filter()
     .or()
     .subjectEqualTo('English')
   )
-  .findAll();
+  .findAllAsync();
 
 // Query by link count
 final studentsWithManyTeachers = await isar.students.filter()
   .teachersLengthGreaterThan(3)
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="warning">
@@ -405,7 +405,7 @@ class Product {
 final products = await isar.products
   .where()
   .nameEqualTo('iPhone')
-  .findAll();
+  .findAllAsync();
 
 // Combine with filters
 final expensiveIPhones = await isar.products
@@ -413,7 +413,7 @@ final expensiveIPhones = await isar.products
   .nameEqualTo('iPhone')
   .filter()
   .priceGreaterThan(1000)
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="info">
@@ -430,7 +430,7 @@ final expensiveIPhones = await isar.products
     final allShoes = await isar.shoes
       .filter()
       .sizeGreaterThan(40)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="findFirst">
@@ -438,7 +438,7 @@ final expensiveIPhones = await isar.products
     final firstShoe = await isar.shoes
       .filter()
       .sizeEqualTo(46)
-      .findFirst();
+      .findFirstAsync();
     ```
   </Tab>
   <Tab value="count">
@@ -446,7 +446,7 @@ final expensiveIPhones = await isar.products
     final count = await isar.shoes
       .filter()
       .sizeGreaterThan(40)
-      .count();
+      .countAsync();
     ```
   </Tab>
   <Tab value="isEmpty">
@@ -454,7 +454,7 @@ final expensiveIPhones = await isar.products
     final isEmpty = await isar.shoes
       .filter()
       .sizeEqualTo(99)
-      .isEmpty();
+      .isEmptyAsync();
     ```
   </Tab>
 </Tabs>
@@ -464,7 +464,7 @@ final expensiveIPhones = await isar.products
 ```dart
 // Delete matching objects
 await isar.writeAsync((isar) async {
-  final count = await isar.shoes
+  final count = isar.shoes
     .filter()
     .sizeLessThan(35)
     .deleteAll();
@@ -481,20 +481,20 @@ Sort results by any property:
 final sorted = await isar.shoes
   .filter()
   .sortBySize()
-  .findAll();
+  .findAllAsync();
 
 // Descending
 final sortedDesc = await isar.shoes
   .filter()
   .sortBySizeDesc()
-  .findAll();
+  .findAllAsync();
 
 // Multiple sorts
 final multiSort = await isar.shoes
   .filter()
   .sortBySize()
   .thenByModel()
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="warning">
@@ -508,14 +508,14 @@ final multiSort = await isar.shoes
 final first10 = await isar.shoes
   .where()
   .limit(10)
-  .findAll();
+  .findAllAsync();
 
 // Skip first 20, get next 10
 final paginated = await isar.shoes
   .where()
   .offset(20)
   .limit(10)
-  .findAll();
+  .findAllAsync();
 ```
 
 ## Distinct
@@ -525,7 +525,7 @@ final paginated = await isar.shoes
 final uniqueSizes = await isar.shoes
   .where()
   .distinctBySize()
-  .findAll();
+  .findAllAsync();
 ```
 
 ## Best Practices
@@ -533,10 +533,10 @@ final uniqueSizes = await isar.shoes
 1. **Use Where Clauses with Indexes**
    ```dart
    // ✅ Fast - uses index
-   await isar.products.where().nameEqualTo('iPhone').findAll();
+   await isar.products.where().nameEqualTo('iPhone').findAllAsync();
    
    // ❌ Slow - scans all records
-   await isar.products.filter().nameEqualTo('iPhone').findAll();
+   await isar.products.filter().nameEqualTo('iPhone').findAllAsync();
    ```
 
 2. **Combine Where and Filter**
@@ -547,7 +547,7 @@ final uniqueSizes = await isar.shoes
      .nameEqualTo('iPhone')
      .filter()
      .priceGreaterThan(500)
-     .findAll();
+     .findAllAsync();
    ```
 
 3. **Group Nested Queries**

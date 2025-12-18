@@ -133,19 +133,19 @@ final users = await isar.users.getAll([1, 2, 3]);
 ### Get All
 
 ```dart
-final allUsers = await isar.users.where().findAll();
+final allUsers = await isar.users.where().findAllAsync();
 ```
 
 ### Find First
 
 ```dart
-final firstUser = await isar.users.where().findFirst();
+final firstUser = await isar.users.where().findFirstAsync();
 ```
 
 ### Count
 
 ```dart
-final count = await isar.users.count();
+final count = await isar.users.countAsync();
 print('Total users: $count');
 ```
 
@@ -183,7 +183,7 @@ print('Total users: $count');
   <Tab value="Conditional Update">
     ```dart
     await isar.writeAsync((isar) async {
-      final adults = await isar.users
+      final adults = isar.users
         .filter()
         .ageGreaterThan(18)
         .findAll();
@@ -248,7 +248,7 @@ await isar.writeAsync((isar) async {
 
 ```dart
 await isar.writeAsync((isar) async {
-  final deletedCount = await isar.users
+  final deletedCount = isar.users
     .filter()
     .ageLessThan(18)
     .deleteAll();
@@ -287,7 +287,7 @@ For better performance with multiple reads:
 
 ```dart
 final results = await isar.readAsync((isar) async {
-  final users = await isar.users.where().findAll();
+  final users = isar.users.where().findAll();
   final count = isar.users.count();
   return {'users': users, 'count': count};
 });
