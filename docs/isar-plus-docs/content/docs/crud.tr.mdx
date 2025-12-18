@@ -188,7 +188,7 @@ print('Toplam kullanıcı: $count');
     ```dart
     await isar.writeAsync((isar) async {
       final adults = await isar.users
-        .filter()
+        .where()
         .ageGreaterThan(18)
         .findAll();
       
@@ -253,7 +253,7 @@ await isar.writeAsync((isar) async {
 ```dart
 await isar.writeAsync((isar) async {
   final deletedCount = await isar.users
-    .filter()
+    .where()
     .ageLessThan(18)
     .deleteAll();
   print('$deletedCount kullanıcı silindi');

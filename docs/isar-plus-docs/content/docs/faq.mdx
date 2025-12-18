@@ -143,7 +143,7 @@ Common questions about Isar Plus and Flutter databases.
       .findAll();
     
     // 🐌 Slow - scans all records (O(n))
-    await isar.users.filter()
+    await isar.users.where()
       .emailEqualTo('john@example.com')
       .findAll();
     ```

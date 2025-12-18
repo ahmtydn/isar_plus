@@ -9,8 +9,7 @@ typedef FilterQuery<OBJ> =
 
 /// Query builders are used to create queries in a safe way.
 ///
-/// Acquire a `QueryBuilder` instance using `collection.where()` or
-/// `collection.filter()`.
+/// Acquire a `QueryBuilder` instance using `collection.where()`.
 class QueryBuilder<OBJ, R, S> {
   /// @nodoc
   @protected

@@ -48,7 +48,7 @@ class Product {
 €30'dan büyük ürünleri bulmak için Isar 9 satırın tamamını kontrol eder:
 
 ```dart
-final expensive = await isar.products.filter()
+final expensive = await isar.products.where()
   .priceGreaterThan(30)
   .findAll();
 ```
@@ -326,7 +326,7 @@ class Product {
     ```dart
     // ❌ Yavaş - tüm kayıtları yükleyip sonra sıralar
     final cheapest = await isar.products
-      .filter()
+      .where()
       .sortByPrice()
       .limit(4)
       .findAll();
@@ -382,7 +382,7 @@ final sorted = await isar.products
 final filtered = await isar.products
   .where()
   .priceGreaterThan(50)
-  .filter()
+  .where()
   .nameStartsWith('iPhone')
   .findAll();
 ```

@@ -155,7 +155,7 @@ class User {
 ```dart
 // Sorgu oluştur
 final adultsQuery = isar.users
-  .filter()
+  .where()
   .ageGreaterThan(18)
   .build();
 
@@ -196,7 +196,7 @@ await isar.writeAsync((isar) async {
 
 ```dart
 final adultsQuery = isar.users
-  .filter()
+  .where()
   .ageGreaterThan(18)
   .build();
 
@@ -302,7 +302,7 @@ class _SearchWidgetState extends State<SearchWidget> {
   @override
   Widget build(BuildContext context) {
     final query = isar.users
-      .filter()
+      .where()
       .nameContains(searchQuery, caseSensitive: false)
       .build();
     
@@ -396,7 +396,7 @@ class CacheService {
     
     // ✅ Tüm koleksiyon yerine spesifik sorguları izleyin
     isar.users
-      .filter()
+      .where()
       .statusEqualTo('active')
       .watch()
       .listen((activeUsers) {
@@ -438,7 +438,7 @@ class MyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<List<User>>(
       stream: isar.users
-        .filter()
+        .where()
         .ageGreaterThan(18)
         .build()
         .watch(fireImmediately: true),

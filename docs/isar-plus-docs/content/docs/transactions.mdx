@@ -269,7 +269,7 @@ await isar.writeAsync((isar) async {
 ```dart
 await isar.writeAsync((isar) async {
   final users = isar.users
-    .filter()
+    .where()
     .ageGreaterThan(18)
     .findAll();
   
@@ -458,7 +458,7 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 ```dart
 await isar.writeAsync((isar) async {
   final existing = isar.users
-    .filter()
+    .where()
     .emailEqualTo(user.email)
     .findFirst();
   
@@ -476,7 +476,7 @@ await isar.writeAsync((isar) async {
 Future<int> incrementCounter(String key) async {
   return await isar.writeAsync((isar) async {
     final counter = isar.counters
-      .filter()
+      .where()
       .keyEqualTo(key)
       .findFirst() ?? Counter()..key = key..value = 0;
     
@@ -492,7 +492,7 @@ Future<int> incrementCounter(String key) async {
 ```dart
 await isar.writeAsync((isar) async {
   final users = isar.users
-    .filter()
+    .where()
     .statusEqualTo('pending')
     .findAll();
   

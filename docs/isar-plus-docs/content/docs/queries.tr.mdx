@@ -48,7 +48,7 @@ class Shoe {
   <Tab value="Eşitlik">
     ```dart
     // 46 numara ayakkabılar
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .findAll();
     ```
@@ -56,12 +56,12 @@ class Shoe {
   <Tab value="Karşılaştırma">
     ```dart
     // 40 numaradan küçük ayakkabılar
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeLessThan(40)
       .findAll(); // -> [39, null]
     
     // Sınırı dahil et
-    final result2 = await isar.shoes.filter()
+    final result2 = await isar.shoes.where()
       .sizeLessThan(40, include: true)
       .findAll(); // -> [39, null, 40]
     ```
@@ -69,12 +69,12 @@ class Shoe {
   <Tab value="Aralık">
     ```dart
     // 39 ile 46 arası ayakkabılar
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeBetween(39, 46)
       .findAll();
     
     // Alt sınırı hariç tut
-    final result2 = await isar.shoes.filter()
+    final result2 = await isar.shoes.where()
       .sizeBetween(39, 46, includeLower: false)
       .findAll(); // -> [40, 46]
     ```
@@ -82,12 +82,12 @@ class Shoe {
   <Tab value="Null Kontrolü">
     ```dart
     // Boyutu null olan ayakkabılar
-    final nullSizes = await isar.shoes.filter()
+    final nullSizes = await isar.shoes.where()
       .sizeIsNull()
       .findAll();
     
     // Boyutu null olmayan ayakkabılar
-    final withSizes = await isar.shoes.filter()
+    final withSizes = await isar.shoes.where()
       .sizeIsNotNull()
       .findAll();
     ```
@@ -112,7 +112,7 @@ Birden fazla koşulu mantıksal operatörlerle birleştirin:
 
 ```dart
 // AND operatörü (örtük)
-final result = await isar.shoes.filter()
+final result = await isar.shoes.where()
   .sizeEqualTo(46)
   .and() // Opsiyonel
   .isUnisexEqualTo(true)
@@ -123,7 +123,7 @@ final result = await isar.shoes.filter()
 <Tabs items={['AND', 'OR', 'NOT', 'GROUP']}>
   <Tab value="AND">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .and()
       .isUnisexEqualTo(true)
@@ -132,7 +132,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="OR">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .or()
       .sizeEqualTo(40)
@@ -141,7 +141,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="NOT">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .not().sizeEqualTo(46)
       .and()
       .not().isUnisexEqualTo(true)
@@ -151,7 +151,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="GROUP">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeBetween(43, 46)
       .and()
       .group((q) => q
@@ -180,26 +180,26 @@ class Product {
 <Tabs items={['StartsWith', 'Contains', 'EndsWith', 'Matches']}>
   <Tab value="StartsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameStartsWith('iPhone')
       .findAll();
     
     // Büyük/küçük harf duyarsız
-    final products2 = await isar.products.filter()
+    final products2 = await isar.products.where()
       .nameStartsWith('iphone', caseSensitive: false)
       .findAll();
     ```
   </Tab>
   <Tab value="Contains">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameContains('Pro')
       .findAll();
     ```
   </Tab>
   <Tab value="EndsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameEndsWith('Max')
       .findAll();
     ```
@@ -207,7 +207,7 @@ class Product {
   <Tab value="Matches">
     ```dart
     // Wildcard desenleri: * (0+ karakter), ? (tek karakter)
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameMatches('iPhone *Pro')
       .findAll();
     // "iPhone 14 Pro", "iPhone 15 Pro" vb.
@@ -227,7 +227,7 @@ Koşullara göre dinamik sorgular oluşturun:
 
 ```dart
 Future<List<Shoe>> findShoes(int? sizeFilter) {
-  return isar.shoes.filter()
+  return isar.shoes.where()
     .optional(
       sizeFilter != null,
       (q) => q.sizeEqualTo(sizeFilter!),
@@ -240,7 +240,7 @@ Future<List<Shoe>> findShoes(int? sizeFilter) {
 
 ```dart
 // 38, 40 veya 42 numara ayakkabılar
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .anyOf(
     [38, 40, 42],
     (q, int size) => q.sizeEqualTo(size)
@@ -248,7 +248,7 @@ final shoes = await isar.shoes.filter()
   .findAll();
 
 // Eşdeğer:
-final shoes2 = await isar.shoes.filter()
+final shoes2 = await isar.shoes.where()
   .sizeEqualTo(38)
   .or()
   .sizeEqualTo(40)
@@ -260,7 +260,7 @@ final shoes2 = await isar.shoes.filter()
 ### AllOf Modifiyeri
 
 ```dart
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .allOf(
     ['Nike', 'Adidas'],
     (q, brand) => q.modelContains(brand)
@@ -285,7 +285,7 @@ class Tweet {
   <Tab value="Length">
     ```dart
     // Çok hashtag'li tweetler
-    final tweets = await isar.tweets.filter()
+    final tweets = await isar.tweets.where()
       .hashtagsLengthGreaterThan(5)
       .findAll();
     ```
@@ -293,7 +293,7 @@ class Tweet {
   <Tab value="Contains">
     ```dart
     // Belirli hashtag'i içeren tweetler
-    final flutterTweets = await isar.tweets.filter()
+    final flutterTweets = await isar.tweets.where()
       .hashtagsElementEqualTo('flutter')
       .findAll();
     // tweets.where((t) => t.hashtags.contains('flutter'))
@@ -302,7 +302,7 @@ class Tweet {
   <Tab value="Empty">
     ```dart
     // Hashtag'siz tweetler
-    final tweets = await isar.tweets.filter()
+    final tweets = await isar.tweets.where()
       .hashtagsIsEmpty()
       .findAll();
     ```
@@ -329,7 +329,7 @@ class Brand {
 
 ```dart
 // Almanya'dan BMW'ler
-final germanCars = await isar.cars.filter()
+final germanCars = await isar.cars.where()
   .brand((q) => q
     .nameEqualTo('BMW')
     .and()
@@ -363,7 +363,7 @@ class Student {
 
 ```dart
 // Matematik veya İngilizce öğretmeni olan öğrenciler
-final students = await isar.students.filter()
+final students = await isar.students.where()
   .teachers((q) => q
     .subjectEqualTo('Math')
     .or()
@@ -372,7 +372,7 @@ final students = await isar.students.filter()
   .findAll();
 
 // Link sayısına göre sorgu
-final studentsWithManyTeachers = await isar.students.filter()
+final studentsWithManyTeachers = await isar.students.where()
   .teachersLengthGreaterThan(3)
   .findAll();
 ```
@@ -409,7 +409,7 @@ final products = await isar.products
 final expensiveIPhones = await isar.products
   .where()
   .nameEqualTo('iPhone')
-  .filter()
+  .where()
   .priceGreaterThan(1000)
   .findAll();
 ```
@@ -426,7 +426,7 @@ final expensiveIPhones = await isar.products
   <Tab value="findAll">
     ```dart
     final allShoes = await isar.shoes
-      .filter()
+      .where()
       .sizeGreaterThan(40)
       .findAll();
     ```
@@ -434,7 +434,7 @@ final expensiveIPhones = await isar.products
   <Tab value="findFirst">
     ```dart
     final firstShoe = await isar.shoes
-      .filter()
+      .where()
       .sizeEqualTo(46)
       .findFirst();
     ```
@@ -442,7 +442,7 @@ final expensiveIPhones = await isar.products
   <Tab value="count">
     ```dart
     final count = await isar.shoes
-      .filter()
+      .where()
       .sizeGreaterThan(40)
       .count();
     ```
@@ -450,7 +450,7 @@ final expensiveIPhones = await isar.products
   <Tab value="isEmpty">
     ```dart
     final isEmpty = await isar.shoes
-      .filter()
+      .where()
       .sizeEqualTo(99)
       .isEmpty();
     ```
@@ -463,7 +463,7 @@ final expensiveIPhones = await isar.products
 // Koşulu sağlayan nesneleri sil
 await isar.writeAsync((isar) async {
   final count = isar.shoes
-    .filter()
+    .where()
     .sizeLessThan(35)
     .deleteAll();
   print('Silinen ayakkabı: $count');
@@ -477,19 +477,19 @@ Sonuçları herhangi bir özelliğe göre sırala:
 ```dart
 // Artan
 final sorted = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
   .findAll();
 
 // Azalan
 final sortedDesc = await isar.shoes
-  .filter()
+  .where()
   .sortBySizeDesc()
   .findAll();
 
 // Çoklu sıralama
 final multiSort = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
   .thenByModel()
   .findAll();
@@ -534,7 +534,7 @@ final uniqueSizes = await isar.shoes
    await isar.products.where().nameEqualTo('iPhone').findAll();
    
    // ❌ Yavaş - tüm kayıtları tarar
-   await isar.products.filter().nameEqualTo('iPhone').findAll();
+   await isar.products.where().nameEqualTo('iPhone').findAll();
    ```
 
 2. **Where ve Filtreyi Birleştirin**
@@ -543,7 +543,7 @@ final uniqueSizes = await isar.shoes
    await isar.products
      .where()
      .nameEqualTo('iPhone')
-     .filter()
+     .where()
      .priceGreaterThan(500)
      .findAll();
    ```

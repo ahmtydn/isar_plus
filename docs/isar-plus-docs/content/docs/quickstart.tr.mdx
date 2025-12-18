@@ -129,7 +129,7 @@ final allUsers = await isar.users.where().findAll();
 
 // Sorgu
 final youngUsers = await isar.users
-  .filter()
+  .where()
   .ageLessThan(30)
   .findAll();
 
