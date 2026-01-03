@@ -4,8 +4,8 @@ description: Isar koleksiyonlarıyla veri modellerinizi tanımlayın
 icon: Database
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 # Şema
 
@@ -27,7 +27,8 @@ class User {
 ```
 
 <Callout>
-  Bir alanı kalıcı kılmak için Isar'ın ona erişebilmesi gerekir. Alanı public yapın veya getter/setter sağlayın.
+  Bir alanı kalıcı kılmak için Isar'ın ona erişebilmesi gerekir. Alanı public
+  yapın veya getter/setter sağlayın.
 </Callout>
 
 ## Veri Türleri
@@ -74,53 +75,88 @@ class ListTypes {
 
 ### Enum'lar
 
-```dart
-enum Status { active, inactive, pending }
+Isar Plus, Dart enum'larını iki depolama stratejisiyle destekler:
 
-@collection
-class Task {
-  Task(this.id);
+<Tabs items={['Ordinal (Varsayılan)', 'Özel Değer']}>
+  <Tab value="Ordinal (Varsayılan)">
+    Varsayılan olarak, enum'lar indekslerine (ordinal) göre depolanır. Herhangi bir annotation olmadan enum'u doğrudan kullanın:
 
-  final int id;
-
-  @enumerated
-  Status? status;
-
-  @Enumerated(EnumType.ordinal)
-  Status? ordinalStatus;
-
-  @Enumerated(EnumType.name)
-  Status? namedStatus;
-}
-```
-
-<Tabs items={['EnumType.ordinal', 'EnumType.name', 'EnumType.value']}>
-  <Tab value="EnumType.ordinal">
-    Enum değerinin indeksini saklar (varsayılan).
     ```dart
-    // Status.active = 0
-    // Status.inactive = 1
-    // Status.pending = 2
-    ```
-  </Tab>
-  <Tab value="EnumType.name">
-    Enum değerinin adını String olarak saklar.
-    ```dart
-    // Status.active = 'active'
-    // Status.inactive = 'inactive'
-    ```
-  </Tab>
-  <Tab value="EnumType.value">
-    Enum içinde tanımlanan özel değeri saklar.
-    ```dart
-    enum Status {
-      @EnumValue(1) active,
-      @EnumValue(2) inactive,
-      @EnumValue(3) pending,
+    enum Status { active, inactive, pending }
+
+    @collection
+    class Task {
+      Task(this.id);
+
+      final int id;
+
+      Status? status; // 0, 1 veya 2 olarak depolanır
     }
     ```
+
+    Depolanan değerler:
+    - `Status.active` → `0`
+    - `Status.inactive` → `1`
+    - `Status.pending` → `2`
+
+    <Callout type="warning">
+      Enum değerlerinin sırasını değiştirirseniz, mevcut depolanan veriler farklı enum değerlerine eşlenecektir. Kararlılık için yeni değerleri sona ekleyin veya özel değerler kullanın.
+    </Callout>
+
+  </Tab>
+  <Tab value="Özel Değer">
+    Daha fazla kontrol için, enum'unuzda bir alan tanımlayın ve `@enumValue` ile işaretleyin. Bu alanın değeri depolama için kullanılacaktır:
+
+    ```dart
+    enum Status {
+      active(1),
+      inactive(2),
+      pending(3);
+
+      const Status(this.code);
+
+      @enumValue
+      final int code;
+    }
+
+    @collection
+    class Task {
+      Task(this.id);
+
+      final int id;
+
+      Status? status; // 1, 2 veya 3 olarak depolanır
+    }
+    ```
+
+    `@enumValue` için desteklenen tipler:
+    - `byte` - tek bayt olarak depolanır
+    - `short` - 16-bit tamsayı olarak depolanır
+    - `int` - 32-bit tamsayı olarak depolanır
+    - `String` - metin olarak depolanır
+
+    ```dart
+    // String tabanlı enum örneği
+    enum Priority {
+      low('LOW'),
+      medium('MEDIUM'),
+      high('HIGH');
+
+      const Priority(this.name);
+
+      @enumValue
+      final String name;
+    }
+    ```
+
   </Tab>
 </Tabs>
+
+<Callout type="info" title="Isar v3'ten Geçiş">
+  Isar v3'teki `@enumerated` ve `@Enumerated(EnumType.ordinal/name)`
+  annotation'ları artık mevcut değildir. Ordinal depolama için düz enum'ları
+  veya özel değerler için `@enumValue` kullanın.
+</Callout>
 
 ### Gömülü Nesneler
 

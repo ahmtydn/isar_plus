@@ -4,9 +4,9 @@ description: Isar 3.x'ten Isar Plus v4'e geçiş için eksiksiz rehber
 icon: ArrowRightLeft
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Isar v3'ten Isar Plus v4'e Geçiş
 
@@ -40,10 +40,13 @@ Her kaydı v3 örneğinden yepyeni bir Isar Plus örneğine aktarın.
 ### Temizlik Yap
 
 Kopyalama başarıyla tamamlandığında legacy dosyaları silin ve eski bağımlılıkları kaldırın.
+
 </Steps>
 
 <Callout type="info" title="Temiz Başlangıç">
-Eski verilere ihtiyacınız **yoksa**, v3 dizinini silip yeni bir veritabanıyla başlayabilirsiniz. Bu rehberin geri kalanı mevcut kayıtları korumaya odaklanır.
+  Eski verilere ihtiyacınız **yoksa**, v3 dizinini silip yeni bir veritabanıyla
+  başlayabilirsiniz. Bu rehberin geri kalanı mevcut kayıtları korumaya
+  odaklanır.
 </Callout>
 
 ## Bağımlılıkları Yan Yana Güncelleyin
@@ -55,8 +58,8 @@ dependencies:
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
   isar_generator: ^3.1.0+1
-  isar_plus: {versions.isar_plus}
-  isar_plus_flutter_libs: {versions.isar_plus}
+  isar_plus: { versions.isar_plus }
+  isar_plus_flutter_libs: { versions.isar_plus }
 
 dev_dependencies:
   build_runner: ^2.4.10
@@ -91,11 +94,13 @@ await isar.writeTxn(() async {
 ```
 
 **Yeni (v4):**
+
 ```dart
 await isar.writeAsync((isar) async {
   await isar.users.put(user);
 });
 ```
+
 </Tab>
 
 <Tab value="ID'ler">
@@ -109,6 +114,7 @@ class User {
 ```
 
 **Yeni (v4):**
+
 ```dart
 @collection
 class User {
@@ -133,10 +139,8 @@ isar.write((isar) {
 });
 ```
 
-ID alanı artık:
-- Non-nullable olmalı (`int`, `Id?` değil)
-- Constructor ile geçilmeli
-- Class tanımında değil, oluşturma sırasında üretilmeli
+ID alanı artık: non-nullable olmalı (`int`, `Id?` değil), constructor ile geçilmeli ve class tanımında değil oluşturma sırasında üretilmeli.
+
 </Callout>
 </Tab>
 
@@ -147,11 +151,32 @@ ID alanı artık:
 enum Status { active, inactive }
 ```
 
-**Yeni (v4):**
+**Yeni (v4) - Ordinal (Varsayılan):**
+
 ```dart
-@enumValue
+// Annotation gerekmiyor - varsayılan olarak index kullanır
 enum Status { active, inactive }
 ```
+
+**Yeni (v4) - Özel Değerler:**
+
+```dart
+enum Status {
+  active(1),
+  inactive(2);
+
+  const Status(this.code);
+
+  @enumValue
+  final int code;
+}
+```
+
+<Callout type="info">
+  `@enumerated` ve `@Enumerated(EnumType.ordinal/name)` annotation'ları v4'te kaldırıldı.
+  Ordinal depolama için: annotation olmadan düz enum kullanın.
+  Özel değerler için: enum içine `@enumValue` annotation'lı bir alan ekleyin.
+</Callout>
 </Tab>
 
 <Tab value="Linkler">
@@ -161,10 +186,12 @@ final posts = IsarLinks<Post>();
 ```
 
 **Yeni (v4):**
+
 ```dart
 // Bunun yerine gömülü nesneler kullanın
 List<Post> posts = [];
 ```
+
 </Tab>
 </Tabs>
 
@@ -191,8 +218,9 @@ await isar.writeAsync((isar) async {
 });
 ```
 
-  Kod tabanınızda `putBy*` çağrıları varsa, bunları bu örnekteki gibi manuel
-  kontrollerle veya koleksiyon düzeyinde `filter`/`where` sorgularıyla değiştirin.
+Kod tabanınızda `putBy*` çağrıları varsa, bunları bu örnekteki gibi manuel
+kontrollerle veya koleksiyon düzeyinde `filter`/`where` sorgularıyla değiştirin.
+
 </Callout>
 
 ### Linklerle İlgili Ayrıntılar
@@ -327,7 +355,7 @@ Future<void> _copyUsers(legacy.Isar legacyDb, plus.Isar plusDb) async {
       .offset(offset)
       .limit(pageSize)
       .findAll();
-      
+
     await plusDb.writeAsync((isar) async {
       await isar.users.putAll(
         batch.map((user) => User(
@@ -342,7 +370,9 @@ Future<void> _copyUsers(legacy.Isar legacyDb, plus.Isar plusDb) async {
 ```
 
 <Callout type="info" title="Eşleme Yardımcıları">
-Enum yeniden adlandırmaları, alan kaldırmaları veya veri temizliği gibi işlemleri tek bir yerde ele alabilmek için eşleme metotlarını (`_mapStatus` gibi) geçiş rutininin yanında tutun.
+  Enum yeniden adlandırmaları, alan kaldırmaları veya veri temizliği gibi
+  işlemleri tek bir yerde ele alabilmek için eşleme metotlarını (`_mapStatus`
+  gibi) geçiş rutininin yanında tutun.
 </Callout>
 
 Çok büyük koleksiyonlarınız varsa UI'yi bloklamamak için döngüyü bir izolede veya arka plan servisinde çalıştırın. Aynı desen gömülü nesneler ve linkler için de geçerlidir—legacy sorgu API'siyle yükleyin ve yeni şema ile kaydedin.
@@ -382,7 +412,10 @@ Future<void> bootstrapIsar(String dir) async {
 ```
 
 <Callout type="info" title="Alternatif Yaklaşımlar">
-Gelecekteki geçişleri de öngörüyorsanız boolean yerine sayısal bir şema sürümü (`legacy` için 3, Isar Plus için 4 gibi) saklayabilirsiniz. Masaüstü veya sunucu build'lerinde SharedPreferences yerine veritabanı dizininin yanına küçük bir `.migrated` dosyası yazabilirsiniz.
+  Gelecekteki geçişleri de öngörüyorsanız boolean yerine sayısal bir şema sürümü
+  (`legacy` için 3, Isar Plus için 4 gibi) saklayabilirsiniz. Masaüstü veya
+  sunucu build'lerinde SharedPreferences yerine veritabanı dizininin yanına
+  küçük bir `.migrated` dosyası yazabilirsiniz.
 </Callout>
 
 ## Temizlik
@@ -393,6 +426,7 @@ Her koleksiyonun kopyalanması bittiğinde:
 ### Bayrağı Kaydet
 
 Geçişin tamamlandığını işaretleyin:
+
 ```dart
 await prefs.setBool('migratedToIsarPlus', true);
 ```
@@ -400,6 +434,7 @@ await prefs.setBool('migratedToIsarPlus', true);
 ### Legacy Dosyalarını Sil
 
 Eski veritabanı dosyalarını kaldırın:
+
 ```dart
 await plus.Isar.deleteDatabase(
   name: 'legacy',
@@ -415,6 +450,7 @@ await plus.Isar.deleteDatabase(
 ### Veritabanını Yeniden Adlandır
 
 İsterseniz yeni veritabanının adını tekrar orijinal adınıza çevirin.
+
 </Steps>
 
 Legacy build'i artık kullanıcılar açmadığından emin olduktan sonra yalnızca `isar_plus`a bağımlı bir güncelleme yayınlayın.
@@ -424,18 +460,22 @@ Legacy build'i artık kullanıcılar açmadığından emin olduktan sonra yalnı
 ### VersionError Devam Ediyor
 
 <Callout type="error" title="Çözüm">
-v4 örneğini açmadan önce v3 dosyalarını sildiğinizden emin olun. Eski WAL/LCK dosyaları legacy header'ı tutmaya devam edebilir.
+  v4 örneğini açmadan önce v3 dosyalarını sildiğinizden emin olun. Eski WAL/LCK
+  dosyaları legacy header'ı tutmaya devam edebilir.
 </Callout>
 
 ### Yinelenen Birincil Anahtarlar
 
 <Callout type="warn" title="ID Gereksinimleri">
-v4 ID'lerinin benzersiz, null olmayan tamsayılar olması gerektiğini unutmayın. Kopyalama sırasında `collection.autoIncrement()` metodunu kullanın veya deterministik anahtarlar üretin.
+  v4 ID'lerinin benzersiz, null olmayan tamsayılar olması gerektiğini unutmayın.
+  Kopyalama sırasında `collection.autoIncrement()` metodunu kullanın veya
+  deterministik anahtarlar üretin.
 </Callout>
 
 ### Üreteç Hata Veriyor
 
 Derleme öncesinde temizlik yapın:
+
 ```bash
 dart pub clean
 dart run build_runner build --delete-conflicting-outputs
@@ -446,7 +486,8 @@ Hiçbir `part '...g.dart';` yönergesinin eksik olmadığından emin olun.
 ### Geri Dönmek İstiyorum
 
 <Callout type="info" title="Güvenli Geçiş">
-Geçiş ayrı bir veritabanına yazdığı için kopyalama bitene kadar yeni dosyaları güvenle silebilir ve legacy olanları saklayabilirsiniz.
+  Geçiş ayrı bir veritabanına yazdığı için kopyalama bitene kadar yeni dosyaları
+  güvenle silebilir ve legacy olanları saklayabilirsiniz.
 </Callout>
 
 Bu adımları tamamladıktan sonra kullanıcılar `isar` 3.x sürümünden `isar_plus` yayınınıza veri kaybetmeden geçiş yapabilir.
