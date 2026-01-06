@@ -69,9 +69,8 @@ class _CounterScreenState extends State<CounterScreen> {
 
   Future<void> _initializeDatabase() async {
     try {
-      final directory = kIsWeb
-          ? null
-          : await getApplicationDocumentsDirectory();
+      final directory =
+          kIsWeb ? null : await getApplicationDocumentsDirectory();
       final isar = Isar.open(
         schemas: [CountSchema],
         directory: directory?.path ?? 'isar_data',

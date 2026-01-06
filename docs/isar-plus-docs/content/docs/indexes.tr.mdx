@@ -4,9 +4,9 @@ description: Güçlü indeks stratejileriyle sorgu performansını optimize edin
 icon: Zap
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # İndeksler
 
@@ -33,17 +33,17 @@ class Product {
 
 **İndekssiz Veri:**
 
-| id | name | price |
-| --- | --- | --- |
-| 1 | Book | 15 |
-| 2 | Table | 55 |
-| 3 | Chair | 25 |
-| 4 | Pencil | 3 |
-| 5 | Lightbulb | 12 |
-| 6 | Carpet | 60 |
-| 7 | Pillow | 30 |
-| 8 | Computer | 650 |
-| 9 | Soap | 2 |
+| id  | name      | price |
+| --- | --------- | ----- |
+| 1   | Book      | 15    |
+| 2   | Table     | 55    |
+| 3   | Chair     | 25    |
+| 4   | Pencil    | 3     |
+| 5   | Lightbulb | 12    |
+| 6   | Carpet    | 60    |
+| 7   | Pillow    | 30    |
+| 8   | Computer  | 650   |
+| 9   | Soap      | 2     |
 
 €30'dan büyük ürünleri bulmak için Isar 9 satırın tamamını kontrol eder:
 
@@ -62,7 +62,7 @@ final expensive = await isar.products.where()
 class Product {
   Id? id;
   late String name;
-  
+
   @Index()
   late int price;
 }
@@ -70,16 +70,16 @@ class Product {
 
 **Oluşan İndeks (sıralı):**
 
-| price | id |
-| --- | --- |
-| 2 | 9 |
-| 3 | 4 |
-| 12 | 5 |
-| 15 | 1 |
-| 25 | 3 |
-| 30 | 7 |
-| **55** | **2** |
-| **60** | **6** |
+| price   | id    |
+| ------- | ----- |
+| 2       | 9     |
+| 3       | 4     |
+| 12      | 5     |
+| 15      | 1     |
+| 25      | 3     |
+| 30      | 7     |
+| **55**  | **2** |
+| **60**  | **6** |
 | **650** | **8** |
 
 Artık sorgu doğrudan ilgili satırlara atlar! ⚡
@@ -166,7 +166,8 @@ final people = await isar.persons
 ```
 
 <Callout type="info">
-  Bileşik indeksler ilk alan tek başına kullanılarak da sorgulanabilir: `.lastNameEqualTo('Doe')`
+  Bileşik indeksler ilk alan tek başına kullanılarak da sorgulanabilir:
+  `.lastNameEqualTo('Doe')`
 </Callout>
 
 ### Çok Alanlı Bileşik
@@ -214,7 +215,8 @@ final flutterPosts = await isar.posts
 ```
 
 <Callout type="warning">
-  Çok girişli indeksler, çok elemanlı listelerde veritabanı boyutunu ciddi şekilde artırabilir.
+  Çok girişli indeksler, çok elemanlı listelerde veritabanı boyutunu ciddi
+  şekilde artırabilir.
 </Callout>
 
 ## Benzersiz İndeksler
@@ -279,6 +281,7 @@ await isar.writeAsync((isar) async {
   await isar.users.put(user);
 });
 ```
+
 </Callout>
 
 ## Büyük/Küçük Harf Duyarlılığı
@@ -302,7 +305,8 @@ await isar.users.where().emailEqualTo('john@example.com').findAll();
 ```
 
 <Callout>
-  Büyük/küçük harf duyarsız indeksler biraz daha fazla yer kaplar ama esnek sorgular sağlar.
+  Büyük/küçük harf duyarsız indeksler biraz daha fazla yer kaplar ama esnek
+  sorgular sağlar.
 </Callout>
 
 ## Sıralama için İndeks
@@ -321,31 +325,20 @@ class Product {
 }
 ```
 
-<Tabs items={['İndekssiz', 'İndeksli']}>
+<Tabs items={["İndekssiz", "İndeksli"]}>
   <Tab value="İndekssiz">
-    ```dart
-    // ❌ Yavaş - tüm kayıtları yükleyip sonra sıralar
-    final cheapest = await isar.products
-      .where()
-      .sortByPrice()
-      .limit(4)
-      .findAll();
-    ```
+    ```dart // ❌ Yavaş - tüm kayıtları yükleyip sonra sıralar final cheapest =
+    await isar.products .where() .sortByPrice() .findAll(limit: 4); ```
   </Tab>
   <Tab value="İndeksli">
-    ```dart
-    // ✅ Hızlı - sıralı indeksi kullanır
-    final cheapest = await isar.products
-      .where()
-      .anyPrice()
-      .limit(4)
-      .findAll();
-    ```
+    ```dart // ✅ Hızlı - sıralı indeksi kullanır final cheapest = await
+    isar.products .where() .anyPrice() .findAll(limit: 4); ```
   </Tab>
 </Tabs>
 
 <Callout type="success">
-  İndeksli sıralama, sonuçların tamamını belleğe yükleyip sıralama ihtiyacını ortadan kaldırır!
+  İndeksli sıralama, sonuçların tamamını belleğe yükleyip sıralama ihtiyacını
+  ortadan kaldırır!
 </Callout>
 
 ## Where Cümleleri
@@ -375,8 +368,7 @@ final products = await isar.products
 final sorted = await isar.products
   .where()
   .anyPrice()
-  .limit(10)
-  .findAll();
+  .findAll(limit: 10);
 
 // Hızlı - indeks + filtre
 final filtered = await isar.products
@@ -389,11 +381,11 @@ final filtered = await isar.products
 
 ## İndeks Tipi Karşılaştırması
 
-| Tip | Boyut | Where Cümleleri | Kullanım Alanı |
-| --- | --- | --- | --- |
-| `IndexType.value` | Büyük | Hepsi | Tam metin arama, aralıklar |
-| `IndexType.hash` | Küçük | Sadece eşitlik | Benzersiz kısıt, lookup |
-| `IndexType.hashElements` | Orta | Liste elemanları | Etiket sistemleri, kategoriler |
+| Tip                      | Boyut | Where Cümleleri  | Kullanım Alanı                 |
+| ------------------------ | ----- | ---------------- | ------------------------------ |
+| `IndexType.value`        | Büyük | Hepsi            | Tam metin arama, aralıklar     |
+| `IndexType.hash`         | Küçük | Sadece eşitlik   | Benzersiz kısıt, lookup        |
+| `IndexType.hashElements` | Orta  | Liste elemanları | Etiket sistemleri, kategoriler |
 
 ## En İyi Uygulamalar
 
@@ -472,10 +464,9 @@ final isar = Isar.open(
 ## İndeks Sınırlamaları
 
 <Callout type="warning">
-  - String'lerin yalnızca ilk 1024 baytı indekslenir
-  - Web'de bileşik indeksler en fazla 3 alan içerebilir
-  - İndeksler yazma sürelerini artırır
-  - Ek depolama alanı tüketir
+  - String'lerin yalnızca ilk 1024 baytı indekslenir - Web'de bileşik indeksler
+  en fazla 3 alan içerebilir - İndeksler yazma sürelerini artırır - Ek depolama
+  alanı tüketir
 </Callout>
 
 ## Sonraki Adımlar

@@ -4,20 +4,22 @@ description: React to database changes in real-time
 icon: Eye
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 
 # Watchers
 
 Watchers allow you to subscribe to changes in your database and react efficiently. Perfect for real-time UI updates and sync operations.
 
 <Callout type="success">
-  Watchers notify you after a transaction commits successfully and the target actually changes.
+  Watchers notify you after a transaction commits successfully and the target
+  actually changes.
 </Callout>
 
 ## Overview
 
 You can watch:
+
 - **Specific objects** - Get notified when one object changes
 - **Collections** - Get notified when any object in a collection changes
 - **Queries** - Get notified when query results change
@@ -79,7 +81,8 @@ class User {
 </Tabs>
 
 <Callout>
-  The object doesn't need to exist yet. The watcher will notify you when it's created.
+  The object doesn't need to exist yet. The watcher will notify you when it's
+  created.
 </Callout>
 
 ### Fire Immediately
@@ -210,18 +213,18 @@ adultsStream.listen((_) {
 ### Query Watcher Limitations
 
 <Callout type="warning">
-  When using `offset`, `limit`, or `distinct`, watchers may notify even when visible results haven't changed.
+  When using `offset`, `limit`, or `distinct`, watchers may notify even when
+  visible results haven't changed.
 </Callout>
 
 ```dart
 // May over-notify
-final topUsers = isar.users
+final topUsersQuery = isar.users
   .where()
   .sortByAge()
-  .limit(10)
   .build();
 
-topUsers.watch().listen((users) {
+topUsersQuery.watch(limit: 10).listen((users) {
   // Might trigger even if top 10 didn't change
 });
 ```
@@ -240,7 +243,7 @@ class UserListWidget extends StatelessWidget {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
         }
-        
+
         final users = snapshot.data!;
         return ListView.builder(
           itemCount: users.length,
@@ -263,9 +266,9 @@ class UserListWidget extends StatelessWidget {
 ```dart
 class UserProfileWidget extends StatelessWidget {
   final int userId;
-  
+
   const UserProfileWidget({required this.userId});
-  
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -274,7 +277,7 @@ class UserProfileWidget extends StatelessWidget {
         if (!snapshot.hasData) {
           return Text('User not found');
         }
-        
+
         final user = snapshot.data!;
         return Column(
           children: [
@@ -298,14 +301,14 @@ class SearchWidget extends StatefulWidget {
 
 class _SearchWidgetState extends State<SearchWidget> {
   String searchQuery = '';
-  
+
   @override
   Widget build(BuildContext context) {
     final query = isar.users
       .where()
       .nameContains(searchQuery, caseSensitive: false)
       .build();
-    
+
     return Column(
       children: [
         TextField(
@@ -320,7 +323,7 @@ class _SearchWidgetState extends State<SearchWidget> {
             stream: query.watch(fireImmediately: true),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return SizedBox();
-              
+
               final users = snapshot.data!;
               return ListView.builder(
                 itemCount: users.length,
@@ -348,7 +351,7 @@ class SyncService {
       await syncUsersToServer();
     });
   }
-  
+
   Future<void> syncUsersToServer() async {
     final users = await isar.users.where().findAll();
     // Send to server...
@@ -361,19 +364,19 @@ class SyncService {
 ```dart
 class CacheService {
   final _cache = <int, User>{};
-  
+
   void startWatching() {
     isar.users.watchLazy().listen((_) {
       _cache.clear();
       print('Cache invalidated');
     });
   }
-  
+
   Future<User?> getUser(int id) async {
     if (_cache.containsKey(id)) {
       return _cache[id];
     }
-    
+
     final user = await isar.users.get(id);
     if (user != null) {
       _cache[id] = user;
@@ -446,18 +449,18 @@ class MyWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         }
-        
+
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         }
-        
+
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Text('No users found');
         }
-        
+
         final users = snapshot.data!;
         return ListView(
-          children: users.map((user) => 
+          children: users.map((user) =>
             ListTile(title: Text(user.name))
           ).toList(),
         );
@@ -476,7 +479,8 @@ class MyWidget extends StatelessWidget {
 5. **Use fireImmediately** for initial UI state
 
 <Callout type="info">
-  Watchers are efficient and lightweight. Use them freely to create reactive UIs!
+  Watchers are efficient and lightweight. Use them freely to create reactive
+  UIs!
 </Callout>
 
 ## Next Steps

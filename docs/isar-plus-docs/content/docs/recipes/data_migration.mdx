@@ -4,9 +4,9 @@ description: Implement data migration strategies for schema changes and version 
 icon: Database
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Data Migration
 
@@ -15,7 +15,8 @@ Isar automatically migrates your database schemas if you add or remove collectio
 We want to use a single version for the entire database in this example. We use shared preferences to store the current version and compare it to the version we want to migrate to. If the versions do not match, we migrate the data and update the version.
 
 <Callout type="info" title="Flexible Versioning">
-You could also give each collection its own version and migrate them individually.
+  You could also give each collection its own version and migrate them
+  individually.
 </Callout>
 
 ## Schema Evolution Example
@@ -29,11 +30,12 @@ Imagine we have a user collection with a birthday field. In version 2 of our app
 class User {
   Id? id;
 
-  late String name;
+late String name;
 
-  late DateTime birthday;
+late DateTime birthday;
 }
-```
+
+````
 </Tab>
 <Tab value="Version 2">
 ```dart title="user_v2.dart"
@@ -47,7 +49,8 @@ class User {
 
   short get birthYear => birthday.year;
 }
-```
+````
+
 </Tab>
 </Tabs>
 
@@ -67,6 +70,7 @@ Loop through all records and update them with the new field values.
 ### Update Version
 
 Mark the migration as complete by updating the stored version number.
+
 </Steps>
 
 ```dart title="main.dart"
@@ -75,7 +79,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   final dir = await getApplicationDocumentsDirectory();
-  
+
   final isar = Isar.open(
     schemas: [UserSchema],
     directory: dir.path,
@@ -89,13 +93,13 @@ void main() async {
 Future<void> performMigrationIfNeeded(Isar isar) async {
   final prefs = await SharedPreferences.getInstance();
   final currentVersion = prefs.getInt('version') ?? 2;
-  
+
   switch(currentVersion) {
     case 1:
       await migrateV1ToV2(isar);
       break;
     case 2:
-      // If the version is not set (new installation) or already 2, 
+      // If the version is not set (new installation) or already 2,
       // we do not need to migrate
       return;
     default:
@@ -109,17 +113,15 @@ Future<void> performMigrationIfNeeded(Isar isar) async {
 Future<void> migrateV1ToV2(Isar isar) async {
   final userCount = await isar.users.count();
 
-  // We paginate through the users to avoid loading all users 
+  // We paginate through the users to avoid loading all users
   // into memory at once
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users
       .where()
-      .offset(i)
-      .limit(50)
-      .findAll();
-      
+      .findAll(offset: i, limit: 50);
+
     await isar.writeAsync((isar) async {
-      // We don't need to update anything since the birthYear 
+      // We don't need to update anything since the birthYear
       // getter is used
       await isar.users.putAll(users);
     });
@@ -130,7 +132,8 @@ Future<void> migrateV1ToV2(Isar isar) async {
 ## Best Practices
 
 <Callout type="warn" title="Performance Consideration">
-If you have to migrate a lot of data, consider using a background isolate to prevent strain on the UI thread.
+  If you have to migrate a lot of data, consider using a background isolate to
+  prevent strain on the UI thread.
 </Callout>
 
 ### Pagination
@@ -139,7 +142,7 @@ Always process records in batches (50-100 records) to avoid memory issues:
 
 ```dart
 for (var i = 0; i < totalCount; i += batchSize) {
-  final batch = await collection.where().offset(i).limit(batchSize).findAll();
+  final batch = await collection.where().findAll(offset: i, limit: batchSize);
   // Process batch...
 }
 ```
