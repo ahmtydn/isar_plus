@@ -378,9 +378,49 @@ final germanCars = await isar.cars.where()
   Always group nested queries for better performance!
 </Callout>
 
-## Link Queries
+## Querying Relationships
 
-Query based on linked objects:
+Isar Plus v4 removed the legacy `IsarLink` and `IsarLinks` types. Instead, relationships are modeled using **embedded objects** or **manual ID references**. See the [Relationships](./relationships) page for full details.
+
+### Embedded Objects
+
+When related data doesn't need to be queried independently, embed it directly:
+
+```dart
+@collection
+class Student {
+  Id? id;
+  late String name;
+  final List<TeacherInfo> teachers; // embedded list
+}
+
+@embedded
+class TeacherInfo {
+  TeacherInfo({this.name = '', this.subject = ''});
+  final String name;
+  final String subject;
+}
+```
+
+```dart
+// Find students with a math teacher using element matchers
+final students = await isar.students
+  .where()
+  .filter()
+  .teachersElement((q) => q.subjectEqualTo('Math'))
+  .findAllAsync();
+
+// Query by embedded list length
+final studentsWithManyTeachers = await isar.students
+  .where()
+  .filter()
+  .teachersLengthGreaterThan(3)
+  .findAllAsync();
+```
+
+### Manual ID References
+
+For many-to-many or independently queried relationships, store foreign keys explicitly:
 
 ```dart
 @collection
@@ -393,29 +433,35 @@ class Teacher {
 class Student {
   Id? id;
   late String name;
-  final teachers = IsarLinks<Teacher>();
+  final List<int> teacherIds; // foreign key list
 }
 ```
 
 ```dart
-// Find students with math or English teacher
-final students = await isar.students.where()
-  .teachers((q) => q
-    .subjectEqualTo('Math')
-    .or()
-    .subjectEqualTo('English')
-  )
+// Find a student's teachers by their IDs
+final student = await isar.students.getAsync(1);
+final teachers = await isar.teachers
+  .where()
+  .filter()
+  .anyOf(student!.teacherIds, (q, id) => q.idEqualTo(id))
   .findAllAsync();
 
-// Query by link count
-final studentsWithManyTeachers = await isar.students.where()
-  .teachersLengthGreaterThan(3)
+// Find students who have a specific teacher
+final mathTeacher = await isar.teachers
+  .where()
+  .subjectEqualTo('Math')
+  .findFirstAsync();
+
+final studentsWithMathTeacher = await isar.students
+  .where()
+  .filter()
+  .teacherIdsElementEqualTo(mathTeacher!.id!)
   .findAllAsync();
 ```
 
-<Callout type="warning">
-  Link queries can be expensive. Consider using embedded objects for better
-  performance.
+<Callout type="info">
+  Embedded objects are stored inline with the parent record—no extra queries needed.
+  Manual ID references require explicit queries but allow independent entity management.
 </Callout>
 
 ## Where Clauses

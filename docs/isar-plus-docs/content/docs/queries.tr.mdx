@@ -376,9 +376,49 @@ final germanCars = await isar.cars.where()
   Daha iyi performans için iç içe sorguları her zaman gruplayın!
 </Callout>
 
-## Link Sorguları
+## İlişki Sorguları
 
-Linkli nesnelere göre sorgu:
+Isar Plus v4, eski `IsarLink` ve `IsarLinks` tiplerini kaldırdı. Bunun yerine ilişkiler **gömülü nesneler** veya **manuel ID referansları** kullanılarak modellenir. Ayrıntılar için [İlişkiler](./relationships) sayfasına bakın.
+
+### Gömülü Nesneler
+
+İlişkili verinin bağımsız sorgulanması gerekmiyorsa, doğrudan gömün:
+
+```dart
+@collection
+class Student {
+  Id? id;
+  late String name;
+  final List<TeacherInfo> teachers; // gömülü liste
+}
+
+@embedded
+class TeacherInfo {
+  TeacherInfo({this.name = '', this.subject = ''});
+  final String name;
+  final String subject;
+}
+```
+
+```dart
+// Element eşleştiricilerle matematik öğretmeni olan öğrencileri bulun
+final students = await isar.students
+  .where()
+  .filter()
+  .teachersElement((q) => q.subjectEqualTo('Math'))
+  .findAllAsync();
+
+// Gömülü liste uzunluğuna göre sorgu
+final studentsWithManyTeachers = await isar.students
+  .where()
+  .filter()
+  .teachersLengthGreaterThan(3)
+  .findAllAsync();
+```
+
+### Manuel ID Referansları
+
+Çoktan çoka veya bağımsız sorgulanan ilişkiler için yabancı anahtarları açıkça saklayın:
 
 ```dart
 @collection
@@ -391,29 +431,35 @@ class Teacher {
 class Student {
   Id? id;
   late String name;
-  final teachers = IsarLinks<Teacher>();
+  final List<int> teacherIds; // yabancı anahtar listesi
 }
 ```
 
 ```dart
-// Matematik veya İngilizce öğretmeni olan öğrenciler
-final students = await isar.students.where()
-  .teachers((q) => q
-    .subjectEqualTo('Math')
-    .or()
-    .subjectEqualTo('English')
-  )
-  .findAll();
+// Öğrencinin öğretmenlerini ID'leriyle bulun
+final student = await isar.students.getAsync(1);
+final teachers = await isar.teachers
+  .where()
+  .filter()
+  .anyOf(student!.teacherIds, (q, id) => q.idEqualTo(id))
+  .findAllAsync();
 
-// Link sayısına göre sorgu
-final studentsWithManyTeachers = await isar.students.where()
-  .teachersLengthGreaterThan(3)
-  .findAll();
+// Belirli bir öğretmene sahip öğrencileri bulun
+final mathTeacher = await isar.teachers
+  .where()
+  .subjectEqualTo('Math')
+  .findFirstAsync();
+
+final studentsWithMathTeacher = await isar.students
+  .where()
+  .filter()
+  .teacherIdsElementEqualTo(mathTeacher!.id!)
+  .findAllAsync();
 ```
 
-<Callout type="warning">
-  Link sorguları maliyetli olabilir. Daha iyi performans için gömülü nesneleri
-  düşünün.
+<Callout type="info">
+  Gömülü nesneler ebeveyn kayıtla birlikte saklanır—ekstra sorgu gerekmez.
+  Manuel ID referansları açık sorgular gerektirir ancak bağımsız varlık yönetimine izin verir.
 </Callout>
 
 ## Where Cümleleri
