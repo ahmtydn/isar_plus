@@ -152,14 +152,13 @@ class _IsarAnalyzer {
       );
     }
 
-    final unknownConstructorParameter =
-        constructor.formalParameters
-            .where(
-              (p) =>
-                  p.isRequired &&
-                  !properties.any((e) => e.dartName == (p.name ?? '')),
-            )
-            .firstOrNull;
+    final unknownConstructorParameter = constructor.formalParameters
+        .where(
+          (p) =>
+              p.isRequired &&
+              !properties.any((e) => e.dartName == (p.name ?? '')),
+        )
+        .firstOrNull;
     if (unknownConstructorParameter != null) {
       _err(
         'Constructor parameter does not match a property.',
@@ -198,8 +197,9 @@ class _IsarAnalyzer {
     late final IsarType type;
     if (dartType.scalarType.element is EnumElement) {
       final enumClass = dartType.scalarType.element! as EnumElement;
-      final enumElements =
-          enumClass.fields.where((f) => f.isEnumConstant).toList();
+      final enumElements = enumClass.fields
+          .where((f) => f.isEnumConstant)
+          .toList();
 
       final enumProperty = enumClass.enumValueProperty;
       enumPropertyName = enumProperty?.name ?? 'index';
@@ -208,8 +208,9 @@ class _IsarAnalyzer {
         _err('Only fields are supported for enum properties', enumProperty);
       }
 
-      final enumIsarType =
-          enumProperty == null ? IsarType.byte : enumProperty.type.propertyType;
+      final enumIsarType = enumProperty == null
+          ? IsarType.byte
+          : enumProperty.type.propertyType;
       if (enumIsarType != IsarType.byte &&
           enumIsarType != IsarType.int &&
           enumIsarType != IsarType.long &&
@@ -263,11 +264,10 @@ class _IsarAnalyzer {
     final nullable =
         dartType.nullabilitySuffix != NullabilitySuffix.none ||
         dartType is DynamicType;
-    final elementNullable =
-        type.isList
-            ? dartType.scalarType.nullabilitySuffix != NullabilitySuffix.none ||
-                dartType.scalarType is DynamicType
-            : null;
+    final elementNullable = type.isList
+        ? dartType.scalarType.nullabilitySuffix != NullabilitySuffix.none ||
+              dartType.scalarType is DynamicType
+        : null;
     if (isId) {
       if (type != IsarType.long && type != IsarType.string) {
         _err('Only int and String properties can be used as id.', property);
@@ -281,10 +281,9 @@ class _IsarAnalyzer {
       _err('Bytes must not be nullable.', property);
     }
 
-    final constructorParameter =
-        constructor.formalParameters
-            .where((p) => (p.name ?? '') == property.name)
-            .firstOrNull;
+    final constructorParameter = constructor.formalParameters
+        .where((p) => (p.name ?? '') == property.name)
+        .firstOrNull;
     int? constructorPosition;
     late DeserializeMode mode;
     if (constructorParameter != null) {
@@ -294,30 +293,28 @@ class _IsarAnalyzer {
           constructorParameter,
         );
       }
-      mode =
-          constructorParameter.isNamed
-              ? DeserializeMode.namedParam
-              : DeserializeMode.positionalParam;
+      mode = constructorParameter.isNamed
+          ? DeserializeMode.namedParam
+          : DeserializeMode.positionalParam;
       constructorPosition = constructor.formalParameters.indexOf(
         constructorParameter,
       );
     } else {
-      mode =
-          property.setter == null
-              ? DeserializeMode.none
-              : DeserializeMode.assign;
+      mode = property.setter == null
+          ? DeserializeMode.none
+          : DeserializeMode.assign;
     }
 
     return PropertyInfo(
       index: propertyIndex,
       dartName: property.name ?? '',
       isarName: property.isarName,
-      typeClassName:
-          type == IsarType.json
-              ? dartType.element!.name!
-              : dartType.scalarType.element!.name!,
-      targetIsarName:
-          type.isObject ? dartType.scalarType.element!.isarName : null,
+      typeClassName: type == IsarType.json
+          ? dartType.element!.name!
+          : dartType.scalarType.element!.name!,
+      targetIsarName: type.isObject
+          ? dartType.scalarType.element!.isarName
+          : null,
       type: type,
       isId: isId,
       enumMap: enumMap,
@@ -326,8 +323,9 @@ class _IsarAnalyzer {
       elementNullable: elementNullable,
       defaultValue:
           constructorParameter?.defaultValueCode ?? _defaultValue(dartType),
-      elementDefaultValue:
-          type.isList ? _defaultValue(dartType.scalarType) : null,
+      elementDefaultValue: type.isList
+          ? _defaultValue(dartType.scalarType)
+          : null,
       utc: type.isDate && property.hasUtcAnnotation,
       mode: mode,
       assignable: property.setter != null,
@@ -398,8 +396,9 @@ class _IsarAnalyzer {
 
       for (var i = 0; i < indexProperties.length; i++) {
         final propertyName = indexProperties[i];
-        final property =
-            properties.where((it) => it.isarName == propertyName).firstOrNull;
+        final property = properties
+            .where((it) => it.isarName == propertyName)
+            .firstOrNull;
         if (property == null) {
           _err('Property does not exist: "$propertyName".', element);
         } else if (property.isId) {

@@ -23,15 +23,15 @@ abstract final class IsarCore {
   static Pointer<Bool> boolPtr = malloc<Bool>();
 
   /// Pointer to a pointer to uint8 for string operations.
-  static final Pointer<Pointer<Uint8>> stringPtrPtr =
-      ptrPtr.cast<Pointer<Uint8>>();
+  static final Pointer<Pointer<Uint8>> stringPtrPtr = ptrPtr
+      .cast<Pointer<Uint8>>();
 
   /// Gets the string pointer value.
   static Pointer<Uint8> get stringPtr => stringPtrPtr.ptrValue;
 
   /// Pointer to a pointer to CIsarReader for reader operations.
-  static final Pointer<Pointer<CIsarReader>> readerPtrPtr =
-      ptrPtr.cast<Pointer<CIsarReader>>();
+  static final Pointer<Pointer<CIsarReader>> readerPtrPtr = ptrPtr
+      .cast<Pointer<CIsarReader>>();
 
   /// Gets the reader pointer value.
   static Pointer<CIsarReader> get readerPtr => readerPtrPtr.ptrValue;
