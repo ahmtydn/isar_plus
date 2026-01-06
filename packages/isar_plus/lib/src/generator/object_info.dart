@@ -225,10 +225,9 @@ class PropertyInfo {
   }
 
   /// The full Dart type of the property.
-  String get dartType =>
-      type.isList
-          ? 'List<$scalarDartType>${nullable ? '?' : ''}'
-          : scalarDartType;
+  String get dartType => type.isList
+      ? 'List<$scalarDartType>${nullable ? '?' : ''}'
+      : scalarDartType;
 
   /// Generates the enum map name for this property.
   String enumMapName(ObjectInfo object) =>
