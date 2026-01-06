@@ -1,0 +1,4 @@
+# MDX files should not be formatted by Prettier
+# Code blocks inside JSX/MDX components break when formatted
+*.mdx
+docs/isar-plus-docs/content/

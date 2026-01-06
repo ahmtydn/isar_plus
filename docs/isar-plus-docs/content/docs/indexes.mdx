@@ -327,12 +327,22 @@ class Product {
 
 <Tabs items={["Without Index", "With Index"]}>
   <Tab value="Without Index">
-    ```dart // ❌ Slow - loads all, then sorts final cheapest = await
-    isar.products .where() .sortByPrice() .findAll(limit: 4); ```
+```dart
+// ❌ Slow - loads all, then sorts
+final cheapest = await isar.products
+  .where()
+  .sortByPrice()
+  .findAll(limit: 4);
+```
   </Tab>
   <Tab value="With Index">
-    ```dart // ✅ Fast - uses sorted index final cheapest = await isar.products
-    .where() .anyPrice() .findAll(limit: 4); ```
+```dart
+// ✅ Fast - uses sorted index
+final cheapest = await isar.products
+  .where()
+  .anyPrice()
+  .findAll(limit: 4);
+```
   </Tab>
 </Tabs>
 

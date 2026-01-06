@@ -49,26 +49,54 @@ class Shoe {
 
 <Tabs items={["Equality", "Comparison", "Range", "Null Check"]}>
   <Tab value="Equality">
-    ```dart // Find size 46 shoes final result = await isar.shoes.where()
-    .sizeEqualTo(46) .findAllAsync(); ```
+```dart
+// Find size 46 shoes
+final result = await isar.shoes.where()
+  .sizeEqualTo(46)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="Comparison">
-    ```dart // Find shoes smaller than size 40 final result = await
-    isar.shoes.where() .sizeLessThan(40) .findAllAsync(); // -> [39, null] //
-    Include the boundary final result2 = await isar.shoes.where()
-    .sizeLessThan(40, include: true) .findAllAsync(); // -> [39, null, 40] ```
+```dart
+// Find shoes smaller than size 40
+final result = await isar.shoes.where()
+  .sizeLessThan(40)
+  .findAllAsync();
+// -> [39, null]
+
+// Include the boundary
+final result2 = await isar.shoes.where()
+  .sizeLessThan(40, include: true)
+  .findAllAsync();
+// -> [39, null, 40]
+```
   </Tab>
   <Tab value="Range">
-    ```dart // Find shoes between size 39 and 46 final result = await
-    isar.shoes.where() .sizeBetween(39, 46) .findAllAsync(); // Exclude lower
-    bound final result2 = await isar.shoes.where() .sizeBetween(39, 46,
-    includeLower: false) .findAllAsync(); // -> [40, 46] ```
+```dart
+// Find shoes between size 39 and 46
+final result = await isar.shoes.where()
+  .sizeBetween(39, 46)
+  .findAllAsync();
+
+// Exclude lower bound
+final result2 = await isar.shoes.where()
+  .sizeBetween(39, 46, includeLower: false)
+  .findAllAsync();
+// -> [40, 46]
+```
   </Tab>
   <Tab value="Null Check">
-    ```dart // Find shoes with null size final nullSizes = await
-    isar.shoes.where() .sizeIsNull() .findAllAsync(); // Find shoes with
-    non-null size final withSizes = await isar.shoes.where() .sizeIsNotNull()
-    .findAllAsync(); ```
+```dart
+// Find shoes with null size
+final nullSizes = await isar.shoes.where()
+  .sizeIsNull()
+  .findAllAsync();
+
+// Find shoes with non-null size
+final withSizes = await isar.shoes.where()
+  .sizeIsNotNull()
+  .findAllAsync();
+```
   </Tab>
 </Tabs>
 
@@ -158,23 +186,40 @@ class Product {
 
 <Tabs items={["StartsWith", "Contains", "EndsWith", "Matches"]}>
   <Tab value="StartsWith">
-    ```dart final products = await isar.products.where()
-    .nameStartsWith('iPhone') .findAllAsync(); // Case insensitive final
-    products2 = await isar.products.where() .nameStartsWith('iphone',
-    caseSensitive: false) .findAllAsync(); ```
+    ```dart
+    final products = await isar.products.where()
+      .nameStartsWith('iPhone')
+      .findAllAsync();
+
+    // Case insensitive
+    final products2 = await isar.products.where()
+      .nameStartsWith('iphone', caseSensitive: false)
+      .findAllAsync();
+    ```
+
   </Tab>
   <Tab value="Contains">
-    ```dart final products = await isar.products.where() .nameContains('Pro')
-    .findAllAsync(); ```
+    ```dart
+    final products = await isar.products.where()
+      .nameContains('Pro')
+      .findAllAsync();
+    ```
   </Tab>
   <Tab value="EndsWith">
-    ```dart final products = await isar.products.where() .nameEndsWith('Max')
-    .findAllAsync(); ```
+    ```dart
+    final products = await isar.products.where()
+      .nameEndsWith('Max')
+      .findAllAsync();
+    ```
   </Tab>
   <Tab value="Matches">
-    ```dart // Wildcard patterns: * (zero or more), ? (one char) final products
-    = await isar.products.where() .nameMatches('iPhone *Pro') .findAllAsync();
-    // Matches: "iPhone 14 Pro", "iPhone 15 Pro", etc. ```
+    ```dart
+    // Wildcard patterns: * (zero or more), ? (one char)
+    final products = await isar.products.where()
+      .nameMatches('iPhone *Pro')
+      .findAllAsync();
+    // Matches: "iPhone 14 Pro", "iPhone 15 Pro", etc.
+    ```
   </Tab>
 </Tabs>
 
@@ -274,17 +319,29 @@ class Tweet {
 
 <Tabs items={["Length", "Contains", "Empty"]}>
   <Tab value="Length">
-    ```dart // Tweets with many hashtags final tweets = await
-    isar.tweets.where() .hashtagsLengthGreaterThan(5) .findAllAsync(); ```
+```dart
+// Tweets with many hashtags
+final tweets = await isar.tweets.where()
+  .hashtagsLengthGreaterThan(5)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="Contains">
-    ```dart // Find tweets with specific hashtag final flutterTweets = await
-    isar.tweets.where() .hashtagsElementEqualTo('flutter') .findAllAsync(); //
-    Equivalent to: tweets.where((t) => // t.hashtags.contains('flutter')) ```
+```dart
+// Find tweets with specific hashtag
+final flutterTweets = await isar.tweets.where()
+  .hashtagsElementEqualTo('flutter')
+  .findAllAsync();
+// Equivalent to: tweets.where((t) => t.hashtags.contains('flutter'))
+```
   </Tab>
   <Tab value="Empty">
-    ```dart // Find tweets without hashtags final tweets = await
-    isar.tweets.where() .hashtagsIsEmpty() .findAllAsync(); ```
+```dart
+// Find tweets without hashtags
+final tweets = await isar.tweets.where()
+  .hashtagsIsEmpty()
+  .findAllAsync();
+```
   </Tab>
 </Tabs>
 
@@ -404,20 +461,36 @@ final expensiveIPhones = await isar.products
 
 <Tabs items={["findAll", "findFirst", "count", "isEmpty"]}>
   <Tab value="findAll">
-    ```dart final allShoes = await isar.shoes .where() .sizeGreaterThan(40)
-    .findAllAsync(); ```
+```dart
+final allShoes = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="findFirst">
-    ```dart final firstShoe = await isar.shoes .where() .sizeEqualTo(46)
-    .findFirstAsync(); ```
+```dart
+final firstShoe = await isar.shoes
+  .where()
+  .sizeEqualTo(46)
+  .findFirstAsync();
+```
   </Tab>
   <Tab value="count">
-    ```dart final count = await isar.shoes .where() .sizeGreaterThan(40)
-    .countAsync(); ```
+```dart
+final count = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .countAsync();
+```
   </Tab>
   <Tab value="isEmpty">
-    ```dart final isEmpty = await isar.shoes .where() .sizeEqualTo(99)
-    .isEmptyAsync(); ```
+```dart
+final isEmpty = await isar.shoes
+  .where()
+  .sizeEqualTo(99)
+  .isEmptyAsync();
+```
   </Tab>
 </Tabs>
 

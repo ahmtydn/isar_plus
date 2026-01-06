@@ -327,12 +327,22 @@ class Product {
 
 <Tabs items={["İndekssiz", "İndeksli"]}>
   <Tab value="İndekssiz">
-    ```dart // ❌ Yavaş - tüm kayıtları yükleyip sonra sıralar final cheapest =
-    await isar.products .where() .sortByPrice() .findAll(limit: 4); ```
+    ```dart
+    // ❌ Yavaş - tüm kayıtları yükleyip sonra sıralar
+    final cheapest = await isar.products
+      .where()
+      .sortByPrice()
+      .findAll(limit: 4);
+    ```
   </Tab>
   <Tab value="İndeksli">
-    ```dart // ✅ Hızlı - sıralı indeksi kullanır final cheapest = await
-    isar.products .where() .anyPrice() .findAll(limit: 4); ```
+    ```dart
+    // ✅ Hızlı - sıralı indeksi kullanır
+    final cheapest = await isar.products
+      .where()
+      .anyPrice()
+      .findAll(limit: 4);
+    ```
   </Tab>
 </Tabs>
 
