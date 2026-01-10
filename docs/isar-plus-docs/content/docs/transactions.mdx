@@ -54,7 +54,7 @@ class Contact {
     ```dart
     // Explicit async read transaction
     final result = await isar.readAsync((isar) async {
-      final contacts = await isar.contacts.where().findAll();
+      final contacts = isar.contacts.where().findAll();
       final count = isar.contacts.count();
       
       return {
@@ -81,7 +81,7 @@ class Contact {
   <Tab value="Implicit">
     ```dart
     // Implicit transaction (automatic)
-    final contacts = await isar.contacts.where().findAll();
+    final contacts = await isar.contacts.where().findAllAsync();
     // Isar wraps this in a transaction automatically
     ```
   </Tab>
@@ -268,8 +268,8 @@ await isar.writeAsync((isar) async {
 
 ```dart
 await isar.writeAsync((isar) async {
-  final users = await isar.users
-    .filter()
+  final users = isar.users
+    .where()
     .ageGreaterThan(18)
     .findAll();
   
@@ -290,7 +290,7 @@ await isar.writeAsync((isar) async {
     ```dart
     // Multiple read transactions run in parallel
     final future1 = isar.readAsync((isar) async {
-      return await isar.contacts.where().findAll();
+      return isar.contacts.where().findAll();
     });
     
     final future2 = isar.readAsync((isar) async {
@@ -310,7 +310,7 @@ await isar.writeAsync((isar) async {
     }));
     
     // This read sees old data (consistent snapshot)
-    final contacts = await isar.contacts.where().findAll();
+    final contacts = await isar.contacts.where().findAllAsync();
     // newContact is NOT included
     ```
   </Tab>
@@ -457,8 +457,8 @@ Future<void> putWithRetry(Contact contact, {int maxAttempts = 3}) async {
 
 ```dart
 await isar.writeAsync((isar) async {
-  final existing = await isar.users
-    .filter()
+  final existing = isar.users
+    .where()
     .emailEqualTo(user.email)
     .findFirst();
   
@@ -475,8 +475,8 @@ await isar.writeAsync((isar) async {
 ```dart
 Future<int> incrementCounter(String key) async {
   return await isar.writeAsync((isar) async {
-    final counter = await isar.counters
-      .filter()
+    final counter = isar.counters
+      .where()
       .keyEqualTo(key)
       .findFirst() ?? Counter()..key = key..value = 0;
     
@@ -491,8 +491,8 @@ Future<int> incrementCounter(String key) async {
 
 ```dart
 await isar.writeAsync((isar) async {
-  final users = await isar.users
-    .filter()
+  final users = isar.users
+    .where()
     .statusEqualTo('pending')
     .findAll();
   

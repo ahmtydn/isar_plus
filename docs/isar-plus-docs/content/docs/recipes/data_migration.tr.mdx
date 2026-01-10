@@ -4,9 +4,9 @@ description: Şema değişiklikleri ve sürüm güncellemeleri için veri geçi�
 icon: Database
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Veri Geçişi
 
@@ -15,7 +15,7 @@ Isar; koleksiyon, alan veya indeks ekleyip kaldırdığınızda şemaları otoma
 Bu örnekte tüm veritabanı için tek bir sürüm kullanıyoruz. Geçerli sürümü SharedPreferences ile saklıyor ve hedef sürümle karşılaştırıyoruz. Sürümler eşleşmiyorsa veriyi geçiriyor ve sürümü güncelliyoruz.
 
 <Callout type="info" title="Esnek Sürümleme">
-Her koleksiyona ayrı sürüm verip bağımsız olarak da geçirebilirsiniz.
+  Her koleksiyona ayrı sürüm verip bağımsız olarak da geçirebilirsiniz.
 </Callout>
 
 ## Şema Evrimi Örneği
@@ -29,11 +29,12 @@ Doğum günü alanı olan bir kullanıcı koleksiyonumuz olduğunu düşünelim.
 class User {
   Id? id;
 
-  late String name;
+late String name;
 
-  late DateTime birthday;
+late DateTime birthday;
 }
-```
+
+````
 </Tab>
 <Tab value="Sürüm 2">
 ```dart title="user_v2.dart"
@@ -47,7 +48,8 @@ class User {
 
   short get birthYear => birthday.year;
 }
-```
+````
+
 </Tab>
 </Tabs>
 
@@ -67,6 +69,7 @@ Tüm kayıtları dolaşıp yeni alanları güncelleyin.
 ### Sürümü Güncelleyin
 
 Kaydedilen sürüm numarasını güncelleyerek geçişin tamamlandığını işaretleyin.
+
 </Steps>
 
 ```dart title="main.dart"
@@ -75,7 +78,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   final dir = await getApplicationDocumentsDirectory();
-  
+
   final isar = Isar.open(
     schemas: [UserSchema],
     directory: dir.path,
@@ -89,7 +92,7 @@ void main() async {
 Future<void> performMigrationIfNeeded(Isar isar) async {
   final prefs = await SharedPreferences.getInstance();
   final currentVersion = prefs.getInt('version') ?? 2;
-  
+
   switch(currentVersion) {
     case 1:
       await migrateV1ToV2(isar);
@@ -113,10 +116,8 @@ Future<void> migrateV1ToV2(Isar isar) async {
   for (var i = 0; i < userCount; i += 50) {
     final users = await isar.users
       .where()
-      .offset(i)
-      .limit(50)
-      .findAll();
-      
+      .findAll(offset: i, limit: 50);
+
     await isar.writeAsync((isar) async {
       // birthYear getter olduğu için güncelleme yapmamıza gerek yok
       await isar.users.putAll(users);
@@ -128,7 +129,8 @@ Future<void> migrateV1ToV2(Isar isar) async {
 ## En İyi Uygulamalar
 
 <Callout type="warn" title="Performans Dikkati">
-Çok fazla veri geçirmeniz gerekiyorsa UI thread'ini yormamak için arka plan izolatı kullanmayı düşünün.
+  Çok fazla veri geçirmeniz gerekiyorsa UI thread'ini yormamak için arka plan
+  izolatı kullanmayı düşünün.
 </Callout>
 
 ### Sayfalama
@@ -137,7 +139,7 @@ Bellek sorunu yaşamamak için kayıtları her zaman 50-100'lük bloklar halinde
 
 ```dart
 for (var i = 0; i < totalCount; i += batchSize) {
-  final batch = await collection.where().offset(i).limit(batchSize).findAll();
+  final batch = await collection.where().findAll(offset: i, limit: batchSize);
   // Blok üzerinde işlem yap...
 }
 ```

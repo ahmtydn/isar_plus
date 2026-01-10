@@ -4,9 +4,9 @@ description: Optimize query performance with powerful indexing strategies
 icon: Zap
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Indexes
 
@@ -33,22 +33,22 @@ class Product {
 
 **Unindexed Data:**
 
-| id | name | price |
-| --- | --- | --- |
-| 1 | Book | 15 |
-| 2 | Table | 55 |
-| 3 | Chair | 25 |
-| 4 | Pencil | 3 |
-| 5 | Lightbulb | 12 |
-| 6 | Carpet | 60 |
-| 7 | Pillow | 30 |
-| 8 | Computer | 650 |
-| 9 | Soap | 2 |
+| id  | name      | price |
+| --- | --------- | ----- |
+| 1   | Book      | 15    |
+| 2   | Table     | 55    |
+| 3   | Chair     | 25    |
+| 4   | Pencil    | 3     |
+| 5   | Lightbulb | 12    |
+| 6   | Carpet    | 60    |
+| 7   | Pillow    | 30    |
+| 8   | Computer  | 650   |
+| 9   | Soap      | 2     |
 
 To find products > €30, Isar must check all 9 rows:
 
 ```dart
-final expensive = await isar.products.filter()
+final expensive = await isar.products.where()
   .priceGreaterThan(30)
   .findAll();
 ```
@@ -62,7 +62,7 @@ Add an index to the `price` field:
 class Product {
   Id? id;
   late String name;
-  
+
   @Index()
   late int price;
 }
@@ -70,16 +70,16 @@ class Product {
 
 **Generated Index (sorted):**
 
-| price | id |
-| --- | --- |
-| 2 | 9 |
-| 3 | 4 |
-| 12 | 5 |
-| 15 | 1 |
-| 25 | 3 |
-| 30 | 7 |
-| **55** | **2** |
-| **60** | **6** |
+| price   | id    |
+| ------- | ----- |
+| 2       | 9     |
+| 3       | 4     |
+| 12      | 5     |
+| 15      | 1     |
+| 25      | 3     |
+| 30      | 7     |
+| **55**  | **2** |
+| **60**  | **6** |
 | **650** | **8** |
 
 Now the query jumps directly to the relevant rows! ⚡
@@ -166,7 +166,8 @@ final people = await isar.persons
 ```
 
 <Callout type="info">
-  Composite indexes can also use only the first property: `.lastNameEqualTo('Doe')`
+  Composite indexes can also use only the first property:
+  `.lastNameEqualTo('Doe')`
 </Callout>
 
 ### Multi-Property Composite
@@ -214,7 +215,8 @@ final flutterPosts = await isar.posts
 ```
 
 <Callout type="warning">
-  Multi-entry indexes can significantly increase database size for lists with many elements.
+  Multi-entry indexes can significantly increase database size for lists with
+  many elements.
 </Callout>
 
 ## Unique Indexes
@@ -279,6 +281,7 @@ await isar.writeAsync((isar) async {
   await isar.users.put(user);
 });
 ```
+
 </Callout>
 
 ## Case Sensitivity
@@ -302,7 +305,8 @@ await isar.users.where().emailEqualTo('john@example.com').findAll();
 ```
 
 <Callout>
-  Case-insensitive indexes take slightly more space but provide flexible queries.
+  Case-insensitive indexes take slightly more space but provide flexible
+  queries.
 </Callout>
 
 ## Index for Sorting
@@ -321,26 +325,24 @@ class Product {
 }
 ```
 
-<Tabs items={['Without Index', 'With Index']}>
+<Tabs items={["Without Index", "With Index"]}>
   <Tab value="Without Index">
-    ```dart
-    // ❌ Slow - loads all, then sorts
-    final cheapest = await isar.products
-      .filter()
-      .sortByPrice()
-      .limit(4)
-      .findAll();
-    ```
+```dart
+// ❌ Slow - loads all, then sorts
+final cheapest = await isar.products
+  .where()
+  .sortByPrice()
+  .findAll(limit: 4);
+```
   </Tab>
   <Tab value="With Index">
-    ```dart
-    // ✅ Fast - uses sorted index
-    final cheapest = await isar.products
-      .where()
-      .anyPrice()
-      .limit(4)
-      .findAll();
-    ```
+```dart
+// ✅ Fast - uses sorted index
+final cheapest = await isar.products
+  .where()
+  .anyPrice()
+  .findAll(limit: 4);
+```
   </Tab>
 </Tabs>
 
@@ -375,25 +377,24 @@ final products = await isar.products
 final sorted = await isar.products
   .where()
   .anyPrice()
-  .limit(10)
-  .findAll();
+  .findAll(limit: 10);
 
 // Fast - index + filter
 final filtered = await isar.products
   .where()
   .priceGreaterThan(50)
-  .filter()
+  .where()
   .nameStartsWith('iPhone')
   .findAll();
 ```
 
 ## Index Types Comparison
 
-| Type | Size | Where Clauses | Use Case |
-| --- | --- | --- | --- |
-| `IndexType.value` | Large | All | Full text search, ranges |
-| `IndexType.hash` | Small | Equality only | Unique constraints, lookups |
-| `IndexType.hashElements` | Medium | List elements | Tag systems, categories |
+| Type                     | Size   | Where Clauses | Use Case                    |
+| ------------------------ | ------ | ------------- | --------------------------- |
+| `IndexType.value`        | Large  | All           | Full text search, ranges    |
+| `IndexType.hash`         | Small  | Equality only | Unique constraints, lookups |
+| `IndexType.hashElements` | Medium | List elements | Tag systems, categories     |
 
 ## Best Practices
 
@@ -472,10 +473,9 @@ final isar = Isar.open(
 ## Index Limitations
 
 <Callout type="warning">
-  - Only the first 1024 bytes of strings are indexed
-  - Maximum of 3 properties in composite indexes (on web)
-  - Indexes increase write operation time
-  - Indexes consume additional storage
+  - Only the first 1024 bytes of strings are indexed - Maximum of 3 properties
+  in composite indexes (on web) - Indexes increase write operation time -
+  Indexes consume additional storage
 </Callout>
 
 ## Next Steps

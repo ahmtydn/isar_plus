@@ -1,4 +1,16 @@
+## 1.2.0
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.0 -->
+
+## What's Changed
+### Other Changes
+* feat: Mark Isar async operations as unsupported on web and update documentation and example. by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/67
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.1.9...1.2.0
+
 ## 1.1.9
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.1.9 -->
 

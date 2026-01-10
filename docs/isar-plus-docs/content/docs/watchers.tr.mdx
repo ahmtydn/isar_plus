@@ -4,20 +4,22 @@ description: Veritabanı değişikliklerine gerçek zamanlı tepki verin
 icon: Eye
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 
 # Watcher'lar
 
 Watcher'lar veritabanınızdaki değişikliklere abone olmanıza ve verimli şekilde tepki vermenize olanak tanır. Gerçek zamanlı UI güncellemeleri ve senkronizasyon işlemleri için idealdir.
 
 <Callout type="success">
-  Watcher'lar yalnızca bir transaction başarıyla commit edildikten ve hedef gerçekten değiştiğinde tetiklenir.
+  Watcher'lar yalnızca bir transaction başarıyla commit edildikten ve hedef
+  gerçekten değiştiğinde tetiklenir.
 </Callout>
 
 ## Genel Bakış
 
 Şunları izleyebilirsiniz:
+
 - **Belirli nesneler** - Tek bir nesne değiştiğinde bildirim alın
 - **Koleksiyonlar** - Koleksiyondaki herhangi bir nesne değiştiğinde bildirim alın
 - **Sorgular** - Sorgu sonuçları değiştiğinde bildirim alın
@@ -79,7 +81,8 @@ class User {
 </Tabs>
 
 <Callout>
-  Nesnenin henüz var olması gerekmez. Oluşturulduğunda watcher sizi bilgilendirir.
+  Nesnenin henüz var olması gerekmez. Oluşturulduğunda watcher sizi
+  bilgilendirir.
 </Callout>
 
 ### Hemen Tetikle
@@ -155,7 +158,7 @@ class User {
 ```dart
 // Sorgu oluştur
 final adultsQuery = isar.users
-  .filter()
+  .where()
   .ageGreaterThan(18)
   .build();
 
@@ -196,7 +199,7 @@ await isar.writeAsync((isar) async {
 
 ```dart
 final adultsQuery = isar.users
-  .filter()
+  .where()
   .ageGreaterThan(18)
   .build();
 
@@ -210,18 +213,18 @@ adultsStream.listen((_) {
 ### Sorgu Watcher Sınırlamaları
 
 <Callout type="warning">
-  `offset`, `limit` veya `distinct` kullanırken, görünür sonuçlar değişmemiş olsa bile bildirim gelebilir.
+  `offset`, `limit` veya `distinct` kullanırken, görünür sonuçlar değişmemiş
+  olsa bile bildirim gelebilir.
 </Callout>
 
 ```dart
 // Fazladan bildirim olabilir
-final topUsers = isar.users
+final topUsersQuery = isar.users
   .where()
   .sortByAge()
-  .limit(10)
   .build();
 
-topUsers.watch().listen((users) {
+topUsersQuery.watch(limit: 10).listen((users) {
   // İlk 10 değişmemiş olsa da tetiklenebilir
 });
 ```
@@ -240,7 +243,7 @@ class UserListWidget extends StatelessWidget {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
         }
-        
+
         final users = snapshot.data!;
         return ListView.builder(
           itemCount: users.length,
@@ -263,9 +266,9 @@ class UserListWidget extends StatelessWidget {
 ```dart
 class UserProfileWidget extends StatelessWidget {
   final int userId;
-  
+
   const UserProfileWidget({required this.userId});
-  
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -274,7 +277,7 @@ class UserProfileWidget extends StatelessWidget {
         if (!snapshot.hasData) {
           return Text('User not found');
         }
-        
+
         final user = snapshot.data!;
         return Column(
           children: [
@@ -298,14 +301,14 @@ class SearchWidget extends StatefulWidget {
 
 class _SearchWidgetState extends State<SearchWidget> {
   String searchQuery = '';
-  
+
   @override
   Widget build(BuildContext context) {
     final query = isar.users
-      .filter()
+      .where()
       .nameContains(searchQuery, caseSensitive: false)
       .build();
-    
+
     return Column(
       children: [
         TextField(
@@ -320,7 +323,7 @@ class _SearchWidgetState extends State<SearchWidget> {
             stream: query.watch(fireImmediately: true),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return SizedBox();
-              
+
               final users = snapshot.data!;
               return ListView.builder(
                 itemCount: users.length,
@@ -348,7 +351,7 @@ class SyncService {
       await syncUsersToServer();
     });
   }
-  
+
   Future<void> syncUsersToServer() async {
     final users = await isar.users.where().findAll();
     // Sunucuya gönder...
@@ -361,19 +364,19 @@ class SyncService {
 ```dart
 class CacheService {
   final _cache = <int, User>{};
-  
+
   void startWatching() {
     isar.users.watchLazy().listen((_) {
       _cache.clear();
       print('Cache invalidated');
     });
   }
-  
+
   Future<User?> getUser(int id) async {
     if (_cache.containsKey(id)) {
       return _cache[id];
     }
-    
+
     final user = await isar.users.get(id);
     if (user != null) {
       _cache[id] = user;
@@ -396,7 +399,7 @@ class CacheService {
     
     // ✅ Tüm koleksiyon yerine spesifik sorguları izleyin
     isar.users
-      .filter()
+      .where()
       .statusEqualTo('active')
       .watch()
       .listen((activeUsers) {
@@ -438,7 +441,7 @@ class MyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<List<User>>(
       stream: isar.users
-        .filter()
+        .where()
         .ageGreaterThan(18)
         .build()
         .watch(fireImmediately: true),
@@ -446,18 +449,18 @@ class MyWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         }
-        
+
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         }
-        
+
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Text('No users found');
         }
-        
+
         final users = snapshot.data!;
         return ListView(
-          children: users.map((user) => 
+          children: users.map((user) =>
             ListTile(title: Text(user.name))
           ).toList(),
         );
@@ -476,7 +479,8 @@ class MyWidget extends StatelessWidget {
 5. **İlk UI durumu için fireImmediately kullanın**
 
 <Callout type="info">
-  Watcher'lar verimli ve hafiftir. Reaktif UI'lar oluşturmak için özgürce kullanın!
+  Watcher'lar verimli ve hafiftir. Reaktif UI'lar oluşturmak için özgürce
+  kullanın!
 </Callout>
 
 ## Sonraki Adımlar

@@ -84,7 +84,7 @@ class Tweet {
 }
 ```
 
-Kendi uygulamanızda da aynı yöntemi uygulayabilirsiniz: yabancı anahtarı açıkça saklayın (`int` veya `String`), `where().filter().fieldEqualTo(...)` sorgularıyla çözümleyin ve referans bütünlüğünü korumak için her iki güncellemeyi aynı write transaction'ında gerçekleştirin.
+Kendi uygulamanızda da aynı yöntemi uygulayabilirsiniz: yabancı anahtarı açıkça saklayın (`int` veya `String`), `where().where().fieldEqualTo(...)` sorgularıyla çözümleyin ve referans bütünlüğünü korumak için her iki güncellemeyi aynı write transaction'ında gerçekleştirin.
 
 ## Geçiş Notu
 

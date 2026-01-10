@@ -4,24 +4,27 @@ description: Build powerful and efficient queries with Isar Plus
 icon: Search
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Queries
 
 Querying is how you find records that match certain conditions. Learn how to build powerful queries and optimize them with indexes.
 
 <Callout type="info">
-  Queries are executed on the database, not in Dart, making them incredibly fast!
+  Queries are executed on the database, not in Dart, making them incredibly
+  fast!
 </Callout>
 
 ## Overview
 
-There are two different methods of filtering your records:
+There are two different methods of filtering your records. Both start with `.where()` but work differently under the hood:
 
-1. **Filters** - Easy to use, work on any property
-2. **Where clauses** - More powerful, require indexes
+1. **Filters** - Easy to use, work on any property (scans all records)
+2. **Where clauses** - More powerful, require indexes (extremely fast)
+
+The API is unified: you always start with `.where()`. If you use a condition on an indexed property, it automatically becomes a fast "Where clause". If you use a condition on a non-indexed property, it becomes a "Filter".
 
 ## Filters
 
@@ -44,67 +47,70 @@ class Shoe {
 
 ### Query Conditions
 
-<Tabs items={['Equality', 'Comparison', 'Range', 'Null Check']}>
+<Tabs items={["Equality", "Comparison", "Range", "Null Check"]}>
   <Tab value="Equality">
-    ```dart
-    // Find size 46 shoes
-    final result = await isar.shoes.filter()
-      .sizeEqualTo(46)
-      .findAll();
-    ```
+```dart
+// Find size 46 shoes
+final result = await isar.shoes.where()
+  .sizeEqualTo(46)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="Comparison">
-    ```dart
-    // Find shoes smaller than size 40
-    final result = await isar.shoes.filter()
-      .sizeLessThan(40)
-      .findAll(); // -> [39, null]
-    
-    // Include the boundary
-    final result2 = await isar.shoes.filter()
-      .sizeLessThan(40, include: true)
-      .findAll(); // -> [39, null, 40]
-    ```
+```dart
+// Find shoes smaller than size 40
+final result = await isar.shoes.where()
+  .sizeLessThan(40)
+  .findAllAsync();
+// -> [39, null]
+
+// Include the boundary
+final result2 = await isar.shoes.where()
+  .sizeLessThan(40, include: true)
+  .findAllAsync();
+// -> [39, null, 40]
+```
   </Tab>
   <Tab value="Range">
-    ```dart
-    // Find shoes between size 39 and 46
-    final result = await isar.shoes.filter()
-      .sizeBetween(39, 46)
-      .findAll();
-    
-    // Exclude lower bound
-    final result2 = await isar.shoes.filter()
-      .sizeBetween(39, 46, includeLower: false)
-      .findAll(); // -> [40, 46]
-    ```
+```dart
+// Find shoes between size 39 and 46
+final result = await isar.shoes.where()
+  .sizeBetween(39, 46)
+  .findAllAsync();
+
+// Exclude lower bound
+final result2 = await isar.shoes.where()
+  .sizeBetween(39, 46, includeLower: false)
+  .findAllAsync();
+// -> [40, 46]
+```
   </Tab>
   <Tab value="Null Check">
-    ```dart
-    // Find shoes with null size
-    final nullSizes = await isar.shoes.filter()
-      .sizeIsNull()
-      .findAll();
-    
-    // Find shoes with non-null size
-    final withSizes = await isar.shoes.filter()
-      .sizeIsNotNull()
-      .findAll();
-    ```
+```dart
+// Find shoes with null size
+final nullSizes = await isar.shoes.where()
+  .sizeIsNull()
+  .findAllAsync();
+
+// Find shoes with non-null size
+final withSizes = await isar.shoes.where()
+  .sizeIsNotNull()
+  .findAllAsync();
+```
   </Tab>
 </Tabs>
 
 ### Available Conditions
 
-| Condition | Description |
-| --- | --- |
-| `.equalTo(value)` | Matches values equal to specified value |
-| `.between(lower, upper)` | Matches values between lower and upper |
-| `.greaterThan(bound)` | Matches values greater than bound |
-| `.lessThan(bound)` | Matches values less than bound |
-| `.isNull()` | Matches null values |
-| `.isNotNull()` | Matches non-null values |
-| `.length()` | Query based on list/string length |
+| Condition                | Description                             |
+| ------------------------ | --------------------------------------- |
+| `.equalTo(value)`        | Matches values equal to specified value |
+| `.between(lower, upper)` | Matches values between lower and upper  |
+| `.greaterThan(bound)`    | Matches values greater than bound       |
+| `.lessThan(bound)`       | Matches values less than bound          |
+| `.isNull()`              | Matches null values                     |
+| `.isNotNull()`           | Matches non-null values                 |
+| `.length()`              | Query based on list/string length       |
 
 ## Logical Operators
 
@@ -112,46 +118,46 @@ Combine multiple conditions using logical operators:
 
 ```dart
 // AND operator (implicit)
-final result = await isar.shoes.filter()
+final result = await isar.shoes.where()
   .sizeEqualTo(46)
   .and() // Optional
   .isUnisexEqualTo(true)
-  .findAll();
+  .findAllAsync();
 // Equivalent to: size == 46 && isUnisex == true
 ```
 
 <Tabs items={['AND', 'OR', 'NOT', 'GROUP']}>
   <Tab value="AND">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .and()
       .isUnisexEqualTo(true)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="OR">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .or()
       .sizeEqualTo(40)
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="NOT">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .not().sizeEqualTo(46)
       .and()
       .not().isUnisexEqualTo(true)
-      .findAll();
+      .findAllAsync();
     // Equivalent to: size != 46 && isUnisex != true
     ```
   </Tab>
   <Tab value="GROUP">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeBetween(43, 46)
       .and()
       .group((q) => q
@@ -159,7 +165,7 @@ final result = await isar.shoes.filter()
         .or()
         .isUnisexEqualTo(false)
       )
-      .findAll();
+      .findAllAsync();
     // Equivalent to: size >= 43 && size <= 46 && 
     // (model.contains('Nike') || isUnisex == false)
     ```
@@ -178,46 +184,48 @@ class Product {
 }
 ```
 
-<Tabs items={['StartsWith', 'Contains', 'EndsWith', 'Matches']}>
+<Tabs items={["StartsWith", "Contains", "EndsWith", "Matches"]}>
   <Tab value="StartsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameStartsWith('iPhone')
-      .findAll();
-    
+      .findAllAsync();
+
     // Case insensitive
-    final products2 = await isar.products.filter()
+    final products2 = await isar.products.where()
       .nameStartsWith('iphone', caseSensitive: false)
-      .findAll();
+      .findAllAsync();
     ```
+
   </Tab>
   <Tab value="Contains">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameContains('Pro')
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="EndsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameEndsWith('Max')
-      .findAll();
+      .findAllAsync();
     ```
   </Tab>
   <Tab value="Matches">
     ```dart
     // Wildcard patterns: * (zero or more), ? (one char)
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameMatches('iPhone *Pro')
-      .findAll();
+      .findAllAsync();
     // Matches: "iPhone 14 Pro", "iPhone 15 Pro", etc.
     ```
   </Tab>
 </Tabs>
 
 <Callout>
-  All string operations have an optional `caseSensitive` parameter that defaults to `true`.
+  All string operations have an optional `caseSensitive` parameter that defaults
+  to `true`.
 </Callout>
 
 ## Query Modifiers
@@ -228,12 +236,12 @@ Build dynamic queries based on conditions:
 
 ```dart
 Future<List<Shoe>> findShoes(int? sizeFilter) {
-  return isar.shoes.filter()
+  return isar.shoes.where()
     .optional(
       sizeFilter != null,
       (q) => q.sizeEqualTo(sizeFilter!),
     )
-    .findAll();
+    .findAllAsync();
 }
 ```
 
@@ -241,33 +249,60 @@ Future<List<Shoe>> findShoes(int? sizeFilter) {
 
 ```dart
 // Find shoes with size 38, 40, or 42
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .anyOf(
     [38, 40, 42],
     (q, int size) => q.sizeEqualTo(size)
   )
-  .findAll();
+  .findAllAsync();
 
 // Equivalent to:
-final shoes2 = await isar.shoes.filter()
+final shoes2 = await isar.shoes.where()
   .sizeEqualTo(38)
   .or()
   .sizeEqualTo(40)
   .or()
   .sizeEqualTo(42)
-  .findAll();
+  .findAllAsync();
 ```
 
 ### AllOf Modifier
 
 ```dart
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .allOf(
     ['Nike', 'Adidas'],
     (q, brand) => q.modelContains(brand)
   )
-  .findAll();
+  .findAllAsync();
 ```
+
+## Advanced: Custom Queries
+
+For complex scenarios where you need to build queries dynamically at runtime, you can use `buildQuery`. This is useful for creating custom query languages or dynamic filtering UIs.
+
+```dart
+// Manually construct a Filter
+final filter = AndGroup([
+  EqualCondition(property: 1, value: 46), // property 1 is 'size'
+  GreaterCondition(property: 2, value: 100), // property 2 is 'price'
+]);
+
+final query = isar.shoes.buildQuery(
+  filter: filter,
+  sortBy: [
+    SortProperty(property: 1, sort: Sort.desc), // Sort by size desc
+  ],
+);
+
+final results = await query.findAllAsync();
+```
+
+<Callout type="warning">
+  Using `buildQuery` requires intimate knowledge of your schema's property
+  indices. It is recommended to use the generated `.where()` API whenever
+  possible.
+</Callout>
 
 ## List Queries
 
@@ -282,32 +317,31 @@ class Tweet {
 }
 ```
 
-<Tabs items={['Length', 'Contains', 'Empty']}>
+<Tabs items={["Length", "Contains", "Empty"]}>
   <Tab value="Length">
-    ```dart
-    // Tweets with many hashtags
-    final tweets = await isar.tweets.filter()
-      .hashtagsLengthGreaterThan(5)
-      .findAll();
-    ```
+```dart
+// Tweets with many hashtags
+final tweets = await isar.tweets.where()
+  .hashtagsLengthGreaterThan(5)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="Contains">
-    ```dart
-    // Find tweets with specific hashtag
-    final flutterTweets = await isar.tweets.filter()
-      .hashtagsElementEqualTo('flutter')
-      .findAll();
-    // Equivalent to: tweets.where((t) => 
-    //   t.hashtags.contains('flutter'))
-    ```
+```dart
+// Find tweets with specific hashtag
+final flutterTweets = await isar.tweets.where()
+  .hashtagsElementEqualTo('flutter')
+  .findAllAsync();
+// Equivalent to: tweets.where((t) => t.hashtags.contains('flutter'))
+```
   </Tab>
   <Tab value="Empty">
-    ```dart
-    // Find tweets without hashtags
-    final tweets = await isar.tweets.filter()
-      .hashtagsIsEmpty()
-      .findAll();
-    ```
+```dart
+// Find tweets without hashtags
+final tweets = await isar.tweets.where()
+  .hashtagsIsEmpty()
+  .findAllAsync();
+```
   </Tab>
 </Tabs>
 
@@ -331,22 +365,62 @@ class Brand {
 
 ```dart
 // Find BMW cars from Germany
-final germanCars = await isar.cars.filter()
+final germanCars = await isar.cars.where()
   .brand((q) => q
     .nameEqualTo('BMW')
     .and()
     .countryEqualTo('Germany')
   )
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="success">
   Always group nested queries for better performance!
 </Callout>
 
-## Link Queries
+## Querying Relationships
 
-Query based on linked objects:
+Isar Plus v4 removed the legacy `IsarLink` and `IsarLinks` types. Instead, relationships are modeled using **embedded objects** or **manual ID references**. See the [Relationships](./relationships) page for full details.
+
+### Embedded Objects
+
+When related data doesn't need to be queried independently, embed it directly:
+
+```dart
+@collection
+class Student {
+  Id? id;
+  late String name;
+  final List<TeacherInfo> teachers; // embedded list
+}
+
+@embedded
+class TeacherInfo {
+  TeacherInfo({this.name = '', this.subject = ''});
+  final String name;
+  final String subject;
+}
+```
+
+```dart
+// Find students with a math teacher using element matchers
+final students = await isar.students
+  .where()
+  .filter()
+  .teachersElement((q) => q.subjectEqualTo('Math'))
+  .findAllAsync();
+
+// Query by embedded list length
+final studentsWithManyTeachers = await isar.students
+  .where()
+  .filter()
+  .teachersLengthGreaterThan(3)
+  .findAllAsync();
+```
+
+### Manual ID References
+
+For many-to-many or independently queried relationships, store foreign keys explicitly:
 
 ```dart
 @collection
@@ -359,28 +433,35 @@ class Teacher {
 class Student {
   Id? id;
   late String name;
-  final teachers = IsarLinks<Teacher>();
+  final List<int> teacherIds; // foreign key list
 }
 ```
 
 ```dart
-// Find students with math or English teacher
-final students = await isar.students.filter()
-  .teachers((q) => q
-    .subjectEqualTo('Math')
-    .or()
-    .subjectEqualTo('English')
-  )
-  .findAll();
+// Find a student's teachers by their IDs
+final student = await isar.students.getAsync(1);
+final teachers = await isar.teachers
+  .where()
+  .filter()
+  .anyOf(student!.teacherIds, (q, id) => q.idEqualTo(id))
+  .findAllAsync();
 
-// Query by link count
-final studentsWithManyTeachers = await isar.students.filter()
-  .teachersLengthGreaterThan(3)
-  .findAll();
+// Find students who have a specific teacher
+final mathTeacher = await isar.teachers
+  .where()
+  .subjectEqualTo('Math')
+  .findFirstAsync();
+
+final studentsWithMathTeacher = await isar.students
+  .where()
+  .filter()
+  .teacherIdsElementEqualTo(mathTeacher!.id!)
+  .findAllAsync();
 ```
 
-<Callout type="warning">
-  Link queries can be expensive. Consider using embedded objects for better performance.
+<Callout type="info">
+  Embedded objects are stored inline with the parent record—no extra queries needed.
+  Manual ID references require explicit queries but allow independent entity management.
 </Callout>
 
 ## Where Clauses
@@ -391,10 +472,10 @@ Where clauses use indexes for ultra-fast queries:
 @collection
 class Product {
   Id? id;
-  
+
   @Index()
   late String name;
-  
+
   @Index()
   late int price;
 }
@@ -405,15 +486,15 @@ class Product {
 final products = await isar.products
   .where()
   .nameEqualTo('iPhone')
-  .findAll();
+  .findAllAsync();
 
 // Combine with filters
 final expensiveIPhones = await isar.products
   .where()
   .nameEqualTo('iPhone')
-  .filter()
+  .where()
   .priceGreaterThan(1000)
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="info">
@@ -424,38 +505,38 @@ final expensiveIPhones = await isar.products
 
 ### Find Operations
 
-<Tabs items={['findAll', 'findFirst', 'count', 'isEmpty']}>
+<Tabs items={["findAll", "findFirst", "count", "isEmpty"]}>
   <Tab value="findAll">
-    ```dart
-    final allShoes = await isar.shoes
-      .filter()
-      .sizeGreaterThan(40)
-      .findAll();
-    ```
+```dart
+final allShoes = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .findAllAsync();
+```
   </Tab>
   <Tab value="findFirst">
-    ```dart
-    final firstShoe = await isar.shoes
-      .filter()
-      .sizeEqualTo(46)
-      .findFirst();
-    ```
+```dart
+final firstShoe = await isar.shoes
+  .where()
+  .sizeEqualTo(46)
+  .findFirstAsync();
+```
   </Tab>
   <Tab value="count">
-    ```dart
-    final count = await isar.shoes
-      .filter()
-      .sizeGreaterThan(40)
-      .count();
-    ```
+```dart
+final count = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .countAsync();
+```
   </Tab>
   <Tab value="isEmpty">
-    ```dart
-    final isEmpty = await isar.shoes
-      .filter()
-      .sizeEqualTo(99)
-      .isEmpty();
-    ```
+```dart
+final isEmpty = await isar.shoes
+  .where()
+  .sizeEqualTo(99)
+  .isEmptyAsync();
+```
   </Tab>
 </Tabs>
 
@@ -464,8 +545,8 @@ final expensiveIPhones = await isar.products
 ```dart
 // Delete matching objects
 await isar.writeAsync((isar) async {
-  final count = await isar.shoes
-    .filter()
+  final count = isar.shoes
+    .where()
     .sizeLessThan(35)
     .deleteAll();
   print('Deleted $count shoes');
@@ -479,26 +560,27 @@ Sort results by any property:
 ```dart
 // Ascending
 final sorted = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
-  .findAll();
+  .findAllAsync();
 
 // Descending
 final sortedDesc = await isar.shoes
-  .filter()
+  .where()
   .sortBySizeDesc()
-  .findAll();
+  .findAllAsync();
 
 // Multiple sorts
 final multiSort = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
   .thenByModel()
-  .findAll();
+  .findAllAsync();
 ```
 
 <Callout type="warning">
-  Sorting without indexes is expensive for large datasets. Use indexed where clauses for sorting when possible.
+  Sorting without indexes is expensive for large datasets. Use indexed where
+  clauses for sorting when possible.
 </Callout>
 
 ## Limit & Offset
@@ -507,15 +589,12 @@ final multiSort = await isar.shoes
 // Get first 10 results
 final first10 = await isar.shoes
   .where()
-  .limit(10)
-  .findAll();
+  .findAllAsync(limit: 10);
 
 // Skip first 20, get next 10
 final paginated = await isar.shoes
   .where()
-  .offset(20)
-  .limit(10)
-  .findAll();
+  .findAllAsync(offset: 20, limit: 10);
 ```
 
 ## Distinct
@@ -525,36 +604,39 @@ final paginated = await isar.shoes
 final uniqueSizes = await isar.shoes
   .where()
   .distinctBySize()
-  .findAll();
+  .findAllAsync();
 ```
 
 ## Best Practices
 
 1. **Use Where Clauses with Indexes**
+
    ```dart
-   // ✅ Fast - uses index
-   await isar.products.where().nameEqualTo('iPhone').findAll();
-   
-   // ❌ Slow - scans all records
-   await isar.products.filter().nameEqualTo('iPhone').findAll();
+   // ✅ Fast - uses index (price is indexed)
+   await isar.products.where().priceEqualTo(500).findAllAsync();
+
+   // ❌ Slow - scans all records (name is not indexed)
+   await isar.products.where().nameEqualTo('iPhone').findAllAsync();
    ```
 
 2. **Combine Where and Filter**
+
    ```dart
    // ✅ Optimal - index + filter
    await isar.products
      .where()
      .nameEqualTo('iPhone')
-     .filter()
+     .where()
      .priceGreaterThan(500)
-     .findAll();
+     .findAllAsync();
    ```
 
 3. **Group Nested Queries**
+
    ```dart
    // ✅ Efficient
    .brand((q) => q.nameEqualTo('BMW').and().countryEqualTo('Germany'))
-   
+
    // ❌ Inefficient
    .brand((q) => q.nameEqualTo('BMW'))
    .and()

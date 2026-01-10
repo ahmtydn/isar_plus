@@ -125,13 +125,13 @@ await isar.writeAsync((isar) async {
 });
 
 // Read
-final allUsers = await isar.users.where().findAll();
+final allUsers = await isar.users.where().findAllAsync();
 
 // Query
 final youngUsers = await isar.users
-  .filter()
+  .where()
   .ageLessThan(30)
-  .findAll();
+  .findAllAsync();
 
 // Update
 await isar.writeAsync((isar) async {

@@ -143,7 +143,7 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
       .findAll();
     
     // 🐌 Yavaş - tüm kayıtları tarar (O(n))
-    await isar.users.filter()
+    await isar.users.where()
       .emailEqualTo('john@example.com')
       .findAll();
     ```

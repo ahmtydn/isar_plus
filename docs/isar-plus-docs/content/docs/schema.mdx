@@ -4,8 +4,8 @@ description: Define your data models with Isar collections
 icon: Database
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 # Schema
 
@@ -27,7 +27,8 @@ class User {
 ```
 
 <Callout>
-  To persist a field, Isar must have access to it. Make it public or provide getter and setter methods.
+  To persist a field, Isar must have access to it. Make it public or provide
+  getter and setter methods.
 </Callout>
 
 ## Data Types
@@ -74,53 +75,88 @@ class ListTypes {
 
 ### Enums
 
-```dart
-enum Status { active, inactive, pending }
+Isar Plus supports Dart enums with two storage strategies:
 
-@collection
-class Task {
-  Task(this.id);
+<Tabs items={['Ordinal (Default)', 'Custom Value']}>
+  <Tab value="Ordinal (Default)">
+    By default, enums are stored by their index (ordinal). Simply use the enum directly without any annotation:
 
-  final int id;
-
-  @enumerated
-  Status? status;
-
-  @Enumerated(EnumType.ordinal)
-  Status? ordinalStatus;
-
-  @Enumerated(EnumType.name)
-  Status? namedStatus;
-}
-```
-
-<Tabs items={['EnumType.ordinal', 'EnumType.name', 'EnumType.value']}>
-  <Tab value="EnumType.ordinal">
-    Stores the index of the enum value (default).
     ```dart
-    // Status.active = 0
-    // Status.inactive = 1
-    // Status.pending = 2
-    ```
-  </Tab>
-  <Tab value="EnumType.name">
-    Stores the name of the enum value as String.
-    ```dart
-    // Status.active = 'active'
-    // Status.inactive = 'inactive'
-    ```
-  </Tab>
-  <Tab value="EnumType.value">
-    Stores a custom value defined in the enum.
-    ```dart
-    enum Status {
-      @EnumValue(1) active,
-      @EnumValue(2) inactive,
-      @EnumValue(3) pending,
+    enum Status { active, inactive, pending }
+
+    @collection
+    class Task {
+      Task(this.id);
+
+      final int id;
+
+      Status? status; // Stored as 0, 1, or 2
     }
     ```
+
+    The stored values are:
+    - `Status.active` → `0`
+    - `Status.inactive` → `1`
+    - `Status.pending` → `2`
+
+    <Callout type="warning">
+      If you reorder enum values, existing stored data will map to different enum values. Add new values at the end or use custom values for stability.
+    </Callout>
+
+  </Tab>
+  <Tab value="Custom Value">
+    For more control, define a field in your enum and annotate it with `@enumValue`. This field's value will be used for storage:
+
+    ```dart
+    enum Status {
+      active(1),
+      inactive(2),
+      pending(3);
+
+      const Status(this.code);
+
+      @enumValue
+      final int code;
+    }
+
+    @collection
+    class Task {
+      Task(this.id);
+
+      final int id;
+
+      Status? status; // Stored as 1, 2, or 3
+    }
+    ```
+
+    Supported types for `@enumValue`:
+    - `byte` - stored as single byte
+    - `short` - stored as 16-bit integer
+    - `int` - stored as 32-bit integer
+    - `String` - stored as text
+
+    ```dart
+    // String-based enum example
+    enum Priority {
+      low('LOW'),
+      medium('MEDIUM'),
+      high('HIGH');
+
+      const Priority(this.name);
+
+      @enumValue
+      final String name;
+    }
+    ```
+
   </Tab>
 </Tabs>
+
+<Callout type="info" title="Migration from Isar v3">
+  The `@enumerated` and `@Enumerated(EnumType.ordinal/name)` annotations from
+  Isar v3 are no longer available. Use plain enums for ordinal storage or
+  `@enumValue` for custom values.
+</Callout>
 
 ### Embedded Objects
 
@@ -295,7 +331,8 @@ Isar handles schema migrations automatically in most cases:
 - Adding/removing indexes
 
 <Callout type="error">
-  Changing the type of an existing field will result in data loss for that field.
+  Changing the type of an existing field will result in data loss for that
+  field.
 </Callout>
 
 ## Next Steps

@@ -84,7 +84,7 @@ class Tweet {
 }
 ```
 
-You can follow the same approach in your app: store the foreign key explicitly (`int` or `String`), create helper methods that run `where().filter().fieldEqualTo(...)`, and keep both updates inside a single write transaction to ensure referential consistency.
+You can follow the same approach in your app: store the foreign key explicitly (`int` or `String`), create helper methods that run `where().where().fieldEqualTo(...)`, and keep both updates inside a single write transaction to ensure referential consistency.
 
 ## Migration Reference
 

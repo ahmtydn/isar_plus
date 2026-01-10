@@ -137,7 +137,7 @@ class LargeDocument {
     
     // ❌ Text operations
     Isar.splitWords('hello world');
-    isar.users.filter().nameMatches('pattern*');
+    isar.users.where().nameMatches('pattern*');
     ```
   </Tab>
   <Tab value="Supported">
@@ -150,7 +150,7 @@ class LargeDocument {
     isar.read((isar) => isar.users.where().findAll());
     
     // ✅ Filters and queries
-    isar.users.filter()
+    isar.users.where()
       .nameContains('John')
       .findAll();
     
@@ -209,16 +209,16 @@ class User {
 final words = Isar.splitWords('Hello World');
 
 // ❌ Wildcard matching not available
-await isar.users.filter()
+await isar.users.where()
   .nameMatches('John*')
   .findAll();
 
 // ✅ Use alternative patterns
-await isar.users.filter()
+await isar.users.where()
   .nameStartsWith('John')
   .findAll();
 
-await isar.users.filter()
+await isar.users.where()
   .nameContains('John')
   .findAll();
 ```
@@ -309,7 +309,7 @@ product.searchName = product.name.toLowerCase();
 
 // Query works on all platforms
 await isar.products
-  .filter()
+  .where()
   .searchNameContains('iphone')
   .findAll();
 ```

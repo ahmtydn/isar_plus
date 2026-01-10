@@ -4,24 +4,27 @@ description: Isar Plus ile güçlü ve verimli sorgular oluşturun
 icon: Search
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps } from "fumadocs-ui/components/steps";
 
 # Sorgular
 
 Sorgulama, belirli koşulları sağlayan kayıtları bulma yöntemidir. Güçlü sorgular oluşturmayı ve indekslerle nasıl optimize edeceğinizi öğrenin.
 
 <Callout type="info">
-  Sorgular Dart'ta değil veritabanında çalışır; bu yüzden inanılmaz derecede hızlıdır!
+  Sorgular Dart'ta değil veritabanında çalışır; bu yüzden inanılmaz derecede
+  hızlıdır!
 </Callout>
 
 ## Genel Bakış
 
-Kayıtlarınızı filtrelemek için iki yöntem vardır:
+Kayıtlarınızı filtrelemek için iki farklı yöntem vardır. Her ikisi de `.where()` ile başlar ancak arka planda farklı çalışır:
 
-1. **Filtreler** - Kullanımı kolaydır, herhangi bir özellikte çalışır
-2. **Where cümleleri** - Daha güçlüdür, indeks gerektirir
+1. **Filtreler** - Kullanımı kolaydır, herhangi bir özellikte çalışır (tüm kayıtları tarar)
+2. **Where cümleleri** - Daha güçlüdür, indeks gerektirir (son derece hızlıdır)
+
+API birleşiktir: her zaman `.where()` ile başlarsınız. İndeksli bir özellik üzerinde koşul kullanırsanız, otomatik olarak hızlı bir "Where cümlesi" olur. İndeksli olmayan bir özellik kullanırsanız, bir "Filtre" olur.
 
 ## Filtreler
 
@@ -44,67 +47,70 @@ class Shoe {
 
 ### Sorgu Koşulları
 
-<Tabs items={['Eşitlik', 'Karşılaştırma', 'Aralık', 'Null Kontrolü']}>
+<Tabs items={["Eşitlik", "Karşılaştırma", "Aralık", "Null Kontrolü"]}>
   <Tab value="Eşitlik">
-    ```dart
-    // 46 numara ayakkabılar
-    final result = await isar.shoes.filter()
-      .sizeEqualTo(46)
-      .findAll();
-    ```
+```dart
+// 46 numara ayakkabılar
+final result = await isar.shoes.where()
+  .sizeEqualTo(46)
+  .findAll();
+```
   </Tab>
   <Tab value="Karşılaştırma">
-    ```dart
-    // 40 numaradan küçük ayakkabılar
-    final result = await isar.shoes.filter()
-      .sizeLessThan(40)
-      .findAll(); // -> [39, null]
-    
-    // Sınırı dahil et
-    final result2 = await isar.shoes.filter()
-      .sizeLessThan(40, include: true)
-      .findAll(); // -> [39, null, 40]
-    ```
+```dart
+// 40 numaradan küçük ayakkabılar
+final result = await isar.shoes.where()
+  .sizeLessThan(40)
+  .findAll();
+// -> [39, null]
+
+// Sınırı dahil et
+final result2 = await isar.shoes.where()
+  .sizeLessThan(40, include: true)
+  .findAll();
+// -> [39, null, 40]
+```
   </Tab>
   <Tab value="Aralık">
-    ```dart
-    // 39 ile 46 arası ayakkabılar
-    final result = await isar.shoes.filter()
-      .sizeBetween(39, 46)
-      .findAll();
-    
-    // Alt sınırı hariç tut
-    final result2 = await isar.shoes.filter()
-      .sizeBetween(39, 46, includeLower: false)
-      .findAll(); // -> [40, 46]
-    ```
+```dart
+// 39 ile 46 arası ayakkabılar
+final result = await isar.shoes.where()
+  .sizeBetween(39, 46)
+  .findAll();
+
+// Alt sınırı hariç tut
+final result2 = await isar.shoes.where()
+  .sizeBetween(39, 46, includeLower: false)
+  .findAll();
+// -> [40, 46]
+```
   </Tab>
   <Tab value="Null Kontrolü">
-    ```dart
-    // Boyutu null olan ayakkabılar
-    final nullSizes = await isar.shoes.filter()
-      .sizeIsNull()
-      .findAll();
-    
-    // Boyutu null olmayan ayakkabılar
-    final withSizes = await isar.shoes.filter()
-      .sizeIsNotNull()
-      .findAll();
-    ```
+```dart
+// Boyutu null olan ayakkabılar
+final nullSizes = await isar.shoes.where()
+  .sizeIsNull()
+  .findAll();
+
+// Boyutu null olmayan ayakkabılar
+final withSizes = await isar.shoes.where()
+  .sizeIsNotNull()
+  .findAll();
+```
   </Tab>
 </Tabs>
 
 ### Kullanılabilir Koşullar
 
-| Koşul | Açıklama |
-| --- | --- |
-| `.equalTo(value)` | Belirtilen değere eşit olanları getirir |
+| Koşul                    | Açıklama                                      |
+| ------------------------ | --------------------------------------------- |
+| `.equalTo(value)`        | Belirtilen değere eşit olanları getirir       |
 | `.between(lower, upper)` | Alt ve üst sınır arasındaki değerleri getirir |
-| `.greaterThan(bound)` | Sınırdan büyük değerleri getirir |
-| `.lessThan(bound)` | Sınırdan küçük değerleri getirir |
-| `.isNull()` | Null değerleri eşleştirir |
-| `.isNotNull()` | Null olmayanları eşleştirir |
-| `.length()` | Liste/string uzunluğuna göre sorgular |
+| `.greaterThan(bound)`    | Sınırdan büyük değerleri getirir              |
+| `.lessThan(bound)`       | Sınırdan küçük değerleri getirir              |
+| `.isNull()`              | Null değerleri eşleştirir                     |
+| `.isNotNull()`           | Null olmayanları eşleştirir                   |
+| `.length()`              | Liste/string uzunluğuna göre sorgular         |
 
 ## Mantıksal Operatörler
 
@@ -112,7 +118,7 @@ Birden fazla koşulu mantıksal operatörlerle birleştirin:
 
 ```dart
 // AND operatörü (örtük)
-final result = await isar.shoes.filter()
+final result = await isar.shoes.where()
   .sizeEqualTo(46)
   .and() // Opsiyonel
   .isUnisexEqualTo(true)
@@ -123,7 +129,7 @@ final result = await isar.shoes.filter()
 <Tabs items={['AND', 'OR', 'NOT', 'GROUP']}>
   <Tab value="AND">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .and()
       .isUnisexEqualTo(true)
@@ -132,7 +138,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="OR">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeEqualTo(46)
       .or()
       .sizeEqualTo(40)
@@ -141,7 +147,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="NOT">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .not().sizeEqualTo(46)
       .and()
       .not().isUnisexEqualTo(true)
@@ -151,7 +157,7 @@ final result = await isar.shoes.filter()
   </Tab>
   <Tab value="GROUP">
     ```dart
-    final result = await isar.shoes.filter()
+    final result = await isar.shoes.where()
       .sizeBetween(43, 46)
       .and()
       .group((q) => q
@@ -177,29 +183,30 @@ class Product {
 }
 ```
 
-<Tabs items={['StartsWith', 'Contains', 'EndsWith', 'Matches']}>
+<Tabs items={["StartsWith", "Contains", "EndsWith", "Matches"]}>
   <Tab value="StartsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameStartsWith('iPhone')
       .findAll();
-    
+
     // Büyük/küçük harf duyarsız
-    final products2 = await isar.products.filter()
+    final products2 = await isar.products.where()
       .nameStartsWith('iphone', caseSensitive: false)
       .findAll();
     ```
+
   </Tab>
   <Tab value="Contains">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameContains('Pro')
       .findAll();
     ```
   </Tab>
   <Tab value="EndsWith">
     ```dart
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameEndsWith('Max')
       .findAll();
     ```
@@ -207,7 +214,7 @@ class Product {
   <Tab value="Matches">
     ```dart
     // Wildcard desenleri: * (0+ karakter), ? (tek karakter)
-    final products = await isar.products.filter()
+    final products = await isar.products.where()
       .nameMatches('iPhone *Pro')
       .findAll();
     // "iPhone 14 Pro", "iPhone 15 Pro" vb.
@@ -216,7 +223,8 @@ class Product {
 </Tabs>
 
 <Callout>
-  Tüm string işlemlerinde varsayılanı `true` olan isteğe bağlı `caseSensitive` parametresi bulunur.
+  Tüm string işlemlerinde varsayılanı `true` olan isteğe bağlı `caseSensitive`
+  parametresi bulunur.
 </Callout>
 
 ## Sorgu Değiştiricileri
@@ -227,7 +235,7 @@ Koşullara göre dinamik sorgular oluşturun:
 
 ```dart
 Future<List<Shoe>> findShoes(int? sizeFilter) {
-  return isar.shoes.filter()
+  return isar.shoes.where()
     .optional(
       sizeFilter != null,
       (q) => q.sizeEqualTo(sizeFilter!),
@@ -240,7 +248,7 @@ Future<List<Shoe>> findShoes(int? sizeFilter) {
 
 ```dart
 // 38, 40 veya 42 numara ayakkabılar
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .anyOf(
     [38, 40, 42],
     (q, int size) => q.sizeEqualTo(size)
@@ -248,7 +256,7 @@ final shoes = await isar.shoes.filter()
   .findAll();
 
 // Eşdeğer:
-final shoes2 = await isar.shoes.filter()
+final shoes2 = await isar.shoes.where()
   .sizeEqualTo(38)
   .or()
   .sizeEqualTo(40)
@@ -260,13 +268,39 @@ final shoes2 = await isar.shoes.filter()
 ### AllOf Modifiyeri
 
 ```dart
-final shoes = await isar.shoes.filter()
+final shoes = await isar.shoes.where()
   .allOf(
     ['Nike', 'Adidas'],
     (q, brand) => q.modelContains(brand)
   )
-  .findAll();
 ```
+
+## Gelişmiş: Özel Sorgular (Custom Queries)
+
+Sorguları çalışma zamanında dinamik olarak oluşturmanız gereken karmaşık senaryolar için `buildQuery` kullanabilirsiniz. Bu, özel sorgu dilleri veya dinamik filtreleme arayüzleri oluşturmak için yararlıdır.
+
+```dart
+// Filter nesnesini manuel oluşturma
+final filter = AndGroup([
+  EqualCondition(property: 1, value: 46), // özellik 1: 'size'
+  GreaterCondition(property: 2, value: 100), // özellik 2: 'price'
+]);
+
+final query = isar.shoes.buildQuery(
+  filter: filter,
+  sortBy: [
+    SortProperty(property: 1, sort: Sort.desc), // boyuta göre azalan sırala
+  ],
+);
+
+final results = await query.findAllAsync();
+```
+
+<Callout type="warning">
+  `buildQuery` kullanmak, şemanızın özellik indeksleri (property index) hakkında
+  derin bilgi gerektirir. Mümkün olduğunda üretilen `.where()` API'sini
+  kullanmanız önerilir.
+</Callout>
 
 ## Liste Sorguları
 
@@ -281,31 +315,31 @@ class Tweet {
 }
 ```
 
-<Tabs items={['Length', 'Contains', 'Empty']}>
+<Tabs items={["Length", "Contains", "Empty"]}>
   <Tab value="Length">
-    ```dart
-    // Çok hashtag'li tweetler
-    final tweets = await isar.tweets.filter()
-      .hashtagsLengthGreaterThan(5)
-      .findAll();
-    ```
+```dart
+// Çok hashtag'li tweetler
+final tweets = await isar.tweets.where()
+  .hashtagsLengthGreaterThan(5)
+  .findAll();
+```
   </Tab>
   <Tab value="Contains">
-    ```dart
-    // Belirli hashtag'i içeren tweetler
-    final flutterTweets = await isar.tweets.filter()
-      .hashtagsElementEqualTo('flutter')
-      .findAll();
-    // tweets.where((t) => t.hashtags.contains('flutter'))
-    ```
+```dart
+// Belirli hashtag'i içeren tweetler
+final flutterTweets = await isar.tweets.where()
+  .hashtagsElementEqualTo('flutter')
+  .findAll();
+// tweets.where((t) => t.hashtags.contains('flutter'))
+```
   </Tab>
   <Tab value="Empty">
-    ```dart
-    // Hashtag'siz tweetler
-    final tweets = await isar.tweets.filter()
-      .hashtagsIsEmpty()
-      .findAll();
-    ```
+```dart
+// Hashtag'siz tweetler
+final tweets = await isar.tweets.where()
+  .hashtagsIsEmpty()
+  .findAll();
+```
   </Tab>
 </Tabs>
 
@@ -329,7 +363,7 @@ class Brand {
 
 ```dart
 // Almanya'dan BMW'ler
-final germanCars = await isar.cars.filter()
+final germanCars = await isar.cars.where()
   .brand((q) => q
     .nameEqualTo('BMW')
     .and()
@@ -342,9 +376,49 @@ final germanCars = await isar.cars.filter()
   Daha iyi performans için iç içe sorguları her zaman gruplayın!
 </Callout>
 
-## Link Sorguları
+## İlişki Sorguları
 
-Linkli nesnelere göre sorgu:
+Isar Plus v4, eski `IsarLink` ve `IsarLinks` tiplerini kaldırdı. Bunun yerine ilişkiler **gömülü nesneler** veya **manuel ID referansları** kullanılarak modellenir. Ayrıntılar için [İlişkiler](./relationships) sayfasına bakın.
+
+### Gömülü Nesneler
+
+İlişkili verinin bağımsız sorgulanması gerekmiyorsa, doğrudan gömün:
+
+```dart
+@collection
+class Student {
+  Id? id;
+  late String name;
+  final List<TeacherInfo> teachers; // gömülü liste
+}
+
+@embedded
+class TeacherInfo {
+  TeacherInfo({this.name = '', this.subject = ''});
+  final String name;
+  final String subject;
+}
+```
+
+```dart
+// Element eşleştiricilerle matematik öğretmeni olan öğrencileri bulun
+final students = await isar.students
+  .where()
+  .filter()
+  .teachersElement((q) => q.subjectEqualTo('Math'))
+  .findAllAsync();
+
+// Gömülü liste uzunluğuna göre sorgu
+final studentsWithManyTeachers = await isar.students
+  .where()
+  .filter()
+  .teachersLengthGreaterThan(3)
+  .findAllAsync();
+```
+
+### Manuel ID Referansları
+
+Çoktan çoka veya bağımsız sorgulanan ilişkiler için yabancı anahtarları açıkça saklayın:
 
 ```dart
 @collection
@@ -357,28 +431,35 @@ class Teacher {
 class Student {
   Id? id;
   late String name;
-  final teachers = IsarLinks<Teacher>();
+  final List<int> teacherIds; // yabancı anahtar listesi
 }
 ```
 
 ```dart
-// Matematik veya İngilizce öğretmeni olan öğrenciler
-final students = await isar.students.filter()
-  .teachers((q) => q
-    .subjectEqualTo('Math')
-    .or()
-    .subjectEqualTo('English')
-  )
-  .findAll();
+// Öğrencinin öğretmenlerini ID'leriyle bulun
+final student = await isar.students.getAsync(1);
+final teachers = await isar.teachers
+  .where()
+  .filter()
+  .anyOf(student!.teacherIds, (q, id) => q.idEqualTo(id))
+  .findAllAsync();
 
-// Link sayısına göre sorgu
-final studentsWithManyTeachers = await isar.students.filter()
-  .teachersLengthGreaterThan(3)
-  .findAll();
+// Belirli bir öğretmene sahip öğrencileri bulun
+final mathTeacher = await isar.teachers
+  .where()
+  .subjectEqualTo('Math')
+  .findFirstAsync();
+
+final studentsWithMathTeacher = await isar.students
+  .where()
+  .filter()
+  .teacherIdsElementEqualTo(mathTeacher!.id!)
+  .findAllAsync();
 ```
 
-<Callout type="warning">
-  Link sorguları maliyetli olabilir. Daha iyi performans için gömülü nesneleri düşünün.
+<Callout type="info">
+  Gömülü nesneler ebeveyn kayıtla birlikte saklanır—ekstra sorgu gerekmez.
+  Manuel ID referansları açık sorgular gerektirir ancak bağımsız varlık yönetimine izin verir.
 </Callout>
 
 ## Where Cümleleri
@@ -389,10 +470,10 @@ Where cümleleri indeksleri kullanarak ultra hızlı sorgular sağlar:
 @collection
 class Product {
   Id? id;
-  
+
   @Index()
   late String name;
-  
+
   @Index()
   late int price;
 }
@@ -409,7 +490,7 @@ final products = await isar.products
 final expensiveIPhones = await isar.products
   .where()
   .nameEqualTo('iPhone')
-  .filter()
+  .where()
   .priceGreaterThan(1000)
   .findAll();
 ```
@@ -422,38 +503,38 @@ final expensiveIPhones = await isar.products
 
 ### Find Operasyonları
 
-<Tabs items={['findAll', 'findFirst', 'count', 'isEmpty']}>
+<Tabs items={["findAll", "findFirst", "count", "isEmpty"]}>
   <Tab value="findAll">
-    ```dart
-    final allShoes = await isar.shoes
-      .filter()
-      .sizeGreaterThan(40)
-      .findAll();
-    ```
+```dart
+final allShoes = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .findAll();
+```
   </Tab>
   <Tab value="findFirst">
-    ```dart
-    final firstShoe = await isar.shoes
-      .filter()
-      .sizeEqualTo(46)
-      .findFirst();
-    ```
+```dart
+final firstShoe = await isar.shoes
+  .where()
+  .sizeEqualTo(46)
+  .findFirst();
+```
   </Tab>
   <Tab value="count">
-    ```dart
-    final count = await isar.shoes
-      .filter()
-      .sizeGreaterThan(40)
-      .count();
-    ```
+```dart
+final count = await isar.shoes
+  .where()
+  .sizeGreaterThan(40)
+  .count();
+```
   </Tab>
   <Tab value="isEmpty">
-    ```dart
-    final isEmpty = await isar.shoes
-      .filter()
-      .sizeEqualTo(99)
-      .isEmpty();
-    ```
+```dart
+final isEmpty = await isar.shoes
+  .where()
+  .sizeEqualTo(99)
+  .isEmpty();
+```
   </Tab>
 </Tabs>
 
@@ -463,7 +544,7 @@ final expensiveIPhones = await isar.products
 // Koşulu sağlayan nesneleri sil
 await isar.writeAsync((isar) async {
   final count = isar.shoes
-    .filter()
+    .where()
     .sizeLessThan(35)
     .deleteAll();
   print('Silinen ayakkabı: $count');
@@ -477,26 +558,27 @@ Sonuçları herhangi bir özelliğe göre sırala:
 ```dart
 // Artan
 final sorted = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
   .findAll();
 
 // Azalan
 final sortedDesc = await isar.shoes
-  .filter()
+  .where()
   .sortBySizeDesc()
   .findAll();
 
 // Çoklu sıralama
 final multiSort = await isar.shoes
-  .filter()
+  .where()
   .sortBySize()
   .thenByModel()
   .findAll();
 ```
 
 <Callout type="warning">
-  İndeks olmadan sıralama büyük veri setlerinde pahalıdır. Mümkün olduğunda indeksli where cümleleriyle sıralayın.
+  İndeks olmadan sıralama büyük veri setlerinde pahalıdır. Mümkün olduğunda
+  indeksli where cümleleriyle sıralayın.
 </Callout>
 
 ## Limit & Offset
@@ -505,15 +587,12 @@ final multiSort = await isar.shoes
 // İlk 10 sonuç
 final first10 = await isar.shoes
   .where()
-  .limit(10)
-  .findAll();
+  .findAll(limit: 10);
 
 // İlk 20'yi atla, sonraki 10'u getir
 final paginated = await isar.shoes
   .where()
-  .offset(20)
-  .limit(10)
-  .findAll();
+  .findAll(offset: 20, limit: 10);
 ```
 
 ## Distinct
@@ -529,30 +608,33 @@ final uniqueSizes = await isar.shoes
 ## En İyi Uygulamalar
 
 1. **İndeksli Where Cümleleri Kullanın**
+
    ```dart
-   // ✅ Hızlı - indeks kullanır
-   await isar.products.where().nameEqualTo('iPhone').findAll();
-   
-   // ❌ Yavaş - tüm kayıtları tarar
-   await isar.products.filter().nameEqualTo('iPhone').findAll();
+   // ✅ Hızlı - indeks kullanır (price indekslidir)
+   await isar.products.where().priceEqualTo(500).findAllAsync();
+
+   // ❌ Yavaş - tüm kayıtları tarar (name indeksli değildir)
+   await isar.products.where().nameEqualTo('iPhone').findAllAsync();
    ```
 
 2. **Where ve Filtreyi Birleştirin**
+
    ```dart
    // ✅ Optimal - indeks + filtre
    await isar.products
      .where()
      .nameEqualTo('iPhone')
-     .filter()
+     .where()
      .priceGreaterThan(500)
      .findAll();
    ```
 
 3. **İç İçe Sorguları Gruplayın**
+
    ```dart
    // ✅ Verimli
    .brand((q) => q.nameEqualTo('BMW').and().countryEqualTo('Germany'))
-   
+
    // ❌ Verimsiz
    .brand((q) => q.nameEqualTo('BMW'))
    .and()
