@@ -46,9 +46,10 @@ abstract class _IsarConnect {
     for (final handler in _handlers.entries) {
       registerExtension(handler.key.method, (method, parameters) async {
         try {
-          final args = parameters.containsKey('args')
-              ? jsonDecode(parameters['args']!) as Map<String, dynamic>
-              : <String, dynamic>{};
+          final args =
+              parameters.containsKey('args')
+                  ? jsonDecode(parameters['args']!) as Map<String, dynamic>
+                  : <String, dynamic>{};
           final result = <String, dynamic>{'result': await handler.value(args)};
           return ServiceExtensionResponse.result(jsonEncode(result));
         } on Exception catch (e) {
@@ -78,22 +79,22 @@ abstract class _IsarConnect {
         }
         final url =
             'https://isarplusinspector.ahmetaydin.dev/${Isar.version}/#/$port$path';
+        final width = url.length + 2;
         String line(String text, String fill) {
-          final fillCount = url.length - text.length;
+          final fillCount = width - text.length;
           final left = List.filled(fillCount ~/ 2, fill);
           final right = List.filled(fillCount - left.length, fill);
           return left.join() + text + right.join();
         }
 
-        final message =
-            '''
+        final message = '''
       ╔${line('', '═')}╗
       ║${line('ISAR CONNECT STARTED', ' ')}║
       ╟${line('', '─')}╢
       ║${line('Open the link to connect to the Isar', ' ')}║
       ║${line('Inspector while this build is running.', ' ')}║
       ╟${line('', '─')}╢
-      ║$url║
+      ║${line(url, ' ')}║
       ╚${line('', '═')}╝''';
         _logger.w(message);
       }),
