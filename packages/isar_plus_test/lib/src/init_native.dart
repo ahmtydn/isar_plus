@@ -1,7 +1,6 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/src/common.dart';
 import 'package:path/path.dart' as path;
@@ -23,7 +22,6 @@ Future<void> prepareTest() async {
       }
     } else {
       if (!kIsWeb) {
-        WidgetsFlutterBinding.ensureInitialized();
         final dir = await getTemporaryDirectory();
         testTempPath = path.join(dir.path, 'test', 'tmp');
       }
