@@ -1,7 +1,6 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/src/common.dart';
 import 'package:path/path.dart' as path;
@@ -25,17 +24,10 @@ Future<void> prepareTest() async {
         testTempPath = path.join(dartToolDir, 'test', 'tmp');
       }
     } else {
-      WidgetsFlutterBinding.ensureInitialized();
-      final dir = await getTemporaryDirectory();
-      testTempPath = path.join(dir.path, 'test', 'tmp');
-    }
-
-    if (testTempPath != null) {
-      final dir = Directory(testTempPath!);
-      if (dir.existsSync()) {
-        dir.deleteSync(recursive: true);
+      if (!kIsWeb) {
+        final dir = await getTemporaryDirectory();
+        testTempPath = dir.path;
       }
-      dir.createSync(recursive: true);
     }
     _setUp = true;
   }
