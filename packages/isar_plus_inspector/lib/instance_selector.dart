@@ -33,7 +33,7 @@ class _InstanceSelectorState extends State<InstanceSelector>
 
   @override
   void initState() {
-    _animation.addStatusListener((AnimationStatus status) {
+    _animation.addStatusListener((status) {
       setState(() {});
     });
     super.initState();

@@ -32,8 +32,8 @@ class ObjectsListSliver extends StatelessWidget {
     final schema = schemas[collection]!;
     return SliverList(
       delegate: SliverChildBuilderDelegate(childCount: objects.length, (
-        BuildContext context,
-        int index,
+        context,
+        index,
       ) {
         final object = objects[index];
         final id = object.getValue(schema.idName!);
