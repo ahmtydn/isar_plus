@@ -6,6 +6,7 @@ use crate::core::error::{IsarError, Result};
 use crate::core::insert::IsarInsert;
 use ouroboros::self_referencing;
 use std::cell::Cell;
+use std::collections::HashMap;
 
 #[self_referencing]
 struct TxnWithStatement {
@@ -58,6 +59,7 @@ pub struct SQLiteInsert<'a> {
 
     // Track inserted IDs for detailed change detection
     inserted_ids: Vec<i64>,
+    before_states: HashMap<i64, serde_json::Value>,
 }
 
 impl<'a> SQLiteInsert<'a> {
@@ -76,6 +78,7 @@ impl<'a> SQLiteInsert<'a> {
             batch_size,
             batch_remaining: batch_size,
             inserted_ids: Vec::new(),
+            before_states: HashMap::new(),
         };
         Ok(insert)
     }
@@ -103,6 +106,26 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
             // Store ID for detailed change detection
             if self.collection.watchers.has_detailed_watchers() {
                 self.inserted_ids.push(id);
+
+                // Fetch "before" state for upsert detection
+                let select_sql = format!(
+                    "SELECT * FROM {} WHERE {} = ?",
+                    self.collection.name,
+                    super::sqlite_collection::SQLiteProperty::ID_NAME
+                );
+                if let Ok(sqlite) = self.txn_stmt.borrow_txn().get_sqlite(false) {
+                    if let Ok(mut stmt) = sqlite.prepare(&select_sql) {
+                        if stmt.bind_long(0, id).is_ok() && stmt.step().unwrap_or(false) {
+                            use super::sqlite_reader::SQLiteReader;
+                            let reader = SQLiteReader::new(
+                                std::borrow::Cow::Borrowed(&stmt),
+                                self.collection,
+                                self.all_collections,
+                            );
+                            self.before_states.insert(id, reader.to_json());
+                        }
+                    }
+                }
             }
 
             if self.batch_remaining == 0 && self.remaining > 0 {
@@ -145,11 +168,13 @@ impl<'a> IsarInsert<'a> for SQLiteInsert<'a> {
                             );
                             let after_json = reader.to_json();
 
-                            // Generate insert change detail (no before state, only after)
+                            let before_json = self.before_states.get(&object_id);
+
+                            // Generate change detail
                             if let Some(change_detail) = ChangeDetector::detect_changes_from_json(
                                 &self.collection.name,
                                 object_id,
-                                None, // No before state for insert
+                                before_json,
                                 Some(&after_json),
                             ) {
                                 if let Ok(mut change_set) = txn.change_set.try_borrow_mut() {

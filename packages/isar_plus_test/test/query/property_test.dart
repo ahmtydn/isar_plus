@@ -589,6 +589,7 @@ void main() {
 
     isarTest('Query with more than 3 properties throws', () {
       expect(
+        // ignore: experimental_member_use
         () => isar.intModels.buildQuery<(int, int, int, int)>(
           properties: [0, 1, 2, 3],
         ),

@@ -92,7 +92,7 @@ class _EnumValue extends StatelessWidget {
     return GestureDetector(
       onTapDown: onUpdate == null
           ? null
-          : (TapDownDetails details) async {
+          : (details) async {
               final nullValue = Object();
               final newValue = await showMenu(
                 context: context,
@@ -141,7 +141,7 @@ class _BoolValue extends StatelessWidget {
     return GestureDetector(
       onTapDown: onUpdate == null
           ? null
-          : (TapDownDetails details) async {
+          : (details) async {
               const nullValue = Object();
               final newValue = await showMenu(
                 context: context,

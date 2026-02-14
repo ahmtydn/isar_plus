@@ -1,13 +1,11 @@
 // ignore_for_file: avoid_redundant_argument_values
 
-import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
 
 part 'update_test.g.dart';
 
-@CopyWith()
 @collection
 class Model {
   Model({
@@ -46,11 +44,60 @@ class Model {
 
   final DateTime dateProp;
 
+  Model copyWith({
+    int? id,
+    bool? boolProp,
+    bool? nullableBoolProp,
+    byte? byteProp,
+    short? shortProp,
+    int? longProp,
+    float? floatProp,
+    double? doubleProp,
+    String? stringProp,
+    String? nullableStringProp,
+    DateTime? dateProp,
+  }) {
+    return Model(
+      id: id ?? this.id,
+      boolProp: boolProp ?? this.boolProp,
+      nullableBoolProp: nullableBoolProp ?? this.nullableBoolProp,
+      byteProp: byteProp ?? this.byteProp,
+      shortProp: shortProp ?? this.shortProp,
+      longProp: longProp ?? this.longProp,
+      floatProp: floatProp ?? this.floatProp,
+      doubleProp: doubleProp ?? this.doubleProp,
+      stringProp: stringProp ?? this.stringProp,
+      nullableStringProp: nullableStringProp ?? this.nullableStringProp,
+      dateProp: dateProp ?? this.dateProp,
+    );
+  }
+
+  // Helper for tests to set nullable fields to null
+  Model copyWithNull({
+    bool nullableBoolProp = false,
+    bool nullableStringProp = false,
+  }) {
+    return Model(
+      id: id,
+      boolProp: boolProp,
+      nullableBoolProp: nullableBoolProp ? null : this.nullableBoolProp,
+      byteProp: byteProp,
+      shortProp: shortProp,
+      longProp: longProp,
+      floatProp: floatProp,
+      doubleProp: doubleProp,
+      stringProp: stringProp,
+      nullableStringProp: nullableStringProp ? null : this.nullableStringProp,
+      dateProp: dateProp,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       other is Model &&
       other.id == id &&
       other.boolProp == boolProp &&
+      other.nullableBoolProp == nullableBoolProp &&
       other.byteProp == byteProp &&
       other.shortProp == shortProp &&
       other.longProp == longProp &&
@@ -105,7 +152,7 @@ void main() {
         });
         expect(
           isar.models.get(model.id),
-          model.copyWith(nullableBoolProp: null),
+          model.copyWithNull(nullableBoolProp: true),
         );
       });
 
@@ -173,7 +220,7 @@ void main() {
         });
         expect(
           isar.models.get(model.id),
-          model.copyWith(nullableStringProp: null),
+          model.copyWithNull(nullableStringProp: true),
         );
 
         isar.write((isar) {

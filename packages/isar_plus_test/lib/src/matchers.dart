@@ -5,7 +5,7 @@ Matcher isIsarError([String? contains]) {
   return allOf(
     isA<IsarError>(),
     predicate(
-      (IsarError e) =>
+      (e) =>
           contains == null ||
           e.toString().toLowerCase().contains(contains.toLowerCase()),
     ),

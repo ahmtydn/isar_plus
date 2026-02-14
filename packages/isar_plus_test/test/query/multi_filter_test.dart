@@ -45,7 +45,7 @@ void main() {
       isarTest('zero elements', () {
         final q = isar.models.where().anyOf(
           <int>[],
-          (q, int element) => q.valueEqualTo(element),
+          (q, element) => q.valueEqualTo(element),
         );
         expect(q.findAll(), [model0, model1, model2, model3]);
       });
@@ -53,7 +53,7 @@ void main() {
       isarTest('one matching element', () {
         final q = isar.models.where().anyOf([
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model2]);
       });
 
@@ -61,14 +61,14 @@ void main() {
         final q = isar.models.where().anyOf([
           0,
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model0, model2]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
       });
 
@@ -76,14 +76,14 @@ void main() {
         final q = isar.models.where().anyOf([
           7,
           3,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model3]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
       });
     });
@@ -92,13 +92,13 @@ void main() {
       isarTest('zero elements', () {
         final q = isar.models.where().anyOf(
           <int>[],
-          (q, int element) => q.valueEqualTo(element),
+          (q, element) => q.valueEqualTo(element),
         );
         expect(q.findAll(), [model0, model1, model2, model3]);
 
         final notQ = isar.models.where().not().anyOf(
           <int>[],
-          (q, int element) => q.valueEqualTo(element),
+          (q, element) => q.valueEqualTo(element),
         );
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
@@ -106,12 +106,12 @@ void main() {
       isarTest('one matching element', () {
         final q = isar.models.where().anyOf([
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model2]);
 
         final notQ = isar.models.where().not().anyOf([
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model3]);
       });
 
@@ -119,25 +119,25 @@ void main() {
         final q = isar.models.where().anyOf([
           0,
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model0, model2]);
 
         final notQ = isar.models.where().not().anyOf([
           0,
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model1, model3]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
 
         final notQ = isar.models.where().not().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
 
@@ -145,25 +145,25 @@ void main() {
         final q = isar.models.where().anyOf([
           7,
           3,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model3]);
 
         final notQ = isar.models.where().not().anyOf([
           7,
           3,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
 
         final notQ = isar.models.where().not().anyOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
     });
@@ -172,13 +172,13 @@ void main() {
       isarTest('zero elements', () {
         final q = isar.models.where().allOf(
           <int>[],
-          (q, int element) => q.valueEqualTo(element),
+          (q, element) => q.valueEqualTo(element),
         );
         expect(q.findAll(), [model0, model1, model2, model3]);
 
         final notQ = isar.models.where().not().allOf(
           <int>[],
-          (q, int element) => q.valueEqualTo(element),
+          (q, element) => q.valueEqualTo(element),
         );
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
@@ -186,12 +186,12 @@ void main() {
       isarTest('one matching element', () {
         final q = isar.models.where().allOf([
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model2]);
 
         final notQ = isar.models.where().not().allOf([
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model3]);
       });
 
@@ -199,25 +199,25 @@ void main() {
         final q = isar.models.where().allOf([
           2,
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), [model2]);
 
         final notQ = isar.models.where().not().allOf([
           2,
           2,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model3]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().allOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
 
         final notQ = isar.models.where().not().allOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
 
@@ -225,25 +225,25 @@ void main() {
         final q = isar.models.where().allOf([
           7,
           3,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
 
         final notQ = isar.models.where().not().allOf([
           7,
           3,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
 
       isarTest('one non-matching element', () {
         final q = isar.models.where().allOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(q.findAll(), isEmpty);
 
         final notQ = isar.models.where().not().allOf([
           5,
-        ], (q, int element) => q.valueEqualTo(element));
+        ], (q, element) => q.valueEqualTo(element));
         expect(notQ.findAll(), [model0, model1, model2, model3]);
       });
     });

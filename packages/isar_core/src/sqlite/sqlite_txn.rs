@@ -60,9 +60,13 @@ impl SQLiteTxn {
         watchers: &Arc<CollectionWatchers<SQLiteQuery>>,
         _collection_name: &str,
     ) {
-        if watchers.has_watchers() {
+        if watchers.has_watchers() || watchers.has_detailed_watchers() {
             let change_set = self.change_set.clone();
             let watchers = watchers.clone();
+
+            if let Ok(mut change_set) = change_set.try_borrow_mut() {
+                change_set.register_detailed_changes_for_watchers(&watchers);
+            }
 
             // For basic watchers only, use update hook for simple notifications
             // Detailed change detection is now handled in individual operations (update, delete, insert)

@@ -24,7 +24,7 @@ class CollectionsList extends StatelessWidget {
 
     return ListView.builder(
       primary: false,
-      itemBuilder: (BuildContext context, int index) {
+      itemBuilder: (context, index) {
         final collection = collections[index];
         final info = collectionInfo[collection.name];
 

@@ -407,10 +407,12 @@ void main() {
     });
 
     isarTest('collectionByIndex() returns correct collection', () {
+      // ignore: experimental_member_use
       final col0 = isar.collectionByIndex<int, IntModel>(0);
       expect(col0, isNotNull);
       expect(col0.schema.name, 'IntModel');
 
+      // ignore: experimental_member_use
       final col1 = isar.collectionByIndex<String, StringModel>(1);
       expect(col1, isNotNull);
       expect(col1.schema.name, 'StringModel');
@@ -418,6 +420,7 @@ void main() {
 
     isarTest('collectionByIndex() throws for wrong type params', () {
       expect(
+        // ignore: experimental_member_use
         () => isar.collectionByIndex<String, StringModel>(0),
         throwsArgumentError,
       );

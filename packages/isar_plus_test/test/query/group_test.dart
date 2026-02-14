@@ -123,7 +123,7 @@ void main() {
         users
             .where()
             .group(
-              (QueryBuilder<Model, Model, QFilterCondition> q) => q
+              (q) => q
                   .nameEqualTo('Simon')
                   .or()
                   .group((q) => q.ageEqualTo(30).or().ageEqualTo(20)),
@@ -149,6 +149,7 @@ void main() {
     });
 
     isarTest('AndGroup with exactly one filter via buildQuery', () {
+      // ignore: experimental_member_use
       final query = users.buildQuery<Model>(
         filter: AndGroup([const EqualCondition(property: 2, value: 20)]),
       );
@@ -157,6 +158,7 @@ void main() {
     });
 
     isarTest('OrGroup with exactly one filter via buildQuery', () {
+      // ignore: experimental_member_use
       final query = users.buildQuery<Model>(
         filter: OrGroup([const EqualCondition(property: 2, value: 40)]),
       );
@@ -166,6 +168,7 @@ void main() {
 
     isarTest('Unsupported filter value type throws ArgumentError', () {
       expect(
+        // ignore: experimental_member_use
         () => users.buildQuery<Model>(
           filter: const EqualCondition(property: 2, value: [1, 2, 3]),
         ),

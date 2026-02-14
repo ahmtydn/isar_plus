@@ -10,7 +10,7 @@ final _router = GoRouter(
   routes: <GoRoute>[
     GoRoute(
       path: '/',
-      builder: (BuildContext context, GoRouterState state) {
+      builder: (context, state) {
         return const Material(
           child: Center(
             child: Text(
@@ -25,7 +25,7 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/:port/:secret',
-      builder: (BuildContext context, GoRouterState state) {
+      builder: (context, state) {
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).requestFocus(FocusNode());

@@ -1,4 +1,16 @@
+## 1.2.1
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.1 -->
+
+## What's Changed
+### Other Changes
+* fix: Add padding to Isar Connect URL in console output by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/74
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.0...1.2.1
+
 ## 1.2.0
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.0 -->
 

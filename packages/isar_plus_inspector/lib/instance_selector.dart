@@ -33,7 +33,7 @@ class _InstanceSelectorState extends State<InstanceSelector>
 
   @override
   void initState() {
-    _animation.addStatusListener((AnimationStatus status) {
+    _animation.addStatusListener((status) {
       setState(() {});
     });
     super.initState();
@@ -59,7 +59,6 @@ class _InstanceSelectorState extends State<InstanceSelector>
               color: theme.colorScheme.secondaryContainer,
               child: SizeTransition(
                 sizeFactor: _animation,
-                axisAlignment: -1,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,

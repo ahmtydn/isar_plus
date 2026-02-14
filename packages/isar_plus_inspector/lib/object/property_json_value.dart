@@ -248,7 +248,7 @@ class _BoolJsonValue extends StatelessWidget {
     return GestureDetector(
       onTapDown: onUpdate == null
           ? null
-          : (TapDownDetails details) async {
+          : (details) async {
               final newValue = await showMenu(
                 context: context,
                 position: RelativeRect.fromLTRB(

@@ -16,10 +16,10 @@ once_cell = "1.21.3"
 tokio = { version = "1.45.1", features = ["sync"] }
 thiserror = "2.0.12"
 
-wasm-bindgen = "0.2.106"
+wasm-bindgen = "0.2.108"
 wasm-bindgen-futures = "0.4.55"
-js-sys = "0.3.82"
-web-sys = { version = "0.3.82", features = [
+js-sys = "0.3.85"
+web-sys = { version = "0.3.85", features = [
   "StorageManager",
   "FileSystemSyncAccessHandle",
   "FileSystemDirectoryHandle",

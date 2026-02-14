@@ -1,4 +1,3 @@
-import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:pub_app/models/api/metrics.dart';
 import 'package:pub_app/models/api/package.dart';
@@ -6,7 +5,6 @@ import 'package:pubspec/pubspec.dart';
 
 part 'package.g.dart';
 
-@CopyWith()
 @collection
 class Package {
   Package({
@@ -131,6 +129,67 @@ class Package {
         if (metrics.tags.contains('platform:windows'))
           SupportedPlatform.windows,
       ],
+    );
+  }
+
+  Package copyWith({
+    String? name,
+    String? version,
+    bool? isLatest,
+    String? description,
+    bool descriptionNull = false,
+    String? homepage,
+    bool homepageNull = false,
+    String? documentation,
+    bool documentationNull = false,
+    List<Dependency>? dependencies,
+    List<Dependency>? devDependencies,
+    DateTime? published,
+    short? points,
+    bool pointsNull = false,
+    short? likes,
+    bool likesNull = false,
+    float? popularity,
+    bool popularityNull = false,
+    String? publisher,
+    bool publisherNull = false,
+    bool? dart,
+    bool dartNull = false,
+    bool? flutter,
+    bool flutterNull = false,
+    bool? flutterFavorite,
+    bool flutterFavoriteNull = false,
+    String? license,
+    bool licenseNull = false,
+    bool? osiLicense,
+    bool osiLicenseNull = false,
+    List<SupportedPlatform>? platforms,
+    bool platformsNull = false,
+  }) {
+    return Package(
+      name: name ?? this.name,
+      version: version ?? this.version,
+      isLatest: isLatest ?? this.isLatest,
+      description: descriptionNull ? null : (description ?? this.description),
+      homepage: homepageNull ? null : (homepage ?? this.homepage),
+      documentation: documentationNull
+          ? null
+          : (documentation ?? this.documentation),
+      dependencies: dependencies ?? this.dependencies,
+      devDependencies: devDependencies ?? this.devDependencies,
+      published: published ?? this.published,
+      points: pointsNull ? null : (points ?? this.points),
+      likes: likesNull ? null : (likes ?? this.likes),
+      popularity: popularityNull ? null : (popularity ?? this.popularity),
+      publisher: publisherNull ? null : (publisher ?? this.publisher),
+      dart: dartNull ? null : (dart ?? this.dart),
+      flutter: flutterNull ? null : (flutter ?? this.flutter),
+      flutterFavorite: flutterFavoriteNull
+          ? null
+          : (flutterFavorite ?? this.flutterFavorite),
+      license: licenseNull ? null : (license ?? this.license),
+      osiLicense: osiLicenseNull ? null : (osiLicense ?? this.osiLicense),
+      platforms: platformsNull ? null : (platforms ?? this.platforms),
     );
   }
 }

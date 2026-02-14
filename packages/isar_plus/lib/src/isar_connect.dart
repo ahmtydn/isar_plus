@@ -47,10 +47,9 @@ abstract class _IsarConnect {
     for (final handler in _handlers.entries) {
       registerExtension(handler.key.method, (method, parameters) async {
         try {
-          final args =
-              parameters.containsKey('args')
-                  ? jsonDecode(parameters['args']!) as Map<String, dynamic>
-                  : <String, dynamic>{};
+          final args = parameters.containsKey('args')
+              ? jsonDecode(parameters['args']!) as Map<String, dynamic>
+              : <String, dynamic>{};
           final result = <String, dynamic>{'result': await handler.value(args)};
           return ServiceExtensionResponse.result(jsonEncode(result));
         } on Exception catch (e) {
@@ -65,7 +64,7 @@ abstract class _IsarConnect {
 
   static void _printConnection() {
     unawaited(
-      Service.getInfo().then((ServiceProtocolInfo info) {
+      Service.getInfo().then((info) {
         final serviceUri = info.serverUri;
         if (serviceUri == null) {
           return;
@@ -88,7 +87,8 @@ abstract class _IsarConnect {
           return left.join() + text + right.join();
         }
 
-        final message = '''
+        final message =
+            '''
       ╔${line('', '═')}╗
       ║${line('ISAR CONNECT STARTED', ' ')}║
       ╟${line('', '─')}╢

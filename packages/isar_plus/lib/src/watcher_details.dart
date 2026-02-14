@@ -227,7 +227,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   ///
   /// [collectionName] identifies the data collection (table, index, etc.).
   /// [objectId] is the unique identifier within that collection.
-  /// [key] is the unique identifier for this data object.
   /// [changeType] specifies the nature of the modification.
   /// [fieldChanges] contains the individual field modifications.
   /// [fullDocument] holds the complete post-change state.
@@ -235,7 +234,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   const ChangeDetail({
     required this.collectionName,
     required this.objectId,
-    required this.key,
     required this.changeType,
     required this.fieldChanges,
     required this.fullDocument,
@@ -258,11 +256,6 @@ class ChangeDetail<T extends DocumentSerializable> {
       final objectId = json['object_id'];
       if (objectId is! int) {
         throw const FormatException('object_id must be an integer');
-      }
-
-      final key = json['key'];
-      if (key is! String || key.isEmpty) {
-        throw const FormatException('key must be a non-empty string');
       }
 
       final changeTypeStr = json['change_type'];
@@ -309,7 +302,6 @@ class ChangeDetail<T extends DocumentSerializable> {
       return ChangeDetail<T>(
         collectionName: collectionName,
         objectId: objectId,
-        key: key,
         changeType: changeType,
         fieldChanges: fieldChanges,
         fullDocument: fullDocument,
@@ -328,10 +320,6 @@ class ChangeDetail<T extends DocumentSerializable> {
 
   /// The unique identifier of the changed object within its collection.
   final int objectId;
-
-  /// Unique identifier for this data object,
-  /// typically the primary key.
-  final String key;
 
   /// The type of database operation that was performed.
   final ChangeType changeType;
@@ -376,7 +364,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   Map<String, dynamic> toJson() => {
     'collection_name': collectionName,
     'object_id': objectId,
-    'key': key,
     'change_type': changeType.value,
     'timestamp': timestamp?.toIso8601String(),
     'full_document': fullDocument.toJson(),
@@ -387,7 +374,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   ChangeDetail<T> copyWith({
     String? collectionName,
     int? objectId,
-    String? key,
     ChangeType? changeType,
     DateTime? timestamp,
     T? fullDocument,
@@ -395,7 +381,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   }) => ChangeDetail<T>(
     collectionName: collectionName ?? this.collectionName,
     objectId: objectId ?? this.objectId,
-    key: key ?? this.key,
     changeType: changeType ?? this.changeType,
     timestamp: timestamp ?? this.timestamp,
     fullDocument: fullDocument ?? this.fullDocument,
@@ -409,7 +394,6 @@ class ChangeDetail<T extends DocumentSerializable> {
       ..write('ChangeDetail<$T>(')
       ..write('collection: $collectionName, ')
       ..write('id: $objectId, ')
-      ..write('key: $key, ')
       ..write('type: $changeType, ')
       ..write('timestamp: ${timestamp?.toIso8601String()}, ')
       ..write('fieldChanges: ${fieldChanges.length}')
@@ -424,7 +408,6 @@ class ChangeDetail<T extends DocumentSerializable> {
       other is ChangeDetail<T> &&
           collectionName == other.collectionName &&
           objectId == other.objectId &&
-          key == other.key &&
           changeType == other.changeType &&
           timestamp == other.timestamp &&
           fullDocument == other.fullDocument &&
@@ -434,7 +417,6 @@ class ChangeDetail<T extends DocumentSerializable> {
   int get hashCode => Object.hash(
     collectionName,
     objectId,
-    key,
     changeType,
     timestamp,
     fullDocument,

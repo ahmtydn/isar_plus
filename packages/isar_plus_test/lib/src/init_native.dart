@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/src/common.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 var _setUp = false;
 Future<void> prepareTest() async {
@@ -11,13 +12,25 @@ Future<void> prepareTest() async {
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       try {
         await Isar.initialize(getBinaryPath());
-        if (testTempPath == null) {
-          final dartToolDir = path.join(Directory.current.path, '.dart_tool');
-          testTempPath = path.join(dartToolDir, 'test', 'tmp');
-          Directory(testTempPath!).createSync(recursive: true);
-        }
       } on Exception {
         // Ignore initialization errors in test environment
+      }
+
+      if (testTempPath == null) {
+        final dartToolDir = path.join(Directory.systemTemp.path, '.dart_tool');
+        testTempPath = path.join(dartToolDir, 'test', 'tmp');
+      }
+    } else {
+      if (!kIsWeb) {
+        final dir = await getTemporaryDirectory();
+        testTempPath = path.join(dir.path, 'test', 'tmp');
+      }
+    }
+
+    if (testTempPath != null) {
+      final dir = Directory(testTempPath!);
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
       }
     }
     _setUp = true;

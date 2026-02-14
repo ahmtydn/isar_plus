@@ -36,6 +36,10 @@ impl SQLite3 {
                 sqlite.initialize()?;
                 Ok(sqlite)
             } else {
+                if r == ffi::SQLITE_CANTOPEN || r == ffi::SQLITE_PERM {
+                    ffi::sqlite3_close(db);
+                    return Err(IsarError::PathError {});
+                }
                 let err = sqlite_err(db, r);
                 if !db.is_null() {
                     ffi::sqlite3_close(db);

@@ -83,3 +83,5 @@ co*.md
 
 coverage/*
 coverage_local.sh
+coverage_report/*
+target_docker/*

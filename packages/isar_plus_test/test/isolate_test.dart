@@ -3,6 +3,7 @@ library;
 
 import 'dart:isolate';
 
+import 'package:flutter/services.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 import 'package:test/test.dart';
@@ -42,7 +43,9 @@ void main() {
       isar.testModels.putAll([_obj1, _obj2]);
     });
 
+    final rootIsolateToken = RootIsolateToken.instance!;
     await Isolate.run(() async {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
       await prepareTest();
 
       final isar = Isar.get(schemas: [TestModelSchema], name: name);
