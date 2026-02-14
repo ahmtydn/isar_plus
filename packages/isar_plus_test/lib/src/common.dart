@@ -60,6 +60,20 @@ bool get isSQLite => _testName.endsWith('(sqlite)');
 
 const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
 
+typedef TestRunner =
+    void Function(
+      String description,
+      dynamic Function() body, {
+      String? testOn,
+      Timeout? timeout,
+      dynamic skip,
+      dynamic tags,
+      Map<String, dynamic>? onPlatform,
+      int? retry,
+    });
+
+TestRunner isarTestRunner = test;
+
 @isTestGroup
 void isarTest(
   String name,
@@ -73,7 +87,7 @@ void isarTest(
   testCount++;
   group(name, () {
     if (isar && !kIsWeb) {
-      test(
+      isarTestRunner(
         '(isar)',
         () async {
           try {
@@ -89,7 +103,7 @@ void isarTest(
     }
 
     if ((!kIsWeb && sqlite) || (kIsWeb && web)) {
-      test(
+      isarTestRunner(
         '(sqlite)',
         () async {
           try {
