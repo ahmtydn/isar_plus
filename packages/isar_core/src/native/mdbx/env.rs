@@ -59,6 +59,8 @@ impl Env {
             match err_code {
                 mdbx_sys::MDBX_SUCCESS => Ok(Arc::new(Env { env })),
                 mdbx_sys::MDBX_EPERM | mdbx_sys::MDBX_ENOFILE => Err(IsarError::PathError {}),
+                #[cfg(target_os = "windows")]
+                3 => Err(IsarError::PathError {}),
                 e => Err(mdbx_error(e)),
             }
         }
