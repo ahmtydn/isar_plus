@@ -59,7 +59,6 @@ class _InstanceSelectorState extends State<InstanceSelector>
               color: theme.colorScheme.secondaryContainer,
               child: SizeTransition(
                 sizeFactor: _animation,
-                alignment: Alignment.topCenter,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
