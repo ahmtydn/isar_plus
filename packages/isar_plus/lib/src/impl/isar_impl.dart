@@ -15,6 +15,7 @@ class _IsarImpl extends Isar {
     // ignore: discarded_futures
     IsarCore._initialize(library: library);
 
+    var effectiveMaxSizeMiB = maxSizeMiB;
     if (engine == IsarEngine.isar) {
       if (encryptionKey != null) {
         throw ArgumentError(
@@ -22,12 +23,12 @@ class _IsarImpl extends Isar {
           'set the engine to IsarEngine.sqlite.',
         );
       }
-      maxSizeMiB ??= Isar.defaultMaxSizeMiB;
+      effectiveMaxSizeMiB ??= Isar.defaultMaxSizeMiB;
     } else {
       if (compactOnLaunch != null) {
         throw ArgumentError('SQLite engine does not support compaction.');
       }
-      maxSizeMiB ??= 0;
+      effectiveMaxSizeMiB ??= 0;
     }
 
     final allSchemas = <IsarGeneratedSchema>{
@@ -48,9 +49,10 @@ class _IsarImpl extends Isar {
     final namePtr = IsarCore._toNativeString(name);
     final directoryPtr = IsarCore._toNativeString(directory);
     final schemaPtr = IsarCore._toNativeString(schemaJson);
-    final encryptionKeyPtr = encryptionKey != null
-        ? IsarCore._toNativeString(encryptionKey)
-        : nullptr;
+    final encryptionKeyPtr =
+        encryptionKey != null
+            ? IsarCore._toNativeString(encryptionKey)
+            : nullptr;
 
     final isarPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarInstance>>();
     IsarCore.b
@@ -61,7 +63,7 @@ class _IsarImpl extends Isar {
           directoryPtr,
           engine == IsarEngine.sqlite,
           schemaPtr,
-          maxSizeMiB,
+          effectiveMaxSizeMiB,
           encryptionKeyPtr,
           compactOnLaunch != null ? compactOnLaunch.minFileSize ?? 0 : -1,
           compactOnLaunch != null ? compactOnLaunch.minBytes ?? 0 : -1,
@@ -234,9 +236,8 @@ class _IsarImpl extends Isar {
   }();
 
   @override
-  late final List<IsarSchema> schemas = generatedSchemas
-      .map((e) => e.schema)
-      .toList();
+  late final List<IsarSchema> schemas =
+      generatedSchemas.map((e) => e.schema).toList();
 
   @override
   bool get isOpen => _ptr != null;
