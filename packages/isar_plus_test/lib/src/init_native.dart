@@ -12,7 +12,10 @@ Future<void> prepareTest() async {
       try {
         await Isar.initialize(getBinaryPath());
         if (testTempPath == null) {
-          final dartToolDir = path.join(Directory.current.path, '.dart_tool');
+          final dartToolDir = path.join(
+            Directory.systemTemp.path,
+            '.dart_tool',
+          );
           testTempPath = path.join(dartToolDir, 'test', 'tmp');
           Directory(testTempPath!).createSync(recursive: true);
         }

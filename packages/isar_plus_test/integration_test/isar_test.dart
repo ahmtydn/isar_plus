@@ -11,16 +11,14 @@ import 'all_tests.dart' as tests;
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    final dir = await getTemporaryDirectory();
+    testTempPath = dir.path;
+  }
+
   final completer = Completer<void>();
 
   group('Integration test', () {
-    setUpAll(() async {
-      if (!kIsWeb) {
-        final dir = await getTemporaryDirectory();
-        testTempPath = dir.path;
-      }
-    });
-
     tearDownAll(() {
       print('Isar test done');
       completer.complete();
