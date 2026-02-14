@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
@@ -10,6 +11,32 @@ import 'all_tests.dart' as tests;
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.android) {
+    isarTestRunner =
+        (
+          String description,
+          dynamic Function() body, {
+          String? testOn,
+          Timeout? timeout,
+          dynamic skip,
+          dynamic tags,
+          Map<String, dynamic>? onPlatform,
+          int? retry,
+        }) {
+          testWidgets(
+            description,
+            (tester) async {
+              await body();
+            },
+            timeout: timeout,
+            skip: skip,
+            tags: tags,
+          );
+        };
+  }
 
   final completer = Completer<void>();
 
