@@ -23,12 +23,8 @@ wasm-bindgen \
 # The wasm-bindgen output will be isar_bg.wasm, rename to isar.wasm
 mv "${ROOT_DIR}/isar_bg.wasm" "${ROOT_DIR}/isar.wasm"
 
-# Patch the generated JS to ensure wasm_bindgen is globally accessible
-# Change "let wasm_bindgen;" to "window.wasm_bindgen = undefined;" at the start
-# and "wasm_bindgen = Object.assign" to "window.wasm_bindgen = Object.assign" at the end
-sed -i.bak '1s/let wasm_bindgen;/window.wasm_bindgen = undefined;/' "${ROOT_DIR}/isar.js"
-sed -i.bak 's/wasm_bindgen = Object\.assign/window.wasm_bindgen = Object.assign/' "${ROOT_DIR}/isar.js"
-rm "${ROOT_DIR}/isar.js.bak"
+sed -i.bak '1s/let wasm_bindgen/window.wasm_bindgen/' "${ROOT_DIR}/isar.js"
+rm -f "${ROOT_DIR}/isar.js.bak"
 
 # Optimize the WASM file with required feature flags
 if command -v wasm-opt &> /dev/null; then
