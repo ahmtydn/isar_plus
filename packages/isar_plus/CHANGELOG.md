@@ -1,4 +1,16 @@
+## 1.2.2
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.2 -->
+
+## What's Changed
+### Other Changes
+* feat: Add exportJson support to Isar Inspector by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/77
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.1...1.2.2
+
 ## 1.2.1
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.1 -->
 
