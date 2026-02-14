@@ -19,8 +19,8 @@
 
     <title>Isar Plus Inspector</title>
     <link rel="manifest" href="manifest.json" />
-    <script defer src="flutter.js"></script>
-    <style lang="css">
+    
+    <style>
       body {
         background: #1a1c1e;
       }
@@ -81,33 +81,29 @@
       <img src="assets/assets/logo.png" alt="Isar Logo" />
       <span id="loader-info-text"></span>
     </section>
+    
+    <script src="flutter_bootstrap.js" async></script>
+    
     <script>
-      var serviceWorkerVersion = "{{flutter_service_worker_version}}";
-
       window.addEventListener("load", () => {
         const loadingContainer = document.querySelector("#loader");
         const loading = document.querySelector("#loader-info-text");
         loading.textContent = "Loading entrypoint...";
-        _flutter.loader
-          .loadEntrypoint({
-            serviceWorker: {
-              serviceWorkerVersion: serviceWorkerVersion,
-            },
-          })
-          .then((engineInitializer) => {
+      
+        _flutter.loader.load({
+          onEntrypointLoaded: async (engineInitializer) => {
             loading.textContent = "Initializing engine...";
-            return engineInitializer.initializeEngine();
-          })
-          .then((appRunner) => {
+            const appRunner = await engineInitializer.initializeEngine();
+
             loading.textContent = "Running app...";
-            return appRunner.runApp();
-          })
-          .then((_) => {
+            await appRunner.runApp();
+
             loadingContainer.classList.add("hide");
             window.setTimeout(() => {
               loadingContainer.remove();
             }, 500);
-          });
+          }
+        });
       });
     </script>
   </body>
