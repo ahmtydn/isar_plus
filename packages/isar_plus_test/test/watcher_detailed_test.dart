@@ -9,10 +9,7 @@ class WatcherModel implements DocumentSerializable {
   WatcherModel(this.id, this.name);
 
   factory WatcherModel.fromJson(Map<String, dynamic> json) {
-    return WatcherModel(
-      json['id'] as int,
-      json['name'] as String,
-    );
+    return WatcherModel(json['id'] as int, json['name'] as String);
   }
 
   final int id;
