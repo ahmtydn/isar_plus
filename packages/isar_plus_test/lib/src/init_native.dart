@@ -18,10 +18,7 @@ Future<void> prepareTest({bool cleanup = true}) async {
       }
 
       if (testTempPath == null) {
-        final dartToolDir = path.join(
-          Directory.systemTemp.path,
-          '.dart_tool',
-        );
+        final dartToolDir = path.join(Directory.systemTemp.path, '.dart_tool');
         testTempPath = path.join(dartToolDir, 'test', 'tmp');
       }
     } else {
