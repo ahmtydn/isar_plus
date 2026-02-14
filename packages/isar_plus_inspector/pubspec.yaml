@@ -22,7 +22,7 @@ dependencies:
   web_socket_channel: ^3.0.3
 
 dev_dependencies:
-  very_good_analysis: ^10.0.0
+  very_good_analysis: ^10.1.0
 
 flutter:
   uses-material-design: true

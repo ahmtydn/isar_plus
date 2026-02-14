@@ -123,7 +123,7 @@ void main() {
         users
             .where()
             .group(
-              (QueryBuilder<Model, Model, QFilterCondition> q) => q
+              (q) => q
                   .nameEqualTo('Simon')
                   .or()
                   .group((q) => q.ageEqualTo(30).or().ageEqualTo(20)),

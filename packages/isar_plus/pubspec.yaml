@@ -32,4 +32,4 @@ dev_dependencies:
   ffigen: ^20.1.1
   flutter_lints: ^6.0.0
   test: any
-  very_good_analysis: ^10.0.0
+  very_good_analysis: ^10.1.0
