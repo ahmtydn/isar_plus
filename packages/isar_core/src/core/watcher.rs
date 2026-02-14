@@ -29,7 +29,6 @@ pub struct ChangeDetail {
     pub change_type: ChangeType,
     pub collection_name: String,
     pub object_id: i64,
-    pub key: String, 
     pub field_changes: Vec<FieldChange>,
     pub full_document: String,
 }
