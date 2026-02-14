@@ -1,12 +1,6 @@
 name: Isar Plus CI
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
   pull_request:
     branches:
       - main
@@ -297,6 +291,8 @@ jobs:
         run: npx --yes serve --cors -p 3000 &
       - name: Install geckodriver
         uses: browser-actions/setup-geckodriver@latest
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare geckodriver
         run: geckodriver --port=4444 &
       - name: Run Dart tests in browser
