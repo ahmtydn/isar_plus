@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/src/init_native.dart'
     if (dart.library.html) 'package:isar_plus_test/src/init_web.dart';
 import 'package:meta/meta.dart';
-import 'package:test/test.dart';
 // ignore: implementation_imports, depend_on_referenced_packages
 import 'package:test_api/src/backend/invoker.dart';
 
@@ -73,7 +74,7 @@ void isarTest(
   testCount++;
   group(name, () {
     if (isar && !kIsWeb) {
-      test(
+      _test(
         '(isar)',
         () async {
           try {
@@ -89,7 +90,7 @@ void isarTest(
     }
 
     if ((!kIsWeb && sqlite) || (kIsWeb && web)) {
-      test(
+      _test(
         '(sqlite)',
         () async {
           try {
@@ -104,6 +105,42 @@ void isarTest(
       );
     }
   });
+}
+
+void _test(
+  String description,
+  dynamic Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  dynamic skip,
+  dynamic tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+}) {
+  if (kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.android) {
+    testWidgets(
+      description,
+      (tester) async {
+        await body();
+      },
+      timeout: timeout,
+      skip: skip is String || (skip is bool && skip),
+      tags: tags,
+    );
+  } else {
+    test(
+      description,
+      body,
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      tags: tags,
+      onPlatform: onPlatform,
+      retry: retry,
+    );
+  }
 }
 
 extension IsarCollectionX<ID, OBJ> on IsarCollection<ID, OBJ> {
