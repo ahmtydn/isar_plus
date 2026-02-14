@@ -49,10 +49,9 @@ class _IsarImpl extends Isar {
     final namePtr = IsarCore._toNativeString(name);
     final directoryPtr = IsarCore._toNativeString(directory);
     final schemaPtr = IsarCore._toNativeString(schemaJson);
-    final encryptionKeyPtr =
-        encryptionKey != null
-            ? IsarCore._toNativeString(encryptionKey)
-            : nullptr;
+    final encryptionKeyPtr = encryptionKey != null
+        ? IsarCore._toNativeString(encryptionKey)
+        : nullptr;
 
     final isarPtrPtr = IsarCore.ptrPtr.cast<Pointer<CIsarInstance>>();
     IsarCore.b
@@ -236,8 +235,9 @@ class _IsarImpl extends Isar {
   }();
 
   @override
-  late final List<IsarSchema> schemas =
-      generatedSchemas.map((e) => e.schema).toList();
+  late final List<IsarSchema> schemas = generatedSchemas
+      .map((e) => e.schema)
+      .toList();
 
   @override
   bool get isOpen => _ptr != null;
