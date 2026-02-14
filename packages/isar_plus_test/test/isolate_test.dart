@@ -43,7 +43,7 @@ void main() {
     });
 
     await Isolate.run(() async {
-      await prepareTest(cleanup: false);
+      await prepareTest();
 
       final isar = Isar.get(schemas: [TestModelSchema], name: name);
 

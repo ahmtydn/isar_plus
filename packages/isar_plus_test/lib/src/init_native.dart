@@ -8,7 +8,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 var _setUp = false;
-Future<void> prepareTest({bool cleanup = true}) async {
+Future<void> prepareTest() async {
   if (!_setUp) {
     if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
       try {
@@ -29,12 +29,11 @@ Future<void> prepareTest({bool cleanup = true}) async {
       }
     }
 
-    if (cleanup && testTempPath != null) {
+    if (testTempPath != null) {
       final dir = Directory(testTempPath!);
-      if (dir.existsSync()) {
-        dir.deleteSync(recursive: true);
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
       }
-      dir.createSync(recursive: true);
     }
     _setUp = true;
   }
