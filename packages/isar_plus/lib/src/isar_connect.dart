@@ -20,6 +20,7 @@ abstract class _IsarConnect {
     ConnectAction.executeQuery: _executeQuery,
     ConnectAction.deleteQuery: _deleteQuery,
     ConnectAction.importJson: _importJson,
+    ConnectAction.exportJson: _exportJson,
     ConnectAction.editProperty: _editProperty,
   };
 
@@ -200,6 +201,25 @@ abstract class _IsarConnect {
     return isar.writeAsync((isar) {
       isar.collectionByIndex<dynamic, dynamic>(colIndex).importJson(p.objects);
     });
+  }
+
+  static Future<dynamic> _exportJson(Map<String, dynamic> params) async {
+    final cQuery = ConnectQueryPayload.fromJson(params);
+    final isar = _instances[cQuery.instance]!;
+    final query = cQuery.toQuery(isar);
+
+    final count = query.count();
+    final objects = await isar.readAsync((isar) {
+      return query.exportJson(offset: cQuery.offset, limit: cQuery.limit);
+    });
+    query.close();
+
+    return ConnectObjectsPayload(
+      instance: cQuery.instance,
+      collection: cQuery.collection,
+      objects: objects,
+      count: count,
+    );
   }
 
   static Future<dynamic> _editProperty(Map<String, dynamic> params) async {
