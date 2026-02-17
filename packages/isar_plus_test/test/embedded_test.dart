@@ -163,14 +163,11 @@ void main() {
         isar.models.putAll([allNull, simple, nested]);
       });
 
-      expect(
-        isar.models.where().exportJson(),
-        [
-          allNull.toJson(),
-          simple.toJson(),
-          nested.toJson(),
-        ],
-      );
+      expect(isar.models.where().exportJson(), [
+        allNull.toJson(),
+        simple.toJson(),
+        nested.toJson(),
+      ]);
     });
   });
 }

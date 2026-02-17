@@ -146,9 +146,7 @@ void main() {
       final properties = schema.properties;
 
       // ordinalEnum → byte (index-based)
-      final ordinalProp = properties.firstWhere(
-        (p) => p.name == 'ordinalEnum',
-      );
+      final ordinalProp = properties.firstWhere((p) => p.name == 'ordinalEnum');
       expect(ordinalProp.type, IsarType.byte);
       expect(ordinalProp.enumMap, {'option1': 0, 'option2': 1, 'option3': 2});
 
