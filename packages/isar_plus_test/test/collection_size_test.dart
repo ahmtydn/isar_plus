@@ -104,21 +104,25 @@ void main() {
       },
     );
 
-    // TODO(ahmtydn): enable when indexes are implemented
-    /*isarTest('includeIndexes should change size', () {
-      isar.write((isar) => isar.modelAs.putAll([objA0, objA1, objA3]));
+    isarTest(
+      'includeIndexes should change size',
+      sqlite: false,
+      web: false,
+      () {
+        isar.write((isar) => isar.modelAs.putAll([objA0, objA1, objA3]));
 
-      final sizeAWithoutIndexes = isar.modelAs.getSize();
-      final sizeAWithIndexes = isar.modelAs.getSize(includeIndexes: true);
-      expect(sizeAWithIndexes, greaterThan(sizeAWithoutIndexes));
+        final sizeAWithoutIndexes = isar.modelAs.getSize();
+        final sizeAWithIndexes = isar.modelAs.getSize(includeIndexes: true);
+        expect(sizeAWithIndexes, greaterThan(sizeAWithoutIndexes));
 
-      isar.write((isar) => isar.modelBs.putAll([objB0, objB3, objB4]));
+        isar.write((isar) => isar.modelBs.putAll([objB0, objB3, objB4]));
 
-      final sizeBWithoutIndexes = isar.modelBs.getSize();
-      final sizeBWithIndexes = isar.modelBs.getSize(includeIndexes: true);
-      // ModelB has no indexes, so should stay the same
-      expect(sizeBWithIndexes, sizeBWithoutIndexes);
-    });*/
+        final sizeBWithoutIndexes = isar.modelBs.getSize();
+        final sizeBWithIndexes = isar.modelBs.getSize(includeIndexes: true);
+        // ModelB has no indexes, so should stay the same
+        expect(sizeBWithIndexes, sizeBWithoutIndexes);
+      },
+    );
 
     isarTest('Delete should decrease size', sqlite: false, web: false, () {
       isar.write((isar) {
