@@ -22,7 +22,7 @@ dependencies:
   analyzer: ^9.0.0
   build: ^4.0.0
   ffi: ^2.1.4
-  json_annotation: ^4.9.0
+  json_annotation: ^4.10.0
   logger: ^2.6.2
   meta: ^1.16.0
   source_gen: ^4.0.2
