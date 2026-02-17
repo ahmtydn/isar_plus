@@ -181,7 +181,7 @@ jobs:
         run: sleep 3
       - name: Collect isar_plus_test Coverage (Web)
         run: |
-          dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s test/all_tests.dart || true
+          dart test --coverage=coverage_web -p chrome -j 1 --timeout 300s integration_test/all_tests.dart || true
           if [ -d "coverage_web" ]; then
             dart pub global activate coverage
             dart pub global run coverage:format_coverage \
