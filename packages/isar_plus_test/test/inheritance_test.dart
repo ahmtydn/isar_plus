@@ -274,24 +274,20 @@ void main() {
         ],
       );
 
-      expect(
-        isar.inheritingModels.where().findAll(),
-        [
-          inheritingObj0,
-          inheritingObj1,
-          inheritingObj2,
-          inheritingObj3,
-          inheritingObj4,
-          inheritingObj5,
-        ],
-      );
+      expect(isar.inheritingModels.where().findAll(), [
+        inheritingObj0,
+        inheritingObj1,
+        inheritingObj2,
+        inheritingObj3,
+        inheritingObj4,
+        inheritingObj5,
+      ]);
     });
 
     isarTest('Query model without inheritance', () {
-      expect(
-        isar.nonInheritingModels.where().ageBetween(30, 60).findAll(),
-        [nonInheritingObj1],
-      );
+      expect(isar.nonInheritingModels.where().ageBetween(30, 60).findAll(), [
+        nonInheritingObj1,
+      ]);
 
       expect(
         isar.nonInheritingModels
@@ -303,10 +299,10 @@ void main() {
         [nonInheritingObj0, nonInheritingObj1],
       );
 
-      expect(
-        isar.nonInheritingModels.where().idGreaterThan(0).findAll(),
-        [nonInheritingObj1, nonInheritingObj2],
-      );
+      expect(isar.nonInheritingModels.where().idGreaterThan(0).findAll(), [
+        nonInheritingObj1,
+        nonInheritingObj2,
+      ]);
     });
   });
 }
