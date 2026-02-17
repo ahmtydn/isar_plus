@@ -4,8 +4,6 @@ import 'package:test/test.dart';
 
 part 'inheritance_test.g.dart';
 
-// ignore_for_file: unreachable_from_main
-
 abstract class BaseModel {
   BaseModel({
     required this.identifier,
@@ -23,7 +21,6 @@ abstract class BaseModel {
 
   final String nickname;
 
-  // ignore:unused_field
   final float _privateProperty = 0;
 
   @Ignore()
@@ -182,49 +179,44 @@ void main() {
       });
     });
 
-    // TODO(ahmtydn): implement
+    isarTest('Validate inheritance model properties', () {
+      expect(isar.inheritingModels.schema.idName, 'identifier');
+      final propertyNames = isar.inheritingModels.schema.properties
+          .map((p) => p.name)
+          .toList();
+      expect(propertyNames.contains('nameHash'), true);
+      expect(propertyNames.contains('name'), true);
+      expect(propertyNames.contains('nickname'), true);
+      expect(propertyNames.contains('age'), true);
+      expect(propertyNames.contains('_privateProperty'), false);
+      expect(inheritingObj0._privateProperty, 0);
+      expect(propertyNames.contains('ignoredProperty'), false);
+      expect(inheritingObj0.ignoredProperty, 42);
 
-    /*test('Validate inheritance model properties', () {
-      expect(InheritingModelSchema.idName, 'identifier');
-      expect(InheritingModelSchema.propertyIds.containsKey('nameHash'), true);
-      expect(InheritingModelSchema.propertyIds.containsKey('name'), true);
-      expect(InheritingModelSchema.propertyIds.containsKey('nickname'), true);
-      expect(InheritingModelSchema.propertyIds.containsKey('age'), true);
-      expect(
-        InheritingModelSchema.propertyIds.containsKey('_privateProperty'),
-        false,
-      );
-      expect(
-        InheritingModelSchema.propertyIds.containsKey('ignoredProperty'),
-        false,
-      );
-      expect(InheritingModelSchema.linkIds.containsKey('link'), true);
-      expect(InheritingModelSchema.indexIds.containsKey('nameHash'), true);
+      final indexNames = isar.inheritingModels.schema.indexes
+          .map((i) => i.name)
+          .toList();
+      expect(indexNames.contains('nameHash'), true);
     });
 
-    test('Validation non inheritance model properties', () {
-      expect(NonInheritingModelSchema.idName, 'id');
-      expect(
-        NonInheritingModelSchema.propertyIds.containsKey('nameHash'),
-        false,
-      );
-      expect(NonInheritingModelSchema.propertyIds.containsKey('name'), false);
-      expect(
-        NonInheritingModelSchema.propertyIds.containsKey('nickname'),
-        true,
-      );
-      expect(NonInheritingModelSchema.propertyIds.containsKey('age'), true);
-      expect(
-        NonInheritingModelSchema.propertyIds.containsKey('_privateProperty'),
-        false,
-      );
-      expect(
-        NonInheritingModelSchema.propertyIds.containsKey('ignoredProperty'),
-        false,
-      );
-      expect(NonInheritingModelSchema.linkIds.containsKey('link'), false);
-      expect(NonInheritingModelSchema.indexIds.containsKey('nameHash'), false);
-    });*/
+    isarTest('Validation non inheritance model properties', () {
+      expect(isar.nonInheritingModels.schema.idName, 'id');
+      final propertyNames = isar.nonInheritingModels.schema.properties
+          .map((p) => p.name)
+          .toList();
+
+      expect(propertyNames.contains('nameHash'), false);
+      expect(propertyNames.contains('name'), false);
+      expect(propertyNames.contains('nickname'), true);
+      expect(propertyNames.contains('age'), true);
+      expect(propertyNames.contains('_privateProperty'), false);
+      expect(propertyNames.contains('ignoredProperty'), false);
+
+      final indexNames = isar.nonInheritingModels.schema.indexes
+          .map((i) => i.name)
+          .toList();
+      expect(indexNames.contains('nameHash'), false);
+    });
 
     isarTest('Query model with inheritance', () {
       expect(
@@ -255,7 +247,7 @@ void main() {
       ]);
     });
 
-    /*isarTest('Query model with inherited index', () {
+    isarTest('Query model with inherited index', () {
       expect(
         isar.inheritingModels
             .where()
@@ -312,9 +304,9 @@ void main() {
       );
 
       expect(
-        isar.nonInheritingModels.where().idGreaterThan(1).findAll(),
+        isar.nonInheritingModels.where().idGreaterThan(0).findAll(),
         [nonInheritingObj1, nonInheritingObj2],
       );
-    });*/
+    });
   });
 }
