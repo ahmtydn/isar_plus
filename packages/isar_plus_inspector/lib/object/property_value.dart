@@ -308,19 +308,6 @@ class _DurationValue extends StatelessWidget {
   Widget build(BuildContext context) {
     final duration = value != null ? Duration(milliseconds: value!) : null;
     return GestureDetector(
-      /* onTap: onUpdate == null
-          ? null
-          : () async {
-              final newDate = await showDatePicker(
-                context: context,
-                initialDate: date ?? DateTime.now(),
-                firstDate: DateTime(1970),
-                lastDate: DateTime(2050),
-              );
-              if (newDate != null) {
-                onUpdate?.call(newDate.microsecondsSinceEpoch);
-              }
-            }, */
       child: Text(
         duration.toString(),
         style: GoogleFonts.jetBrainsMono(
