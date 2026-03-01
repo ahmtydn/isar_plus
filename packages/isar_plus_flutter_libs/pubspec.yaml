@@ -11,7 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  isar_plus: 0.0.0-placeholder
+  isar_plus: 
+    path: ../isar_plus
 
 flutter:
   plugin:

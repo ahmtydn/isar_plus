@@ -86,6 +86,9 @@ String _writeProperty({
                 '?? $_nullLong'
           : '$value$enumGetter.toUtc().microsecondsSinceEpoch';
       return 'IsarCore.writeLong($writer, $index, $converted);';
+    case IsarType.duration:
+      final converted = nullable ? '$value$enumGetter?.inMilliseconds ?? $_nullLong' : '$value$enumGetter?.inMilliseconds';
+      return 'IsarCore.writeLong($writer, $index, $converted);';
     case IsarType.double:
       final orNull = nullable ? '?? double.nan' : '';
       return 'IsarCore.writeDouble($writer, $index, $value$enumGetter$orNull);';
@@ -132,6 +135,7 @@ String _writeProperty({
     case IsarType.floatList:
     case IsarType.longList:
     case IsarType.dateTimeList:
+    case IsarType.durationList:
     case IsarType.doubleList:
     case IsarType.stringList:
     case IsarType.objectList:

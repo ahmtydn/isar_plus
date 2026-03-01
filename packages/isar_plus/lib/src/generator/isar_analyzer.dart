@@ -353,6 +353,8 @@ class _IsarAnalyzer {
       return "''";
     } else if (type.isDartCoreDateTime) {
       return 'DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal()';
+    } else if (type.isDartCoreDuration) {
+      return 'Duration.zero';
     } else if (type.isDartCoreList) {
       return 'const <${type.scalarType}>[]';
     } else if (type.isDartCoreMap) {

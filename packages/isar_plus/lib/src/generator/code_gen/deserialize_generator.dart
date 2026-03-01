@@ -205,6 +205,16 @@ String _deserialize({
           }
         }''';
 
+    case IsarType.duration:
+      return '''
+        {
+          final value = IsarCore.readLong(reader, $index);
+          if (value == $_nullLong) {
+            ${transform(defaultValue)}
+          } else {
+            ${transform('Duration(milliseconds: value)')}
+          }
+        }''';
     case IsarType.double:
       if (defaultValue == 'double.nan') {
         return transform('IsarCore.readDouble(reader, $index)');
@@ -246,6 +256,7 @@ String _deserialize({
     case IsarType.floatList:
     case IsarType.longList:
     case IsarType.dateTimeList:
+    case IsarType.durationList:
     case IsarType.doubleList:
     case IsarType.stringList:
     case IsarType.objectList:

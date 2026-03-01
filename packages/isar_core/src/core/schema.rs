@@ -36,11 +36,14 @@ impl IsarSchema {
     }
 
     pub fn from_json(json: &[u8]) -> Result<Vec<Self>> {
-        if let Ok(collections) = serde_json::from_slice::<Vec<IsarSchema>>(json) {
-            Ok(collections)
-        } else {
-            schema_error("Could not deserialize schema JSON")
-        }
+        serde_json::from_slice::<Vec<IsarSchema>>(json).map_err(|e| {
+            IsarError::SchemaError {
+                message: format!(
+                    "Could not deserialize schema JSON: {} (line: {}, column: {})",
+                    e, e.line(), e.column()
+                ),
+            }
+        })
     }
 
     pub fn verify_schemas(schemas: &[Self]) -> Result<()> {
