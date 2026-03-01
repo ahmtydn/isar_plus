@@ -41,6 +41,8 @@ class PropertyValue extends StatelessWidget {
       return _DateValue(value: value as int?, onUpdate: onUpdate);
     } else if (type.isString) {
       return _StringValue(value: value as String?, onUpdate: onUpdate);
+    } else if (type.isDuration) {
+      return _DurationValue(value: value as int?, onUpdate: onUpdate);
     } else {
       return const NullValue();
     }
@@ -77,18 +79,16 @@ class _EnumValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enumName = enumMap.entries
-        .firstWhere(
-          (e) => e.value == value,
-          orElse: () {
-            if (isByte) {
-              return enumMap.entries.first;
-            } else {
-              return const MapEntry('null', null);
-            }
-          },
-        )
-        .key;
+    final enumName = enumMap.entries.firstWhere(
+      (e) => e.value == value,
+      orElse: () {
+        if (isByte) {
+          return enumMap.entries.first;
+        } else {
+          return const MapEntry('null', null);
+        }
+      },
+    ).key;
     return GestureDetector(
       onTapDown: onUpdate == null
           ? null
@@ -103,8 +103,7 @@ class _EnumValue extends StatelessWidget {
                   0,
                 ),
                 items: [
-                  if (!isByte)
-                    PopupMenuItem(value: nullValue, child: const Text('null')),
+                  if (!isByte) PopupMenuItem(value: nullValue, child: const Text('null')),
                   for (final enumName in enumMap.keys)
                     PopupMenuItem(
                       value: enumMap[enumName],
@@ -223,9 +222,7 @@ class _DateValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = value != null
-        ? DateTime.fromMicrosecondsSinceEpoch(value!)
-        : null;
+    final date = value != null ? DateTime.fromMicrosecondsSinceEpoch(value!) : null;
     return GestureDetector(
       onTap: onUpdate == null
           ? null
@@ -263,9 +260,7 @@ class _StringValue extends StatefulWidget {
 
 class _StringValueState extends State<_StringValue> {
   late final controller = TextEditingController(
-    text: widget.value != null
-        ? '"${widget.value.toString().replaceAll('\n', '⤵')}"'
-        : '',
+    text: widget.value != null ? '"${widget.value.toString().replaceAll('\n', '⤵')}"' : '',
   );
 
   @override
@@ -298,6 +293,27 @@ class _StringValueState extends State<_StringValue> {
         color: Colors.green,
         fontWeight: FontWeight.bold,
         fontSize: 14,
+      ),
+    );
+  }
+}
+
+class _DurationValue extends StatelessWidget {
+  const _DurationValue({required this.value, this.onUpdate});
+
+  final int? value;
+  final void Function(dynamic newValue)? onUpdate;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = value != null ? Duration(milliseconds: value!) : null;
+    return GestureDetector(
+      child: Text(
+        duration.toString(),
+        style: GoogleFonts.jetBrainsMono(
+          color: duration != null ? Colors.blue : Colors.grey,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

@@ -6,6 +6,11 @@ extension on DartType {
       element!.name == 'DateTime' &&
       element!.library?.name == 'dart.core';
 
+  bool get isDartCoreDuration =>
+      element != null &&
+      element!.name == 'Duration' &&
+      element!.library?.name == 'dart.core';
+
   IsarType? get _primitiveIsarType {
     if (isDartCoreBool) {
       return IsarType.bool;
@@ -27,6 +32,8 @@ extension on DartType {
       return IsarType.string;
     } else if (isDartCoreDateTime) {
       return IsarType.dateTime;
+    } else if (isDartCoreDuration) {
+      return IsarType.duration;
     } else if (this is DynamicType) {
       return IsarType.json;
     } else if (element != null && element!.embeddedAnnotation != null) {
@@ -69,6 +76,8 @@ extension on DartType {
           return IsarType.doubleList;
         case IsarType.dateTime:
           return IsarType.dateTimeList;
+        case IsarType.duration:
+          return IsarType.durationList;
         case IsarType.string:
           return IsarType.stringList;
         case IsarType.object:
