@@ -141,37 +141,33 @@ void main() {
         isar.models.putAll([allNull, simple, nested]);
       });
 
-      //isar.models.verify([allNull, simple, nested]);
+      isar.models.verify([allNull, simple, nested]);
 
       expect(isar.models.where().findAll(), [allNull, simple, nested]);
     });
 
-    // TODO(ahmtydn): enable
-    /*isarTest('.importJson()', ()  {
-       isar.write(()  {
-         isar.models.tImportJson([
+    isarTest('.importJson()', () {
+      isar.write((isar) {
+        isar.models.importJson([
           allNull.toJson(),
           simple.toJson(),
           nested.toJson(),
         ]);
       });
 
-       isar.models.verify([allNull, simple, nested]);
+      isar.models.verify([allNull, simple, nested]);
     });
 
-    isarTest('.exportJson()', ()  {
-       isar.write(()  {
-         isar.models.putAll([allNull, simple, nested]);
+    isarTest('.exportJson()', () {
+      isar.write((isar) {
+        isar.models.putAll([allNull, simple, nested]);
       });
 
-      expect(
-         isar.models.where().exportJson(),
-        [
-          allNull.toJson(),
-          simple.toJson(),
-          nested.toJson(),
-        ],
-      );
-    });*/
+      expect(isar.models.where().exportJson(), [
+        allNull.toJson(),
+        simple.toJson(),
+        nested.toJson(),
+      ]);
+    });
   });
 }

@@ -49,6 +49,9 @@ String _generateImports(List<File> testFiles) {
       .map((file) {
         final dartPath = file.path.replaceAll(p.separator, '/');
         final alias = _generateImportAlias(file.path);
+        if (file.path.endsWith('isolate_test.dart')) {
+          return "import '$dartPath'\n    if (dart.library.js_interop) 'test/isolate_test_stub.dart'\n    as $alias;";
+        }
         return "import '$dartPath' as $alias;";
       })
       .join('\n');
