@@ -16,27 +16,19 @@ runs:
         # Cache for all targets (iOS, Android, etc.)
         cache-all-crates: true
     
-    - name: Get wasm-bindgen version
-      id: wasm-bindgen-version
-      shell: bash
-      run: |
-        VERSION=$(grep -A 1 'name = "wasm-bindgen"' Cargo.lock | grep 'version' | head -n 1 | cut -d '"' -f 2)
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-
     - name: Cache wasm-bindgen-cli
       uses: actions/cache@v3
       with:
         path: ~/.cargo/bin/wasm-bindgen
-        key: ${{ runner.os }}-${{ runner.arch }}-wasm-bindgen-${{ steps.wasm-bindgen-version.outputs.version }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wasm-bindgen-0.2.114
     
     - name: Install wasm-bindgen-cli
       shell: bash
       run: |
-        TARGET_VERSION="${{ steps.wasm-bindgen-version.outputs.version }}"
-        if ! command -v wasm-bindgen &> /dev/null || [ "$(wasm-bindgen --version | cut -d ' ' -f 2)" != "$TARGET_VERSION" ]; then
-          cargo install wasm-bindgen-cli --version "$TARGET_VERSION"
+        if ! command -v wasm-bindgen &> /dev/null; then
+          cargo install wasm-bindgen-cli --version 0.2.114
         else
-          echo "wasm-bindgen $TARGET_VERSION already installed"
+          echo "wasm-bindgen already installed"
         fi
     
     - name: Cache LLVM
