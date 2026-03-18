@@ -131,10 +131,9 @@ class ConnectQueryPayload {
     return ConnectQueryPayload(
       instance: json['instance'] as String,
       collection: json['collection'] as String,
-      filter:
-          json['filter'] != null
-              ? _filterFromJson(json['filter'] as Map<String, dynamic>)
-              : null,
+      filter: json['filter'] != null
+          ? _filterFromJson(json['filter'] as Map<String, dynamic>)
+          : null,
       offset: json['offset'] as int?,
       limit: json['limit'] as int?,
       sortProperty: json['sortProperty'] as int?,
@@ -241,11 +240,7 @@ class ConnectQueryPayload {
         return {'type': 'lt', 'property': property, 'value': value};
       case LessOrEqualCondition(:final property, :final value):
         return {'type': 'lte', 'property': property, 'value': value};
-      case BetweenCondition(
-        :final property,
-        :final lower,
-        :final upper,
-      ):
+      case BetweenCondition(:final property, :final lower, :final upper):
         return {
           'type': 'between',
           'property': property,
