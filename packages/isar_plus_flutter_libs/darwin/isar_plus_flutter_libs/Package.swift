@@ -23,7 +23,7 @@ let package = Package(
         ),
         .binaryTarget(
             name: "isar",
-            path: "../isar.xcframework"
+            path: "isar.xcframework"
         )
     ]
 )

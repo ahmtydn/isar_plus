@@ -34,12 +34,5 @@ fi
 echo "Creating universal simulator binary..."
 lipo "target/aarch64-apple-ios-sim/release/libisar.a" "target/x86_64-apple-ios/release/libisar.a" -output "target/aarch64-apple-ios-sim/libisar.a" -create
 
-echo "Creating XCFramework..."
-xcodebuild \
-    -create-xcframework \
-    -library target/aarch64-apple-ios/release/libisar.a \
-    -library target/aarch64-apple-ios-sim/libisar.a \
-    -output isar.xcframework 
-
-echo "Creating archive..."
-zip -r isar_ios.xcframework.zip isar.xcframework
+echo "iOS static libraries ready."
+echo "Run build_xcframework.sh to create a unified iOS+macOS XCFramework."
