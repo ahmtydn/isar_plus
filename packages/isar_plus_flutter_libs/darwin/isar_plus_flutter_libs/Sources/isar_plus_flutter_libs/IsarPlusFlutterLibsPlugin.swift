@@ -6,9 +6,12 @@ import FlutterMacOS
 import Flutter
 #endif
 
+@_silgen_name("isar_version")
+func isar_version() -> UInt32
+
 public class IsarPlusFlutterLibsPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
-        // This plugin only bundles the Isar native binary.
-        // No method channel or platform interaction needed.
+        // Dummy call to prevent the linker from stripping the Isar library
+        let _ = isar_version()
     }
 }

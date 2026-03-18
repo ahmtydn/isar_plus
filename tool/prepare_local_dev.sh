@@ -11,7 +11,7 @@ Options:
   --targets <list>   Comma separated list of targets to build
                      (default: macos,ios,wasm).
                      Supported values: macos,ios,wasm,android-arm64,android-armv7,android-x64,linux-x64,windows-x64.
-  --version <ver>    Version string to export as ISAR_VERSION (default: 0.0.0-local).
+  --version <ver>    Version string to export as ISAR_VERSION (default: 0.0.0-placeholder).
   --example <name>   Example directory under examples/ to wire up (default: counter).
   --skip-pub-get     Skip running pub get / flutter pub get at the end.
   -h, --help         Show this help message.
@@ -21,7 +21,7 @@ EOF
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 TARGETS=(macos ios wasm)
-VERSION="0.0.0-local"
+VERSION="0.0.0-placeholder"
 EXAMPLE="counter"
 RUN_PUB_GET=true
 
@@ -118,11 +118,11 @@ fi
 if has_target "ios" || has_target "macos"; then
   echo "\n==> Creating unified XCFramework (iOS + macOS)"
   bash "$SCRIPT_DIR/build_xcframework.sh"
-  DARWIN_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/darwin"
+  DARWIN_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs"
   mkdir -p "$DARWIN_DIR"
   rm -rf "$DARWIN_DIR/isar.xcframework"
   cp -R "$REPO_ROOT/isar.xcframework" "$DARWIN_DIR/isar.xcframework"
-  built_artifacts+=("unified xcframework -> packages/isar_plus_flutter_libs/darwin/isar.xcframework")
+  built_artifacts+=("unified xcframework -> packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/isar.xcframework")
 fi
 
 if has_target "wasm"; then
