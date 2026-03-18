@@ -131,9 +131,10 @@ class ConnectQueryPayload {
     return ConnectQueryPayload(
       instance: json['instance'] as String,
       collection: json['collection'] as String,
-      filter: json['filter'] != null
-          ? _filterFromJson(json['filter'] as Map<String, dynamic>)
-          : null,
+      filter:
+          json['filter'] != null
+              ? _filterFromJson(json['filter'] as Map<String, dynamic>)
+              : null,
       offset: json['offset'] as int?,
       limit: json['limit'] as int?,
       sortProperty: json['sortProperty'] as int?,
@@ -241,9 +242,9 @@ class ConnectQueryPayload {
       case LessOrEqualCondition(:final property, :final value):
         return {'type': 'lte', 'property': property, 'value': value};
       case BetweenCondition(
-        property: final property,
-        lower: final lower,
-        upper: final upper,
+        :final property,
+        :final lower,
+        :final upper,
       ):
         return {
           'type': 'between',
@@ -257,15 +258,15 @@ class ConnectQueryPayload {
         return {'type': 'endsWith', 'property': property, 'value': value};
       case ContainsCondition(:final property, :final value):
         return {'type': 'contains', 'property': property, 'value': value};
-      case MatchesCondition(property: final property, wildcard: final wildcard):
+      case MatchesCondition(:final property, :final wildcard):
         return {'type': 'matches', 'property': property, 'value': wildcard};
-      case IsNullCondition(property: final property):
+      case IsNullCondition(:final property):
         return {'type': 'isNull', 'property': property};
-      case AndGroup(filters: final filters):
+      case AndGroup(:final filters):
         return {'type': 'and', 'filters': filters.map(_filterToJson).toList()};
-      case OrGroup(filters: final filters):
+      case OrGroup(:final filters):
         return {'type': 'or', 'filters': filters.map(_filterToJson).toList()};
-      case NotGroup(filter: final filter):
+      case NotGroup(:final filter):
         return {'type': 'not', 'filter': _filterToJson(filter)};
       case ObjectFilter():
         throw UnimplementedError();
