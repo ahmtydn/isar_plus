@@ -52,7 +52,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly \
     && rustup component add rustfmt clippy \
     && cargo install cargo-tarpaulin \
-    && cargo install wasm-bindgen-cli --version 0.2.108
+    && cargo install wasm-bindgen-cli --version 0.2.114
 
 # Set working directory
 WORKDIR /app
