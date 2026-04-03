@@ -26,9 +26,7 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) async {
   if (!_scriptLoaded) {
     // Check if wasm_bindgen is already available
     final wasmBindgenExists = _windowWasmBindgen;
-    if (wasmBindgenExists == null ||
-        wasmBindgenExists.isUndefined ||
-        wasmBindgenExists.isNull) {
+    if (wasmBindgenExists == null) {
       // Not loaded yet, load it dynamically
       await _loadWasmBindgenScript(url);
     }
@@ -50,23 +48,26 @@ Future<void> _loadWasmBindgenScript(String wasmUrl) async {
   final jsUrl = wasmUrl.replaceAll('.wasm', '.js');
 
   // Create and inject the script tag
-  final script = web.document.createElement('script') as web.HTMLScriptElement
-    ..src = jsUrl
-    ..type = 'text/javascript'
-    ..onload = (web.Event event) {
-      // Schedule async work without making the callback async
-      unawaited(_verifyWasmBindgenLoaded(jsUrl, completer));
-    }.toJS
-    ..onerror = (web.Event event) {
-      completer.completeError(
-        Exception(
-          'Failed to load isar.js from $jsUrl. '
-          'Make sure both isar.wasm and isar.js are '
-          'available at the same location. '
-          'For local usage, copy both files to your web/ directory.',
-        ),
-      );
-    }.toJS;
+  final script =
+      web.document.createElement('script') as web.HTMLScriptElement
+        ..src = jsUrl
+        ..type = 'text/javascript'
+        ..onload =
+            (web.Event event) {
+              // Schedule async work without making the callback async
+              unawaited(_verifyWasmBindgenLoaded(jsUrl, completer));
+            }.toJS
+        ..onerror =
+            (web.Event event) {
+              completer.completeError(
+                Exception(
+                  'Failed to load isar.js from $jsUrl. '
+                  'Make sure both isar.wasm and isar.js are '
+                  'available at the same location. '
+                  'For local usage, copy both files to your web/ directory.',
+                ),
+              );
+            }.toJS;
 
   web.document.head!.appendChild(script);
 
@@ -85,9 +86,7 @@ Future<void> _verifyWasmBindgenLoaded(
   var attempts = 0;
   while (attempts < 10) {
     final wasmBindgenExists = _windowWasmBindgen;
-    if (wasmBindgenExists != null &&
-        !wasmBindgenExists.isUndefined &&
-        !wasmBindgenExists.isNull) {
+    if (wasmBindgenExists != null) {
       completer.complete();
       return;
     }
