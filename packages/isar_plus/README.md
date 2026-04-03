@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/ahmtydn/isar">
-    <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar.svg?sanitize=true" height="128">
+    <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar.svg?sanitize=true" width="160">
   </a>
   <h1 align="center">Isar Plus Database</h1>
 </p>
@@ -47,7 +47,7 @@ Isar Plus is an enhanced fork of the original [Isar database](https://github.com
 📚 **Comprehensive documentation is available at [isarplus.ahmetaydin.dev](https://isarplus.ahmetaydin.dev)**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar_docs.png?sanitize=true" alt="Isar Plus Documentation">
+  <img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/isar_docs.png?sanitize=true" alt="Isar Plus Documentation" width="600">
 </p>
 
 Join the [Telegram group](https://t.me/isarplus) for discussion and sneak peeks of new versions of the DB.
@@ -58,7 +58,7 @@ If you want to say thank you, star us on GitHub and like us on pub.dev 🙌💙
 
 The Isar Inspector allows you to inspect the Isar instances & collections of your app in real-time. You can execute queries, edit properties, switch between instances and sort the data.
 
-<img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/inspector.gif">
+<img src="https://raw.githubusercontent.com/ahmtydn/isar_plus/main/.github/assets/inspector.gif" width="100%">
 
 To launch the inspector, just run your Isar app in debug mode and open the Inspector link in the logs.
 
