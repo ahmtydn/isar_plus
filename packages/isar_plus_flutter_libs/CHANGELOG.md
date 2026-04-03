@@ -1,4 +1,16 @@
+## 1.2.5
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.5 -->
+
+## What's Changed
+### Other Changes
+* fix(web/wasm): resolve Isar initialization and isolate issues in Flutter Web (WASM) by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/89
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.4...1.2.5
+
 ## 1.2.4
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.4 -->
 
