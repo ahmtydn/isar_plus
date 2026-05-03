@@ -9,21 +9,24 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "isar_plus_flutter_libs",
+            name: "isar-plus-flutter-libs",
             targets: ["isar_plus_flutter_libs"]
         )
     ],
     targets: [
         .binaryTarget(
             name: "IsarPlusCore",
-            url: "https://github.com/ahmtydn/isar/releases/download/<VERSION>/IsarPlusCore.xcframework.zip",
-            checksum: "<CHECKSUM>"
+            path: "Core/IsarPlusCore.xcframework"
+        ),
+        .target(
+            name: "CIsarCore",
+            dependencies: ["IsarPlusCore"],
+            path: "Core"
         ),
         .target(
             name: "isar_plus_flutter_libs",
-            dependencies: ["IsarPlusCore"],
-            path: "darwin/Classes",
-            publicHeadersPath: "."
+            dependencies: ["CIsarCore"],
+            path: "Plugin"
         ),
     ]
 )

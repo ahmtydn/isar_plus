@@ -5,6 +5,7 @@ import UIKit
 import FlutterMacOS
 import Cocoa
 #endif
+import CIsarCore
 
 public class IsarPlusFlutterLibsPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {}
