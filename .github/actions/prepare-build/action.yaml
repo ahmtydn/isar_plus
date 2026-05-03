@@ -31,40 +31,12 @@ runs:
           echo "wasm-bindgen 0.2.114 is already installed"
         fi
     
-    - name: Cache LLVM
-      if: runner.os == 'Windows'
-      uses: actions/cache@v3
-      with:
-        path: ${{ runner.temp }}/llvm
-        key: ${{ runner.os }}-llvm-11.0
-    
-    - name: Install LLVM and Clang
-      if: runner.os == 'Windows'
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "11.0"
-        directory: ${{ runner.temp }}/llvm
-    
-    - name: Install Perl
-      if: runner.os == 'Windows'
-      uses: shogo82148/actions-setup-perl@v1.31.1
-      with:
-        distribution: strawberry
-        perl-version: "5.32"
-    
-    - name: Install Make for Windows
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        # Install make via chocolatey
-        choco install make -y
-    
     - name: Set Windows environment variables
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
-        echo "OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl" >> $env:GITHUB_ENV
+        echo "LIBCLANG_PATH=$((gcm clang).source -replace 'clang.exe')" >> $env:GITHUB_ENV
+        echo "OPENSSL_SRC_PERL=$((gcm perl).source)" >> $env:GITHUB_ENV
     
     - name: Set up Android NDK environment
       if: runner.os == 'Linux'
