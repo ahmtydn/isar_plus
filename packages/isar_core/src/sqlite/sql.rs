@@ -379,32 +379,38 @@ pub(crate) fn data_type_sql(property: &PropertySchema) -> Cow<'_, str> {
         DataType::Float => Cow::Borrowed("f32"),
         DataType::Long => Cow::Borrowed("i64"),
         DataType::Double => Cow::Borrowed("f64"),
-        DataType::String => Cow::Borrowed("str"),
-        DataType::Json => Cow::Borrowed("json"),
-        DataType::Object => Cow::Borrowed(property.collection.as_ref().unwrap()),
-        DataType::BoolList => Cow::Borrowed("bool[]"),
-        DataType::ByteList => Cow::Borrowed("u8[]"),
-        DataType::IntList => Cow::Borrowed("i32[]"),
-        DataType::FloatList => Cow::Borrowed("f32[]"),
-        DataType::LongList => Cow::Borrowed("i64[]"),
-        DataType::DoubleList => Cow::Borrowed("f64[]"),
-        DataType::StringList => Cow::Borrowed("str[]"),
+        DataType::String => Cow::Borrowed("TEXT"),
+        DataType::Json => Cow::Borrowed("JSON_TEXT"),
+        DataType::Object => Cow::Owned(format!("{}_TEXT", property.collection.as_ref().unwrap())),
+        DataType::BoolList => Cow::Borrowed("bool[]_TEXT"),
+        DataType::ByteList => Cow::Borrowed("u8[]_TEXT"),
+        DataType::IntList => Cow::Borrowed("i32[]_TEXT"),
+        DataType::FloatList => Cow::Borrowed("f32[]_TEXT"),
+        DataType::LongList => Cow::Borrowed("i64[]_TEXT"),
+        DataType::DoubleList => Cow::Borrowed("f64[]_TEXT"),
+        DataType::StringList => Cow::Borrowed("str[]_TEXT"),
         DataType::ObjectList => {
             let target_collection = property.collection.as_ref().unwrap();
-            Cow::Owned(format!("{target_collection}[]"))
+            Cow::Owned(format!("{target_collection}[]_TEXT"))
         }
     }
 }
 
 pub(crate) fn sql_data_type(sqlite_type: &str) -> (DataType, Option<&str>) {
-    match sqlite_type.to_ascii_lowercase().as_str() {
+    let clean_type = if sqlite_type.to_ascii_lowercase().ends_with("_text") {
+        &sqlite_type[..sqlite_type.len() - 5]
+    } else {
+        sqlite_type
+    };
+
+    match clean_type.to_ascii_lowercase().as_str() {
         "bool" => (DataType::Bool, None),
         "u8" => (DataType::Byte, None),
         "i32" => (DataType::Int, None),
         "f32" => (DataType::Float, None),
         "i64" => (DataType::Long, None),
         "f64" => (DataType::Double, None),
-        "str" => (DataType::String, None),
+        "str" | "text" => (DataType::String, None),
         "json" => (DataType::Json, None),
         "bool[]" => (DataType::BoolList, None),
         "u8[]" => (DataType::ByteList, None),
@@ -414,10 +420,10 @@ pub(crate) fn sql_data_type(sqlite_type: &str) -> (DataType, Option<&str>) {
         "f64[]" => (DataType::DoubleList, None),
         "str[]" => (DataType::StringList, None),
         _ => {
-            if let Some(target_collection) = sqlite_type.strip_suffix("[]") {
+            if let Some(target_collection) = clean_type.strip_suffix("[]") {
                 (DataType::ObjectList, Some(target_collection))
             } else {
-                (DataType::Object, Some(sqlite_type))
+                (DataType::Object, Some(clean_type))
             }
         }
     }
