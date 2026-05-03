@@ -417,7 +417,12 @@ jobs:
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
-          flutter config --enable-macos-desktop 
+          flutter config --enable-macos-desktop
+          flutter config --enable-swift-package-manager
+          # Patch Package.swift to use local path for testing
+          sed -i '' 's/url: ".*"/path: "darwin\/IsarPlusCore.xcframework"/' ../isar_plus_flutter_libs/Package.swift
+          sed -i '' '/checksum: .*/d' ../isar_plus_flutter_libs/Package.swift
+          
           flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
@@ -531,6 +536,12 @@ jobs:
         run: |
           # List available devices for debugging
           flutter devices
+          # Enable SPM
+          flutter config --enable-swift-package-manager
+          # Patch Package.swift to use local path for testing
+          sed -i '' 's/url: ".*"/path: "darwin\/IsarPlusCore.xcframework"/' ../isar_plus_flutter_libs/Package.swift
+          sed -i '' '/checksum: .*/d' ../isar_plus_flutter_libs/Package.swift
+          
           # Get the specific device ID from the simulator action
           DEVICE_ID="${{ steps.simulator.outputs.udid }}"
           echo "Using device ID: $DEVICE_ID"
