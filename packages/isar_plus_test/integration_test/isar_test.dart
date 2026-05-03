@@ -6,7 +6,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 
 import 'all_tests.dart' as tests;
-import 'isar_test_helper.dart' if (dart.library.js_interop) 'isar_test_helper_web.dart';
+import 'isar_test_helper.dart'
+    if (dart.library.js_interop) 'isar_test_helper_web.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
