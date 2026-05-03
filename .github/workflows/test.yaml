@@ -554,10 +554,15 @@ jobs:
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
 
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          df -h
+
       - name: Run Flutter Integration tests
         run: |
-          # List available devices for debugging
-          flutter devices
           # Enable SPM
           flutter config --enable-swift-package-manager
           # Patch Package.swift to use local path for testing
@@ -567,6 +572,10 @@ jobs:
           # Get the specific device ID from the simulator action
           DEVICE_ID="${{ steps.simulator.outputs.udid }}"
           echo "Using device ID: $DEVICE_ID"
-          # Run tests on the specific iOS simulator using device ID
-          flutter test -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true
+          
+          # Wait for simulator to be fully ready
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          
+          # Run tests with verbose logging
+          flutter test --verbose -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true --device-timeout 300
         working-directory: packages/isar_plus_test
