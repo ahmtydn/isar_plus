@@ -3,6 +3,15 @@
 # Windows build using native compilation (faster than CMake)
 echo "Building Windows binary with native compilation..."
 
+# Use clang-cl for C/C++ compilation (much faster than MSVC cl.exe for massive files like sqlite3.c)
+export CC_x86_64_pc_windows_msvc="clang-cl"
+export CXX_x86_64_pc_windows_msvc="clang-cl"
+export CC_aarch64_pc_windows_msvc="clang-cl"
+export CXX_aarch64_pc_windows_msvc="clang-cl"
+
+# Use lld-link for significantly faster linking, especially with LTO enabled
+export RUSTFLAGS="-C linker=lld-link"
+
 if [ "$1" = "x64" ]; then
   rustup target add x86_64-pc-windows-msvc
   cargo build --target x86_64-pc-windows-msvc --features sqlcipher-vendored --release
