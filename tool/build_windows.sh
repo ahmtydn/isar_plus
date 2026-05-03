@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Windows build using native compilation (faster than CMake)
 echo "Building Windows binary with native compilation..."

@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 if [ "$1" = "x64" ]; then
   rustup target add x86_64-unknown-linux-gnu
   cargo build -p isar --target x86_64-unknown-linux-gnu --features sqlcipher-vendored --release
