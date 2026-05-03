@@ -11,7 +11,7 @@ export CC_aarch64_pc_windows_msvc="clang-cl"
 export CXX_aarch64_pc_windows_msvc="clang-cl"
 
 # Use lld-link for significantly faster linking, especially with LTO enabled
-export RUSTFLAGS="-C linker=lld-link"
+export RUSTFLAGS="-C linker=lld-link -C link-arg=/IGNORE:4099"
 
 if [ "$1" = "x64" ]; then
   rustup target add x86_64-pc-windows-msvc

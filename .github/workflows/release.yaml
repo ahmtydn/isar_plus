@@ -141,7 +141,10 @@ jobs:
         run: sh tool/download_binaries.sh
 
       - name: Adjust Version
-        run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          find . -type f -exec sed -i "s/0.0.0-placeholder/${VERSION}/g" {} +
 
       - name: Update Package.swift checksum and URL
         run: |
