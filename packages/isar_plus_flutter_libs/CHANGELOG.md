@@ -1,4 +1,13 @@
+## v1.2.6-dev.2
+
+<!-- Release notes generated using configuration in .github/release.yml at v1.2.6-dev.2 -->
+
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/v1.2.6-dev.1...v1.2.6-dev.2
+
 ## 1.2.6
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.6 -->
 
