@@ -29,7 +29,6 @@ Isar Plus is an enhanced fork of the original [Isar database](https://github.com
 - ✨ **Enhanced Features**: Additional capabilities beyond the original Isar
 - 🌐 **Improved Web Support**: Better SQLite/WASM integration for Flutter Web
 - 🔧 **Active Maintenance**: Regular updates and bug fixes
-- 🌍 **Multilingual Documentation**: Including Turkish language support
 - 🚀 **Performance Optimizations**: Continuous improvements to speed and efficiency
 
 ## Features
