@@ -1,0 +1,15 @@
+name: Test Env Windows
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Setup environment
+        shell: pwsh
+        run: |
+          echo "LIBCLANG_PATH=$((gcm clang).source -replace 'clang.exe')"
+          echo "OPENSSL_SRC_PERL=$((gcm perl).source)"
