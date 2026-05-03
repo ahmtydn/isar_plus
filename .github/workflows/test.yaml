@@ -587,5 +587,5 @@ jobs:
           xcrun simctl bootstatus "$DEVICE_ID" -b
           
           # Run tests with verbose logging
-          flutter test --verbose -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true --device-timeout 300
+          flutter test --verbose -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true --timeout 300s
         working-directory: packages/isar_plus_test
