@@ -17,7 +17,7 @@ runs:
         cache-all-crates: true
     
     - name: Cache wasm-bindgen-cli
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cargo/bin/wasm-bindgen
         key: ${{ runner.os }}-${{ runner.arch }}-wasm-bindgen-0.2.114
