@@ -1,17 +1,12 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:io';
 
-import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart' hide kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar_plus_test/isar_plus_test.dart';
 
 import 'all_tests.dart' as tests;
-
-typedef _IsarGetErrorNative = Pointer<Utf8> Function(Uint32);
-typedef _IsarGetError = Pointer<Utf8> Function(int);
+import 'isar_test_helper.dart' if (dart.library.js_interop) 'isar_test_helper_web.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -58,22 +53,6 @@ void main() async {
     expect(testCount > 0, true);
     expect(testErrors, isEmpty);
   }, timeout: Timeout.none);
-  if (Platform.isIOS || Platform.isMacOS) {
-    testWidgets(
-      'DynamicLibrary.process() can call isar_get_error on Darwin',
-      (tester) async {
-        expect(
-          () {
-            final lib = DynamicLibrary.process();
-            final isarGetError = lib
-                .lookupFunction<_IsarGetErrorNative, _IsarGetError>(
-                  'isar_get_error',
-                );
-            isarGetError(0);
-          },
-          returnsNormally,
-        );
-      },
-    );
-  }
+
+  runDarwinTest();
 }
