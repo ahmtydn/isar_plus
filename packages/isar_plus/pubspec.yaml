@@ -19,13 +19,13 @@ environment:
   sdk: ">=3.7.0 <4.0.0"
 
 dependencies:
-  analyzer: ^9.0.0
-  build: ^4.0.0
+  analyzer: ">=9.0.0 <11.0.0"
+  build: ^4.0.4
   ffi: ^2.1.4
   json_annotation: ^4.9.0
   logger: ^2.6.2
   meta: ^1.16.0
-  source_gen: ^4.0.2
+  source_gen: ^4.2.1
   web: ^1.1.0
 
 dev_dependencies:

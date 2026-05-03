@@ -1,4 +1,55 @@
+## 1.2.6
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.6 -->
+
+## What's Changed
+### Other Changes
+* Fix: Leading Zeros Stripped from String Fields in Root Collections by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/91
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.5...1.2.6
+
+## 1.2.5
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.5 -->
+
+## What's Changed
+### Other Changes
+* fix(web/wasm): resolve Isar initialization and isolate issues in Flutter Web (WASM) by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/89
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.4...1.2.5
+
+## 1.2.4
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.4 -->
+
+## What's Changed
+### Other Changes
+* fix: Simplify checks for wasm_bindgen availability in initialization by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/88
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.3...1.2.4
+
+## 1.2.3
+
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.3 -->
+
+## What's Changed
+### Other Changes
+* Fix React Server Components CVE vulnerabilities by @vercel[bot] in https://github.com/ahmtydn/isar_plus/pull/79
+* chore: update analyzer and other package versions by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/84
+* refactor: use concise pattern matching syntax for filter conditions in `_filterToJson`. by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/85
+* deps: Update wasm-bindgen and wasm-bindgen-cli to version 0.2.114 by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/86
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.2...1.2.3
+
 ## 1.2.2
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.2 -->
 
