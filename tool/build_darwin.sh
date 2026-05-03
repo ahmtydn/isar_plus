@@ -15,14 +15,14 @@ rustup target add \
 
 # iOS device
 echo "Building for aarch64-apple-ios..."
-cargo build --target aarch64-apple-ios --features sqlcipher --release
+cargo build -p isar --target aarch64-apple-ios --features sqlcipher --release
 
 # iOS simulator — create universal binary
 echo "Building for aarch64-apple-ios-sim..."
-cargo build --target aarch64-apple-ios-sim --features sqlcipher --release
+cargo build -p isar --target aarch64-apple-ios-sim --features sqlcipher --release
 
 echo "Building for x86_64-apple-ios..."
-cargo build --target x86_64-apple-ios --features sqlcipher --release
+cargo build -p isar --target x86_64-apple-ios --features sqlcipher --release
 
 echo "Creating universal iOS simulator binary..."
 mkdir -p build/ios-simulator
@@ -32,10 +32,10 @@ lipo target/aarch64-apple-ios-sim/release/libisar.a \
 
 # macOS — create universal static binary
 echo "Building for aarch64-apple-darwin..."
-cargo build --target aarch64-apple-darwin --features sqlcipher --release
+cargo build -p isar --target aarch64-apple-darwin --features sqlcipher --release
 
 echo "Building for x86_64-apple-darwin..."
-cargo build --target x86_64-apple-darwin --features sqlcipher --release
+cargo build -p isar --target x86_64-apple-darwin --features sqlcipher --release
 
 echo "Creating universal macOS binary..."
 mkdir -p build/macos
