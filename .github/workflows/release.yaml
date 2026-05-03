@@ -145,7 +145,7 @@ jobs:
           sed -i \
             -e "s|url: \".*IsarPlusCore.xcframework.zip\"|url: \"${RELEASE_URL}\"|" \
             -e "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" \
-            packages/isar_plus_flutter_libs/Package.swift
+            packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
 
       - name: Update npm
         run: npm install -g npm@latest

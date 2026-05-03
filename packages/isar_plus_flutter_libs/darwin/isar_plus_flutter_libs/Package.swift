@@ -16,7 +16,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "IsarPlusCore",
-            path: "Core/IsarPlusCore.xcframework"
+            url: "https://github.com/ahmtydn/isar_plus/releases/download/0.0.0-placeholder/IsarPlusCore.xcframework.zip",
+            checksum: "0000000000000000000000000000000000000000000000000000000000000000"
         ),
         .target(
             name: "CIsarCore",
