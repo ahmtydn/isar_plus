@@ -12,12 +12,6 @@ curl "${github}/libisar_android_arm64.so" -o packages/isar_plus_flutter_libs/and
 curl "${github}/libisar_android_armv7.so" -o packages/isar_plus_flutter_libs/android/src/main/jniLibs/armeabi-v7a/libisar.so --create-dirs -L -f
 curl "${github}/libisar_android_x64.so" -o packages/isar_plus_flutter_libs/android/src/main/jniLibs/x86_64/libisar.so --create-dirs -L
 
-curl "${github}/IsarPlusCore.xcframework.zip" \
-    -o packages/isar_plus_flutter_libs/darwin/IsarPlusCore.xcframework.zip \
-    --create-dirs -L -f
-unzip -o packages/isar_plus_flutter_libs/darwin/IsarPlusCore.xcframework.zip \
-    -d packages/isar_plus_flutter_libs/darwin
-rm packages/isar_plus_flutter_libs/darwin/IsarPlusCore.xcframework.zip
 
 curl "${github}/libisar_linux_x64.so" -o packages/isar_plus_flutter_libs/linux/libisar.so --create-dirs -L -f
 curl "${github}/isar_windows_x64.dll" -o packages/isar_plus_flutter_libs/windows/isar.dll --create-dirs -L -f
