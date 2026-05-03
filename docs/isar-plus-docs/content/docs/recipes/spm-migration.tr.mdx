@@ -69,16 +69,24 @@ dependencies:
 
 ### CocoaPods'tan Yükseltme
 
+Çoğu Flutter projesi için, Swift Package Manager'a geçiş yapmak uygulama kodunuzu değiştirmenizi gerektirmez; ancak projenizde özel Xcode yapılandırmaları veya CocoaPods kurulum komut dosyalarını yoğun olarak kullanan bağımlılıklar varsa durum farklı olabilir. Eklentinin en son sürümüne güncellemek, Apple platformlarındaki temel bağımlılık yöneticinizi otomatik olarak Swift Package Manager'a geçirecektir.
+
+CocoaPods aracılığıyla diğer Flutter dışı bağımlılıkları yönetiyorsanız, bunları manuel olarak taşımanız veya saklamanız gerekebilir. CocoaPods'u projenizden tamamen kaldırmak istiyorsanız şu adımları izleyin:
+
 <Steps>
 
 ### CocoaPods artifactlarını kaldırın
 
-iOS proje dizininizdeki `Podfile` ve `Podfile.lock` dosyalarını silin, `Pods/` dizinini kaldırın:
+Xcode kapalıyken, CocoaPods bağımlılıklarınızı kaldırın ve oluşturulan çalışma alanını (workspace) silin:
 
 ```bash
-rm ios/Podfile ios/Podfile.lock
-rm -rf ios/Pods
+cd ios
+pod deintegrate
+rm -rf Podfile Podfile.lock Pods Runner.xcworkspace
+cd ..
 ```
+
+*(`macos` dizini için de geçerliyse tekrarlayın).*
 
 ### Derived data'yı temizleyin
 

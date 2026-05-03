@@ -69,16 +69,24 @@ dependencies:
 
 ### Upgrading from CocoaPods
 
+For most Flutter projects, migrating to Swift Package Manager does not require changing your application code unless your project has custom Xcode configurations or dependencies that make heavy use of CocoaPods install scripts. Updating to the latest version of the plugin will automatically migrate your underlying dependency manager on Apple platforms to Swift Package Manager.
+
+If you are managing other non-Flutter dependencies via CocoaPods, you may need to migrate those manually or keep them. If you want to fully remove CocoaPods from your project, follow these steps:
+
 <Steps>
 
 ### Remove CocoaPods artifacts
 
-Delete the `Podfile` and `Podfile.lock` from your iOS project directory, and remove the `Pods/` directory:
+With Xcode closed, uninstall your CocoaPods dependencies and delete the generated workspace:
 
 ```bash
-rm ios/Podfile ios/Podfile.lock
-rm -rf ios/Pods
+cd ios
+pod deintegrate
+rm -rf Podfile Podfile.lock Pods Runner.xcworkspace
+cd ..
 ```
+
+*(Repeat for the `macos` directory if applicable).*
 
 ### Clean derived data
 
