@@ -96,8 +96,10 @@ fn main() {
     }
 
     println!("cargo::rerun-if-changed={}", ld_path.display());
-    println!("cargo:rustc-link-search=native={}", ld_path.display());
-    println!("cargo:rustc-link-lib=static=sqlite3")
+    if std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default() == "wasm32" {
+        println!("cargo:rustc-link-search=native={}", ld_path.display());
+        println!("cargo:rustc-link-lib=static=sqlite3");
+    }
 }
 
 #[cfg(all(not(feature = "precompiled"), feature = "bundled"))]
