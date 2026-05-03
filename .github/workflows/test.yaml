@@ -59,6 +59,8 @@ jobs:
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - run: dart pub get
         working-directory: packages/isar_plus
       - run: flutter pub get
@@ -99,6 +101,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -118,6 +122,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -146,6 +152,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -226,6 +234,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Run Generator Unit tests
         run: |
           dart pub get
@@ -241,6 +251,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -276,6 +288,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -313,6 +327,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -354,6 +370,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -435,6 +453,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Install Linux requirements
@@ -467,6 +487,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
