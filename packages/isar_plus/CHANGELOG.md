@@ -1,4 +1,16 @@
+## 1.2.6
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.2.6 -->
+
+## What's Changed
+### Other Changes
+* Fix: Leading Zeros Stripped from String Fields in Root Collections by @ahmtydn in https://github.com/ahmtydn/isar_plus/pull/91
+
+
+**Full Changelog**: https://github.com/ahmtydn/isar_plus/compare/1.2.5...1.2.6
+
 ## 1.2.5
+
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.2.5 -->
 
