@@ -3,7 +3,8 @@ part of 'package:isar_plus/isar_plus.dart';
 /// @nodoc
 abstract final class IsarCore {
   /// Whether the code is running on the web platform.
-  static const bool kIsWeb = bool.fromEnvironment('dart.library.js_util') ||
+  static const bool kIsWeb =
+      bool.fromEnvironment('dart.library.js_util') ||
       bool.fromEnvironment('dart.library.js_interop');
 
   static var _initialized = false;
