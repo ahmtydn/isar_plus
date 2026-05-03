@@ -28,21 +28,18 @@ jobs:
             artifact_name: libisar_android_x64.so
             script: build_android.sh x64
             upload_path: libisar_android_x64.so
-          - name: "iOS Framework"
+          - name: "Darwin XCFramework"
             os: macos-latest
-            artifact_name: isar_ios.xcframework.zip
-            script: build_ios.sh
-            upload_path: isar_ios.xcframework.zip
+            artifact_name: IsarPlusCore.xcframework.zip
+            script: build_darwin.sh
+            upload_path: |
+              IsarPlusCore.xcframework.zip
+              IsarPlusCore.xcframework.zip.sha256
           - name: "Linux x64"
             os: ubuntu-latest
             artifact_name: libisar_linux_x64.so
             script: build_linux.sh x64
             upload_path: libisar_linux_x64.so
-          - name: "macOS"
-            os: macos-latest
-            artifact_name: libisar_macos.dylib
-            script: build_macos.sh
-            upload_path: libisar_macos.dylib
           - name: "Windows x64"
             os: windows-latest
             artifact_name: isar_windows_x64.dll
@@ -91,51 +88,41 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Set Isar Version
         run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-        
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-          
+
       - name: Move artifacts to root
         run: |
-          # Debug: Show the actual directory structure
           echo "Artifact directory structure:"
           find ./artifacts -type f
-          
-          # Move artifacts from their subdirectories to root
+
           for artifact_dir in ./artifacts/*/; do
             if [ -d "$artifact_dir" ]; then
               echo "Processing directory: $artifact_dir"
               find "$artifact_dir" -maxdepth 1 -type f -exec mv {} ./ \;
             fi
           done
-          
-          # Verify files are in root
+
           echo "Files in root directory:"
-          ls -la *.so *.dylib *.dll *.wasm *.js *.zip 2>/dev/null || echo "No binary files found in root"
+          ls -la *.so *.dll *.wasm *.js *.zip 2>/dev/null || echo "No binary files found in root"
 
       - name: Create latest release
         run: |
-          echo "Creating latest release..."
-          
-          # Determine if it's a prerelease
           if [[ "${{ github.ref_name }}" == *"dev"* ]] || [[ "${{ github.ref_name }}" == *"beta"* ]] || [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
             PRERELEASE_FLAG="--prerelease"
-            echo "Creating as prerelease"
           else
             PRERELEASE_FLAG="--latest"
-            echo "Creating as latest release"
           fi
-          
-          # Create release with all binaries and auto-generated notes
+
           gh release create ${{ github.ref_name }} \
             libisar_android_arm64.so \
             libisar_android_armv7.so \
             libisar_android_x64.so \
-            isar_ios.xcframework.zip \
+            IsarPlusCore.xcframework.zip \
             libisar_linux_x64.so \
-            libisar_macos.dylib \
             isar_windows_x64.dll \
             isar.wasm \
             isar.js \
@@ -147,19 +134,45 @@ jobs:
 
       - name: Download Binaries (for pub.dev)
         run: sh tool/download_binaries.sh
+
       - name: Adjust Version
         run: find . -type f -exec sed -i "s/0.0.0-placeholder/${{ github.ref_name }}/g" {} +
+
+      - name: Update Package.swift checksum and URL
+        run: |
+          CHECKSUM=$(cat IsarPlusCore.xcframework.zip.sha256)
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/IsarPlusCore.xcframework.zip"
+          sed -i \
+            -e "s|url: \".*IsarPlusCore.xcframework.zip\"|url: \"${RELEASE_URL}\"|" \
+            -e "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" \
+            packages/isar_plus_flutter_libs/Package.swift
+
       - name: Update npm
         run: npm install -g npm@latest
+
       - name: Publish to npm
         run: npm publish --provenance
 
+      - name: pub.dev credentials
+        run: |
+          mkdir -p $HOME/.config/dart
+          echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
+
+      - name: Publish isar
+        run: |
+          dart pub get
+          dart pub publish --force
+        working-directory: packages/isar_plus
+
+      - name: Publish isar_plus_flutter_libs
+        run: |
+          flutter pub get
+          flutter pub publish --force
+        working-directory: packages/isar_plus_flutter_libs
+
       - name: Update CHANGELOG files
         run: |
-          # Wait a moment for the release to be fully created
           sleep 5
-          
-          # Make script executable and run it
           chmod +x tool/update_changelog.sh
           ./tool/update_changelog.sh "${{ github.ref_name }}" "${{ github.repository_owner }}" "isar_plus"
         env:
@@ -169,29 +182,13 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
-          # Check if there are any changes to commit
           if git diff --quiet packages/*/CHANGELOG.md; then
             echo "No CHANGELOG changes to commit"
           else
             git add packages/*/CHANGELOG.md
             git commit -m "docs: update CHANGELOG files for release ${{ github.ref_name }}"
             git push origin HEAD:main
-            echo "✅ CHANGELOG files updated and committed"
+            echo "CHANGELOG files updated and committed"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: pub.dev credentials
-        run: |
-          mkdir -p $HOME/.config/dart
-          echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
-      - name: Publish isar
-        run: |
-          dart pub get
-          dart pub publish --force
-        working-directory: packages/isar_plus
-      - name: Publish isar_plus_flutter_libs
-        run: |
-          flutter pub get
-          flutter pub publish --force
-        working-directory: packages/isar_plus_flutter_libs

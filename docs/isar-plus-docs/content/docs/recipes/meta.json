@@ -6,6 +6,7 @@
         "multi_isolate",
         "data_migration",
         "string_ids",
-        "migrate_from_isar3"
+        "migrate_from_isar3",
+        "spm-migration"
     ]
 }
