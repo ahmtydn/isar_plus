@@ -153,7 +153,13 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish to npm
-        run: npm publish --provenance
+        run: |
+          if [[ "${{ github.ref_name }}" == *"dev"* ]] || [[ "${{ github.ref_name }}" == *"beta"* ]] || [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
+            TAG_FLAG="--tag dev"
+          else
+            TAG_FLAG=""
+          fi
+          npm publish --provenance $TAG_FLAG
 
       - name: pub.dev credentials
         run: |
