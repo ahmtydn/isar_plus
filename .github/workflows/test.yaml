@@ -437,11 +437,21 @@ jobs:
         run: |
           flutter config --enable-macos-desktop
           flutter config --enable-swift-package-manager
-          # Patch Package.swift to use local path for testing
           sed -i '' 's/url: ".*"/path: "Core\/IsarPlusCore.xcframework"/' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
           sed -i '' '/checksum: .*/d' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
-          
-          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true
+
+          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true 2>&1 | tee /tmp/flutter_test_output.txt
+
+          if grep -q "tests failed" /tmp/flutter_test_output.txt; then
+            echo "Some tests failed."
+            exit 1
+          elif grep -q "tests passed" /tmp/flutter_test_output.txt; then
+            echo "All tests passed."
+            exit 0
+          else
+            echo "No test result summary found — unexpected output."
+            exit 1
+          fi
         working-directory: packages/isar_plus_test
 
   integration_test_linux:
