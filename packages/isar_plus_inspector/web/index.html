@@ -96,7 +96,7 @@
             const appRunner = await engineInitializer.initializeEngine();
 
             loading.textContent = "Running app...";
-            await appRunner.runApp();
+            appRunner.runApp();
 
             loadingContainer.classList.add("hide");
             window.setTimeout(() => {
