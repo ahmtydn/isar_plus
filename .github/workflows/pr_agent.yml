@@ -73,9 +73,43 @@ jobs:
           pr_reviewer.persistent_comment: "true"
           pr_reviewer.require_tests_review: "true"
           pr_reviewer.require_security_review: "true"
+          pr_reviewer.require_estimate_effort_to_review: "false"
+          pr_reviewer.enable_review_labels_effort: "false"
+          pr_reviewer.enable_review_labels_security: "false"
           pr_reviewer.num_max_findings: "8"
+          pr_reviewer.extra_instructions: |
+            Use a professional, concise review style. Do not use emojis anywhere.
+
+            Use this exact structure:
+
+            ## Review Findings
+
+            If there are no concrete findings, write:
+            No blocking issues found.
+
+            For each finding, use:
+            ### [Severity] Short Finding Title
+            - Location: `path/to/file.ext:line`
+            - Issue: Explain the concrete problem.
+            - Impact: Explain the practical risk.
+            - Recommendation: Suggest the smallest clear fix.
+
+            ## Test Coverage
+
+            Summarize missing or relevant tests in one or two bullets. If no test gap is visible, write:
+            No obvious test gap from the diff.
+
+            ## Release Risk
+
+            Briefly state whether the change affects public API, data compatibility, release automation, changelog, tags, publishing, or CI.
+
+            Focus on correctness, data safety, platform-specific behavior, release impact, and missing tests.
+            Do not add or suggest review metadata labels such as review effort, security review labels, or estimated effort labels.
+            Do not include score, effort estimate, generic summary, walkthrough, or promotional text.
+            Keep comments actionable and avoid repeating the PR summary.
           pr_description.publish_labels: "true"
           pr_description.generate_ai_title: "false"
           pr_description.use_description_markers: "true"
           pr_description.enable_semantic_files_types: "true"
           pr_description.collapsible_file_list: "adaptive"
+          pr_description.extra_instructions: "Use only the repository labels configured as custom labels. Do not add release:* labels; release labels are reserved for maintainers. Do not use emojis anywhere."

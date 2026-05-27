@@ -12,9 +12,39 @@ pr_actions = ["opened", "reopened", "ready_for_review", "review_requested", "syn
 persistent_comment = true
 require_tests_review = true
 require_security_review = true
+require_estimate_effort_to_review = false
+enable_review_labels_effort = false
+enable_review_labels_security = false
 num_max_findings = 8
 extra_instructions = """
+Use a professional, concise review style. Do not use emojis anywhere.
+
+Use this exact structure:
+
+## Review Findings
+
+If there are no concrete findings, write:
+No blocking issues found.
+
+For each finding, use:
+### [Severity] Short Finding Title
+- Location: `path/to/file.ext:line`
+- Issue: Explain the concrete problem.
+- Impact: Explain the practical risk.
+- Recommendation: Suggest the smallest clear fix.
+
+## Test Coverage
+
+Summarize missing or relevant tests in one or two bullets. If no test gap is visible, write:
+No obvious test gap from the diff.
+
+## Release Risk
+
+Briefly state whether the change affects public API, data compatibility, release automation, changelog, tags, publishing, or CI.
+
 Focus on correctness, data safety, platform-specific behavior, release impact, and missing tests.
+Do not add or suggest review metadata labels such as review effort, security review labels, or estimated effort labels.
+Do not include score, effort estimate, generic summary, walkthrough, or promotional text.
 Keep comments actionable and avoid repeating the PR summary.
 """
 
@@ -27,6 +57,7 @@ collapsible_file_list = "adaptive"
 extra_instructions = """
 Use only the repository labels configured as custom labels.
 Do not add release:* labels; release labels are reserved for maintainers.
+Do not use emojis anywhere.
 """
 
 [custom_labels."breaking-change"]
