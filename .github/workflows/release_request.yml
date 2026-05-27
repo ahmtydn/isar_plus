@@ -1,0 +1,164 @@
+name: Release request
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+      - closed
+  issue_comment:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag to create, for example v1.2.8"
+        required: true
+        type: string
+      base_ref:
+        description: "Branch to release from"
+        required: false
+        default: main
+        type: string
+      pr_number:
+        description: "Optional PR number to comment on"
+        required: false
+        type: string
+      release_label:
+        description: "Release label used for validation"
+        required: false
+        default: release:request
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: release-request-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  ask_for_version:
+    name: Ask for release version
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+      - name: Checkout automation scripts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Ask maintainer for version
+        run: python .github/scripts/release_request.py request-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: Prepare changelog and dispatch release
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/release')
+      )
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare release request
+        id: prepare
+        run: python .github/scripts/release_request.py prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate changelog entry
+        if: steps.prepare.outputs.should_release == 'true'
+        run: >-
+          python .github/scripts/generate_changelog_entry.py
+          --version "${VERSION}"
+          --target "${BASE_REF}"
+          --output "${RUNNER_TEMP}/release_notes.md"
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
+          BASE_REF: ${{ steps.prepare.outputs.base_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit changelog, create tag, and dispatch release
+        if: steps.prepare.outputs.should_release == 'true'
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "${BASE_REF}" --tags
+          git checkout -B "${BASE_REF}" "origin/${BASE_REF}"
+
+          python .github/scripts/update_changelog.py \
+            --version "${VERSION}" \
+            --notes-file "${RUNNER_TEMP}/release_notes.md"
+
+          git add packages/isar_plus/CHANGELOG.md packages/isar_plus_flutter_libs/CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No CHANGELOG changes to commit"
+          else
+            git commit -m "docs: update changelog for ${VERSION}"
+            git push origin "HEAD:${BASE_REF}"
+          fi
+
+          if git rev-parse --quiet --verify "refs/tags/${VERSION}"; then
+            echo "Tag ${VERSION} already exists"
+            exit 1
+          fi
+
+          git tag -a "${VERSION}" -m "Release ${VERSION}"
+          git push origin "refs/tags/${VERSION}"
+
+          gh workflow run release.yaml --ref "${BASE_REF}" -f tag="${VERSION}"
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
+          BASE_REF: ${{ steps.prepare.outputs.base_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment success
+        if: success() && steps.prepare.outputs.should_release == 'true'
+        run: >-
+          python .github/scripts/release_request.py complete
+          --status success
+          --version "${VERSION}"
+          --run-url "${RUN_URL}"
+          --pr-number "${PR_NUMBER}"
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
+          PR_NUMBER: ${{ steps.prepare.outputs.pr_number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment failure
+        if: failure() && steps.prepare.outputs.should_release == 'true'
+        run: >-
+          python .github/scripts/release_request.py complete
+          --status failure
+          --version "${VERSION}"
+          --run-url "${RUN_URL}"
+          --pr-number "${PR_NUMBER}"
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
+          PR_NUMBER: ${{ steps.prepare.outputs.pr_number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,53 @@
+# GitHub generated release notes configuration.
+# Labels here are also used by the release-request workflow when it builds CHANGELOG entries.
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - duplicate
+      - question
+      - invalid
+      - wontfix
+      - release:skip
+    authors:
+      - octocat
+      - dependabot
+  categories:
+    - title: Breaking Changes
+      labels:
+        - breaking-change
+        - breaking
+    - title: New Features
+      labels:
+        - enhancement
+        - feature
+        - new-feature
+    - title: Bug Fixes
+      labels:
+        - bug
+        - bugfix
+        - fix
+    - title: Performance Improvements
+      labels:
+        - performance
+        - optimization
+        - perf
+    - title: Documentation
+      labels:
+        - documentation
+        - docs
+    - title: Dependencies
+      labels:
+        - dependencies
+        - deps
+    - title: Internal Changes
+      labels:
+        - internal
+        - refactor
+        - chore
+        - ci
+        - build
+    - title: Other Changes
+      labels:
+        - "*"

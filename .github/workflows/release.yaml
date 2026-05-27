@@ -4,13 +4,45 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release"
+        required: true
+        type: string
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  release_context:
+    name: Release context
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.context.outputs.tag }}
+      ref: ${{ steps.context.outputs.ref }}
+    steps:
+      - name: Resolve release tag
+        id: context
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+
+          if [[ -z "${TAG}" ]]; then
+            echo "Release tag is required"
+            exit 1
+          fi
+
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "ref=refs/tags/${TAG}" >> "${GITHUB_OUTPUT}"
+
   build_binaries:
     name: "Build: ${{ matrix.name }}"
+    needs: release_context
     strategy:
       fail-fast: false
       max-parallel: 8
@@ -58,11 +90,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release_context.outputs.ref }}
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Set Isar Version
         shell: bash
-        run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+        run: echo "ISAR_VERSION=${{ needs.release_context.outputs.tag }}" >> $GITHUB_ENV
       - name: Build binary
         run: bash tool/${{ matrix.script }}
       - name: Upload artifact
@@ -74,7 +108,9 @@ jobs:
 
   publish:
     name: Publish
-    needs: build_binaries
+    needs:
+      - release_context
+      - build_binaries
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -83,6 +119,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ needs.release_context.outputs.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: subosito/flutter-action@v2
       - name: Enable Swift Package Manager
@@ -92,7 +129,7 @@ jobs:
           node-version: "20"
           registry-url: 'https://registry.npmjs.org'
       - name: Set Isar Version
-        run: echo "ISAR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+        run: echo "ISAR_VERSION=${{ needs.release_context.outputs.tag }}" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -116,13 +153,13 @@ jobs:
 
       - name: Create latest release
         run: |
-          if [[ "${{ github.ref_name }}" == *"dev"* ]] || [[ "${{ github.ref_name }}" == *"beta"* ]] || [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
+          if [[ "${{ needs.release_context.outputs.tag }}" == *"dev"* ]] || [[ "${{ needs.release_context.outputs.tag }}" == *"beta"* ]] || [[ "${{ needs.release_context.outputs.tag }}" == *"alpha"* ]]; then
             PRERELEASE_FLAG="--prerelease"
           else
             PRERELEASE_FLAG="--latest"
           fi
 
-          gh release create ${{ github.ref_name }} \
+          gh release create ${{ needs.release_context.outputs.tag }} \
             libisar_android_arm64.so \
             libisar_android_armv7.so \
             libisar_android_x64.so \
@@ -131,7 +168,8 @@ jobs:
             isar_windows_x64.dll \
             isar.wasm \
             isar.js \
-            --title "Isar Plus ${{ github.ref_name }}" \
+            --title "Isar Plus ${{ needs.release_context.outputs.tag }}" \
+            --generate-notes \
             $PRERELEASE_FLAG
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,14 +179,14 @@ jobs:
 
       - name: Adjust Version
         run: |
-          VERSION="${{ github.ref_name }}"
+          VERSION="${{ needs.release_context.outputs.tag }}"
           VERSION="${VERSION#v}"
           find . -type f -exec sed -i "s/0.0.0-placeholder/${VERSION}/g" {} +
 
       - name: Update Package.swift checksum and URL
         run: |
           CHECKSUM=$(cat IsarPlusCore.xcframework.zip.sha256)
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/IsarPlusCore.xcframework.zip"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.release_context.outputs.tag }}/IsarPlusCore.xcframework.zip"
           sed -i \
             -e "s|url: \".*IsarPlusCore.xcframework.zip\"|url: \"${RELEASE_URL}\"|" \
             -e "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" \
@@ -159,7 +197,7 @@ jobs:
 
       - name: Publish to npm
         run: |
-          if [[ "${{ github.ref_name }}" == *"dev"* ]] || [[ "${{ github.ref_name }}" == *"beta"* ]] || [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
+          if [[ "${{ needs.release_context.outputs.tag }}" == *"dev"* ]] || [[ "${{ needs.release_context.outputs.tag }}" == *"beta"* ]] || [[ "${{ needs.release_context.outputs.tag }}" == *"alpha"* ]]; then
             TAG_FLAG="--tag dev"
           else
             TAG_FLAG=""

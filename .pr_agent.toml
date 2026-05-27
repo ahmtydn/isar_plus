@@ -1,0 +1,54 @@
+[config]
+enable_custom_labels = true
+verbosity_level = 2
+
+[github_action_config]
+auto_review = true
+auto_describe = true
+auto_improve = false
+pr_actions = ["opened", "reopened", "ready_for_review", "review_requested", "synchronize"]
+
+[pr_reviewer]
+persistent_comment = true
+require_tests_review = true
+require_security_review = true
+num_max_findings = 8
+extra_instructions = """
+Focus on correctness, data safety, platform-specific behavior, release impact, and missing tests.
+Keep comments actionable and avoid repeating the PR summary.
+"""
+
+[pr_description]
+publish_labels = true
+generate_ai_title = false
+use_description_markers = true
+enable_semantic_files_types = true
+collapsible_file_list = "adaptive"
+extra_instructions = """
+Use only the repository labels configured as custom labels.
+Do not add release:* labels; release labels are reserved for maintainers.
+"""
+
+[custom_labels."breaking-change"]
+description = "Use when the PR introduces a breaking public API or behavior change."
+
+[custom_labels."enhancement"]
+description = "Use when the PR adds a user-visible feature or capability."
+
+[custom_labels."bug"]
+description = "Use when the PR fixes an incorrect behavior, crash, data issue, or regression."
+
+[custom_labels."performance"]
+description = "Use when the PR improves speed, memory use, binary size, or throughput."
+
+[custom_labels."documentation"]
+description = "Use when the PR primarily changes docs, comments, examples, or guides."
+
+[custom_labels."dependencies"]
+description = "Use when the PR primarily updates dependencies, SDK constraints, or generated lockfiles."
+
+[custom_labels."refactor"]
+description = "Use when the PR changes internal structure without intended behavior changes."
+
+[custom_labels."ci"]
+description = "Use when the PR primarily changes CI, release automation, scripts, or build setup."

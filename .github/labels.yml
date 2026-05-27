@@ -35,6 +35,14 @@ chore: "#fef2c0"
 ci: "#fef2c0"
 build: "#fef2c0"
 
+# Release automation
+"release:request": "#5319e7"
+"release:patch": "#0e8a16"
+"release:minor": "#1d76db"
+"release:major": "#b60205"
+"release:prerelease": "#fbca04"
+"release:skip": "#ffffff"
+
 # Exclude from release notes
 ignore-for-release: "#ffffff"
 duplicate: "#cfd3d7"
