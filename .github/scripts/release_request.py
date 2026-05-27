@@ -240,16 +240,16 @@ def request_body(pr: dict, labels: list[str], latest: str | None) -> str:
     suggestion = next_patch_tag(latest)
     label_text = ", ".join(f"`{label}`" for label in labels)
     return f"""{MARKER}
-Release hazirligi icin surum bekliyorum.
+Waiting for a version to prepare this release.
 
-PR merge edildikten sonra yetkili biri su yorumu yazabilir:
+After the PR is merged, an authorized user can post the following comment:
 
 `/release {suggestion}`
 
-Algilanan release label'lari: {label_text}
-Son stable tag: `{latest or 'none'}`
+Detected release labels: {label_text}
+Latest stable tag: `{latest or 'none'}`
 
-Notlar `.github/release.yml` icindeki label kategorilerine gore CHANGELOG dosyalarina eklenecek. Tag olusturulduktan sonra `release.yaml` workflow'u otomatik dispatch edilecek.
+Notes will be added to CHANGELOG files according to the label categories in `.github/release.yml`. Once the tag is created, the `release.yaml` workflow will be automatically dispatched.
 """
 
 
