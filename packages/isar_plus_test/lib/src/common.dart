@@ -3,14 +3,14 @@ import 'dart:math';
 
 import 'package:isar_plus/isar_plus.dart';
 import 'package:isar_plus_test/src/init_native.dart'
-    if (dart.library.html) 'package:isar_plus_test/src/init_web.dart';
+    if (dart.library.js_interop) 'package:isar_plus_test/src/init_web.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 // ignore: implementation_imports, depend_on_referenced_packages
 import 'package:test_api/src/backend/invoker.dart';
 
 export 'package:isar_plus_test/src/init_native.dart'
-    if (dart.library.html) 'package:isar_plus_test/src/init_web.dart';
+    if (dart.library.js_interop) 'package:isar_plus_test/src/init_web.dart';
 
 final testErrors = <String>[];
 int testCount = 0;

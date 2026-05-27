@@ -234,6 +234,10 @@ Common questions about Isar Plus and Flutter databases.
     - Chrome/Edge 102+: OPFS (fast)
     - Safari/Firefox: IndexedDB (compatible)
     
+    <Callout type="info">
+      **Note:** Full OPFS support requires Web Workers. Because the current Isar Web implementation runs on the main thread, it falls back to IndexedDB under the hood. OPFS Web Worker support is planned!
+    </Callout>
+    
     **Limitations:**
     - Must use async APIs
     - Some text helpers unavailable

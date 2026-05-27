@@ -193,6 +193,7 @@ fn main() {
             .define("MDBX_WITHOUT_MSVC_CRT", "1")
             .define("HAVE_LIBM", "1")
             .define("NDEBUG", "1")
+            .define("MDBX_HAVE_BUILTIN_CPU_SUPPORTS", "0")
             // Windows specific includes and flags
             .include(mdbx_root.join("src"))
             .file(mdbx_src.join("alloy.c"))

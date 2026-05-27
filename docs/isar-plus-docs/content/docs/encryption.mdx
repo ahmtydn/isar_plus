@@ -1,0 +1,72 @@
+---
+title: Encryption
+description: Secure your Isar Plus database using SQLCipher encryption
+icon: Lock
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Database Encryption
+
+Isar Plus provides out-of-the-box support for encrypting your database using the industry standard SQLCipher. This ensures that your data is securely stored on disk and cannot be read without the correct encryption key.
+
+<Callout type="warning">
+  Encryption is only supported when using the **SQLite storage engine** (`IsarEngine.sqlite`).
+</Callout>
+
+## Opening an Encrypted Database
+
+To encrypt your database, simply provide an `encryptionKey` when opening the Isar instance. The encryption key should be a strong, unpredictable String (or pass-phrase).
+
+```dart title="lib/main.dart" {6,7}
+import 'package:isar_plus/isar_plus.dart';
+
+final isar = await Isar.openAsync(
+  schemas: [UserSchema],
+  directory: dir.path,
+  engine: IsarEngine.sqlite, // Required for encryption
+  encryptionKey: 'your_super_secret_encryption_key',
+);
+```
+
+Once a database is created with an encryption key, you **must** provide the exact same key every time you open it in the future. 
+
+### Encryption Errors
+
+If you attempt to open an existing encrypted database with a different key (or without a key), Isar will throw an `EncryptionError`. 
+
+You should handle this gracefully in your application, especially if you allow users to change their pass-phrase or if you are securely storing the key in a location like the iOS Keychain or Android Keystore.
+
+```dart
+try {
+  final isar = await Isar.openAsync(
+    schemas: [UserSchema],
+    directory: dir.path,
+    engine: IsarEngine.sqlite,
+    encryptionKey: 'wrong_key',
+  );
+} on EncryptionError {
+  print('Could not decrypt the database! Incorrect key.');
+  // Ask the user for the password again, or handle recovery.
+}
+```
+
+## Deleting an Encrypted Database
+
+Sometimes, a user might lose their password, or the database might become corrupted. If you need to wipe the database and start fresh, but cannot open it due to a lost encryption key, you can use the static `Isar.deleteDatabase` method. 
+
+This safely removes the database from disk without requiring you to open it first.
+
+```dart
+Isar.deleteDatabase(
+  name: Isar.defaultName,
+  directory: dir.path,
+  engine: IsarEngine.sqlite,
+);
+```
+
+## Best Practices
+
+- **Never hardcode your encryption key** in your source code.
+- **Use secure storage** provided by the OS (like `flutter_secure_storage`) to generate and store a strong, random 256-bit key when the app is first launched.
+- **Always handle `EncryptionError`** during database initialization to prevent app crashes if the key is lost or corrupted.

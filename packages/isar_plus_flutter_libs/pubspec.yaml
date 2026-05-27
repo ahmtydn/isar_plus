@@ -6,7 +6,7 @@ homepage: https://github.com/ahmtydn/isar
 
 environment:
   sdk: ">=3.1.0 <4.0.0"
-  flutter: ">=3.10.0"
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
@@ -21,8 +21,10 @@ flutter:
         pluginClass: IsarPlusFlutterLibsPlugin
       ios:
         pluginClass: IsarPlusFlutterLibsPlugin
+        sharedDarwinSource: true
       macos:
         pluginClass: IsarPlusFlutterLibsPlugin
+        sharedDarwinSource: true
       linux:
         pluginClass: IsarPlusFlutterLibsPlugin
       windows:

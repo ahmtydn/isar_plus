@@ -107,7 +107,7 @@ pub const SQLITE3_HEADER: &str = "SQLite format 3";
 
 /// get random name if zFileName is null and other cases
 pub fn random_name() -> String {
-    let random = Number::from(Math::random()).to_string(36).unwrap();
+    let random = Number::from(Math::random()).to_string_with_radix(36).unwrap();
     random.slice(2, random.length()).as_string().unwrap()
 }
 

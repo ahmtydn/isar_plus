@@ -129,7 +129,7 @@ export default async function Layout({
 
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
-      <head>
+      <head suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
@@ -145,6 +145,7 @@ export default async function Layout({
           flexDirection: 'column',
           minHeight: '100vh',
         }}
+        suppressHydrationWarning
       >
         <RootProvider i18n={provider(lang)}>{children}</RootProvider>
       </body>

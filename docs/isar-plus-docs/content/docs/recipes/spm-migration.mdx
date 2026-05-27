@@ -1,0 +1,117 @@
+---
+title: SPM Migration
+description: Migrating isar_plus_flutter_libs from CocoaPods to Swift Package Manager with a unified Darwin shared structure
+icon: Package
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# SPM Migration Guide
+
+This document describes the migration of `isar_plus_flutter_libs` from CocoaPods to Swift Package Manager (SPM) and the introduction of a unified Darwin shared structure for iOS and macOS.
+
+<Callout type="info">
+  If you are upgrading from a version that used CocoaPods, follow the steps in the [Upgrading from CocoaPods](#upgrading-from-cocoapods) section.
+</Callout>
+
+## Overview
+
+Prior to this migration, the plugin used separate CocoaPods podspecs for iOS and macOS, with distinct native source directories for each platform. The new structure:
+
+- Uses a **single `Package.swift`** at the plugin root for SPM configuration
+- Shares all Darwin (iOS + macOS) native source code under **`darwin/Classes/`**
+- Ships a **unified `IsarPlusCore.xcframework`** containing slices for iOS device, iOS simulator, and macOS
+- Removes all CocoaPods artifacts (`.podspec` files, `Podfile`, `Pods/` directories)
+
+## New Darwin Shared Structure
+
+```
+packages/isar_plus_flutter_libs/
+├── darwin/
+│   └── Classes/
+│       ├── binding.h                       ← FFI declarations (shared)
+│       └── IsarPlusFlutterLibsPlugin.swift ← Unified plugin (iOS + macOS)
+├── Package.swift                           ← SPM manifest
+└── pubspec.yaml                            ← Flutter plugin config
+```
+
+The `darwin/Classes/` directory is the single source of truth for all Apple platform native code. Platform-specific imports (`UIKit` vs `Cocoa`) are handled via Swift conditional compilation (`#if os(iOS) / #elseif os(macOS)`).
+
+## Unified XCFramework Structure
+
+The native Isar Core library is distributed as a single `IsarPlusCore.xcframework` containing three slices:
+
+| Slice | Architecture | Description |
+|-------|-------------|-------------|
+| `ios-arm64` | arm64 | iOS physical devices |
+| `ios-arm64_x86_64-simulator` | arm64 + x86_64 | iOS Simulator (universal) |
+| `macos-arm64_x86_64` | arm64 + x86_64 | macOS (Apple Silicon + Intel) |
+
+All slices use **static archives** (`.a`), which is required for SPM vendored binary support. The macOS slice is no longer a `.dylib`.
+
+## Installation and Setup
+
+### New Projects
+
+For new projects, no special setup is required. Add the dependency to your `pubspec.yaml` and Flutter's tooling will automatically resolve the plugin via SPM:
+
+```yaml
+dependencies:
+  isar_plus: {versions.isar_plus_dev}
+  isar_plus_flutter_libs: {versions.isar_plus_flutter_libs_dev}
+```
+
+<Callout>
+  Flutter automatically handles SPM resolution when `sharedDarwinSource: true` is set in the plugin's `pubspec.yaml`. No manual Xcode configuration is needed.
+</Callout>
+
+### Upgrading from CocoaPods
+
+For most Flutter projects, migrating to Swift Package Manager does not require changing your application code unless your project has custom Xcode configurations or dependencies that make heavy use of CocoaPods install scripts. Updating to the latest version of the plugin will automatically migrate your underlying dependency manager on Apple platforms to Swift Package Manager.
+
+If you are managing other non-Flutter dependencies via CocoaPods, you may need to migrate those manually or keep them. If you want to fully remove CocoaPods from your project, follow these steps:
+
+<Steps>
+
+### Remove CocoaPods artifacts
+
+With Xcode closed, uninstall your CocoaPods dependencies and delete the generated workspace:
+
+```bash
+cd ios
+pod deintegrate
+rm -rf Podfile Podfile.lock Pods Runner.xcworkspace
+cd ..
+```
+
+*(Repeat for the `macos` directory if applicable).*
+
+### Clean derived data
+
+In Xcode, go to **Product → Clean Build Folder** (⇧⌘K), or delete DerivedData manually:
+
+```bash
+rm -rf ~/Library/Developer/Xcode/DerivedData
+```
+
+### Resolve packages
+
+Open your project in Xcode and go to **File → Packages → Resolve Package Versions**, or run:
+
+```bash
+flutter pub get
+```
+
+### Build and verify
+
+Run your app on a simulator or device to confirm everything works:
+
+```bash
+flutter run
+```
+
+</Steps>
+
+

@@ -234,6 +234,10 @@ Isar Plus ve Flutter veritabanlarıyla ilgili yaygın sorular.
     - Chrome/Edge 102+: OPFS (hızlı)
     - Safari/Firefox: IndexedDB (uyumlu)
     
+    <Callout type="info">
+      **Not:** Tam OPFS desteği Web Worker gerektirir. Mevcut Isar Web uygulaması ana thread'de çalıştığı için arka planda IndexedDB'ye dönüş (fallback) yapar. OPFS Web Worker desteği planlanmaktadır!
+    </Callout>
+    
     **Kısıtlamalar:**
     - Asenkron API'ler kullanılmalı
     - Bazı metin yardımcıları yok

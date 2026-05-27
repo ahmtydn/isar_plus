@@ -46,7 +46,6 @@ local.properties
 **/ios/**/.vagrant/
 **/ios/**/DerivedData/
 **/ios/**/Icon?
-**/ios/**/Pods/
 **/ios/**/.symlinks/
 **/ios/**/profile
 **/ios/**/xcuserdata
@@ -69,6 +68,9 @@ local.properties
 **/ephemeral
 **/.plugin_symlinks/
 
+# SPM build artifacts
+**/.build/
+
 # Coverage
 *.info
 *.profraw
@@ -85,3 +87,5 @@ coverage/*
 coverage_local.sh
 coverage_report/*
 target_docker/*
+
+examples/test/

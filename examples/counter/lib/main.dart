@@ -109,7 +109,7 @@ class _CounterScreenState extends State<CounterScreen> {
     if (isar == null) return;
 
     try {
-      await isar.writeAsync((isarInstance) {
+      isar.write((isarInstance) {
         final nextId = isarInstance.counts.where().idProperty().max() ?? 0;
         isarInstance.counts.put(
           Count(

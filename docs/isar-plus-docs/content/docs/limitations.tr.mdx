@@ -46,6 +46,10 @@ Isar Plus; mobil, masaüstü ve web platformlarında çalışır. Her platformun
       </Card>
     </Cards>
     
+    <Callout type="info">
+      **OPFS Hakkında Not:** OPFS en yüksek performansı sunar ancak veritabanının bir Web Worker ortamında çalışmasını gerektirir. Isar Plus Web desteği şu anda ana iş parçacığında (main thread) çalıştığı için, kaputun altında geçici olarak **IndexedDB**'ye dönüş yapar (fallback). Tam OPFS Web Worker desteği gelecekteki bir güncelleme için planlanmaktadır!
+    </Callout>
+    
     ### Kısıtlar
     
     ```dart

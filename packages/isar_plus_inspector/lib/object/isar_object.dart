@@ -25,8 +25,12 @@ class IsarObject {
 
     final objects = <IsarObject?>[];
     for (var i = 0; i < list.length; i++) {
-      final data = list[i] as Map<String, dynamic>;
-      objects.add(IsarObject(data));
+      final item = list[i];
+      if (item == null) {
+        objects.add(null);
+      } else {
+        objects.add(IsarObject(item as Map<String, dynamic>));
+      }
     }
 
     return objects;

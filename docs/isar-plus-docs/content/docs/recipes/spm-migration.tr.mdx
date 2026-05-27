@@ -1,0 +1,117 @@
+---
+title: SPM Geçişi
+description: isar_plus_flutter_libs'in CocoaPods'tan Swift Package Manager'a geçişi ve birleşik Darwin yapısı
+icon: Package
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# SPM Geçiş Rehberi
+
+Bu belge, `isar_plus_flutter_libs` eklentisinin CocoaPods'tan Swift Package Manager'a (SPM) geçişini ve iOS ile macOS için birleşik Darwin yapısının kullanıma alınmasını açıklar.
+
+<Callout type="info">
+  CocoaPods kullanan bir sürümden yükseltme yapıyorsanız [CocoaPods'tan Yükseltme](#cocoapodstan-yükseltme) bölümündeki adımları izleyin.
+</Callout>
+
+## Genel Bakış
+
+Bu geçişten önce eklenti, iOS ve macOS için ayrı CocoaPods podspec dosyaları ve her platform için farklı native kaynak dizinleri kullanıyordu. Yeni yapı:
+
+- Eklenti kökünde SPM yapılandırması için **tek bir `Package.swift`** kullanır
+- Tüm Darwin (iOS + macOS) native kaynak kodunu **`darwin/Classes/`** altında paylaşır
+- iOS cihaz, iOS simülatör ve macOS dilimlerini içeren **birleşik bir `IsarPlusCore.xcframework`** sunar
+- Tüm CocoaPods artifactlarını (`.podspec` dosyaları, `Podfile`, `Pods/` dizinleri) kaldırır
+
+## Yeni Darwin Paylaşımlı Yapısı
+
+```
+packages/isar_plus_flutter_libs/
+├── darwin/
+│   └── Classes/
+│       ├── binding.h                       ← FFI bildirimleri (paylaşımlı)
+│       └── IsarPlusFlutterLibsPlugin.swift ← Birleşik eklenti (iOS + macOS)
+├── Package.swift                           ← SPM manifest
+└── pubspec.yaml                            ← Flutter eklenti yapılandırması
+```
+
+`darwin/Classes/` dizini, tüm Apple platform native kodunun tek kaynağıdır. Platforma özgü importlar (`UIKit` ve `Cocoa`) Swift koşullu derleme direktifleriyle yönetilir (`#if os(iOS) / #elseif os(macOS)`).
+
+## Birleşik XCFramework Yapısı
+
+Native Isar Core kütüphanesi, üç dilim içeren tek bir `IsarPlusCore.xcframework` olarak dağıtılır:
+
+| Dilim | Mimari | Açıklama |
+|-------|--------|----------|
+| `ios-arm64` | arm64 | iOS fiziksel cihazlar |
+| `ios-arm64_x86_64-simulator` | arm64 + x86_64 | iOS Simülatör (evrensel) |
+| `macos-arm64_x86_64` | arm64 + x86_64 | macOS (Apple Silicon + Intel) |
+
+Tüm dilimler **statik arşiv** (`.a`) kullanır; bu SPM vendored binary desteği için zorunludur. macOS dilimi artık `.dylib` değildir.
+
+## Kurulum ve Yapılandırma
+
+### Yeni Projeler
+
+Yeni projeler için özel bir kurulum gerekmez. `pubspec.yaml` dosyanıza bağımlılığı ekleyin; Flutter araçları eklentiyi SPM üzerinden otomatik olarak çözümler:
+
+```yaml
+dependencies:
+  isar_plus: {versions.isar_plus_dev}
+  isar_plus_flutter_libs: {versions.isar_plus_flutter_libs_dev}
+```
+
+<Callout>
+  Eklentinin `pubspec.yaml` dosyasında `sharedDarwinSource: true` ayarlandığında Flutter, SPM çözümlemesini otomatik olarak yönetir. Manuel Xcode yapılandırması gerekmez.
+</Callout>
+
+### CocoaPods'tan Yükseltme
+
+Çoğu Flutter projesi için, Swift Package Manager'a geçiş yapmak uygulama kodunuzu değiştirmenizi gerektirmez; ancak projenizde özel Xcode yapılandırmaları veya CocoaPods kurulum komut dosyalarını yoğun olarak kullanan bağımlılıklar varsa durum farklı olabilir. Eklentinin en son sürümüne güncellemek, Apple platformlarındaki temel bağımlılık yöneticinizi otomatik olarak Swift Package Manager'a geçirecektir.
+
+CocoaPods aracılığıyla diğer Flutter dışı bağımlılıkları yönetiyorsanız, bunları manuel olarak taşımanız veya saklamanız gerekebilir. CocoaPods'u projenizden tamamen kaldırmak istiyorsanız şu adımları izleyin:
+
+<Steps>
+
+### CocoaPods artifactlarını kaldırın
+
+Xcode kapalıyken, CocoaPods bağımlılıklarınızı kaldırın ve oluşturulan çalışma alanını (workspace) silin:
+
+```bash
+cd ios
+pod deintegrate
+rm -rf Podfile Podfile.lock Pods Runner.xcworkspace
+cd ..
+```
+
+*(`macos` dizini için de geçerliyse tekrarlayın).*
+
+### Derived data'yı temizleyin
+
+Xcode'da **Product → Clean Build Folder** (⇧⌘K) seçeneğine gidin ya da DerivedData'yı manuel olarak silin:
+
+```bash
+rm -rf ~/Library/Developer/Xcode/DerivedData
+```
+
+### Paketleri çözümleyin
+
+Xcode'da **File → Packages → Resolve Package Versions** seçeneğine gidin ya da şunu çalıştırın:
+
+```bash
+flutter pub get
+```
+
+### Derleyin ve doğrulayın
+
+Her şeyin çalıştığını onaylamak için uygulamanızı simülatörde veya cihazda çalıştırın:
+
+```bash
+flutter run
+```
+
+</Steps>
+
+

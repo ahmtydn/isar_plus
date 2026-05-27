@@ -26,9 +26,7 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) async {
   if (!_scriptLoaded) {
     // Check if wasm_bindgen is already available
     final wasmBindgenExists = _windowWasmBindgen;
-    if (wasmBindgenExists == null ||
-        wasmBindgenExists.isUndefined ||
-        wasmBindgenExists.isNull) {
+    if (wasmBindgenExists == null) {
       // Not loaded yet, load it dynamically
       await _loadWasmBindgenScript(url);
     }
@@ -85,9 +83,7 @@ Future<void> _verifyWasmBindgenLoaded(
   var attempts = 0;
   while (attempts < 10) {
     final wasmBindgenExists = _windowWasmBindgen;
-    if (wasmBindgenExists != null &&
-        !wasmBindgenExists.isUndefined &&
-        !wasmBindgenExists.isNull) {
+    if (wasmBindgenExists != null) {
       completer.complete();
       return;
     }

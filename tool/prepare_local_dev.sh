@@ -9,8 +9,8 @@ Build Isar Plus artifacts locally and wire the example app to use them.
 
 Options:
   --targets <list>   Comma separated list of targets to build
-                     (default: macos,ios,wasm).
-                     Supported values: macos,ios,wasm,android-arm64,android-armv7,android-x64,linux-x64,windows-x64.
+                     (default: darwin,wasm).
+                     Supported values: darwin,wasm,android-arm64,android-armv7,android-x64,linux-x64,windows-x64.
   --version <ver>    Version string to export as ISAR_VERSION (default: 0.0.0-local).
   --example <name>   Example directory under examples/ to wire up (default: counter).
   --skip-pub-get     Skip running pub get / flutter pub get at the end.
@@ -20,7 +20,7 @@ EOF
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
-TARGETS=(macos ios wasm)
+TARGETS=(darwin wasm)
 VERSION="0.0.0-local"
 EXAMPLE="counter"
 RUN_PUB_GET=true
@@ -84,9 +84,8 @@ echo "Preparing local Isar Plus artifacts for targets: ${TARGETS[*]}"
 
 # Clean existing build artifacts before building
 echo "\n==> Cleaning existing build artifacts"
-rm -f "$REPO_ROOT/libisar_macos.dylib"
-rm -f "$REPO_ROOT/isar_ios.xcframework.zip"
-rm -rf "$REPO_ROOT/isar.xcframework"
+rm -f "$REPO_ROOT/IsarPlusCore.xcframework.zip"
+rm -rf "$REPO_ROOT/IsarPlusCore.xcframework"
 rm -f "$REPO_ROOT/isar.wasm"
 rm -f "$REPO_ROOT/isar.js"
 rm -f "$REPO_ROOT/libisar_android_arm64.so"
@@ -100,21 +99,13 @@ echo "Build artifacts cleaned"
 
 declare -a built_artifacts=()
 
-if has_target "macos"; then
-  echo "\n==> Building macOS universal dylib"
-  bash "$SCRIPT_DIR/build_macos.sh"
-  mkdir -p "$REPO_ROOT/packages/isar_plus_flutter_libs/macos"
-  cp "$REPO_ROOT/libisar_macos.dylib" "$REPO_ROOT/packages/isar_plus_flutter_libs/macos/libisar.dylib"
-  built_artifacts+=("macos dylib -> packages/isar_plus_flutter_libs/macos/libisar.dylib")
-fi
-
-if has_target "ios"; then
-  echo "\n==> Building iOS xcframework"
-  bash "$SCRIPT_DIR/build_ios.sh"
-  IOS_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/ios"
-  rm -rf "$IOS_DIR/isar.xcframework"
-  unzip -qo "$REPO_ROOT/isar_ios.xcframework.zip" -d "$IOS_DIR"
-  built_artifacts+=("ios xcframework -> packages/isar_plus_flutter_libs/ios/isar.xcframework")
+if has_target "darwin"; then
+  echo "\n==> Building Darwin unified XCFramework"
+  bash "$SCRIPT_DIR/build_darwin.sh"
+  DARWIN_DIR="$REPO_ROOT/packages/isar_plus_flutter_libs/darwin"
+  rm -rf "$DARWIN_DIR/IsarPlusCore.xcframework"
+  unzip -qo "$REPO_ROOT/IsarPlusCore.xcframework.zip" -d "$DARWIN_DIR"
+  built_artifacts+=("darwin xcframework -> packages/isar_plus_flutter_libs/darwin/IsarPlusCore.xcframework")
 fi
 
 if has_target "wasm"; then

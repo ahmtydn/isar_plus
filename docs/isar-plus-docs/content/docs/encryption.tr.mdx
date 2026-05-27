@@ -1,0 +1,72 @@
+---
+title: Şifreleme
+description: Isar Plus veritabanınızı SQLCipher kullanarak şifreleyerek güvence altına alın
+icon: Lock
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Veritabanı Şifreleme (Encryption)
+
+Isar Plus, doğrudan kutudan çıktığı haliyle endüstri standardı olan SQLCipher kullanarak veritabanınızı şifreleme desteği sunar. Bu, verilerinizin diskte güvenli bir şekilde saklanmasını sağlar ve doğru şifreleme anahtarı olmadan okunmasını imkansız hale getirir.
+
+<Callout type="warning">
+  Şifreleme şu anda **yalnızca SQLite depolama motoru** (`IsarEngine.sqlite`) kullanıldığında desteklenmektedir.
+</Callout>
+
+## Şifreli Bir Veritabanını Açmak
+
+Veritabanınızı şifrelemek için, Isar sunucusunu açarken (open) bir `encryptionKey` (şifreleme anahtarı) sağlamanız yeterlidir. Şifreleme anahtarı, güçlü ve tahmin edilemez bir String metin (veya parola) olmalıdır.
+
+```dart title="lib/main.dart" {6,7}
+import 'package:isar_plus/isar_plus.dart';
+
+final isar = await Isar.openAsync(
+  schemas: [UserSchema],
+  directory: dir.path,
+  engine: IsarEngine.sqlite, // Şifreleme için SQLite zorunludur
+  encryptionKey: 'sizin_cok_gizli_sifreleme_anahtariniz',
+);
+```
+
+Bir veritabanı belirli bir şifreleme anahtarı ile oluşturulduktan sonra, gelecekte veritabanını her açtığınızda **tam olarak aynı anahtarı** sağlamak zorundasınız.
+
+### Şifreleme Hataları (EncryptionError)
+
+Mevcut şifrelenmiş bir veritabanını farklı bir anahtarla (veya anahtar olmadan) açmaya çalışırsanız, Isar bir `EncryptionError` fırlatır.
+
+Özellikle kullanıcılara parolalarını değiştirme izni veriyorsanız veya anahtarı iOS Keychain veya Android Keystore gibi güvenli bir yerde saklıyorsanız, uygulamanızda bu durumu düzgün bir şekilde yönetmelisiniz (try-catch bloğu içinde).
+
+```dart
+try {
+  final isar = await Isar.openAsync(
+    schemas: [UserSchema],
+    directory: dir.path,
+    engine: IsarEngine.sqlite,
+    encryptionKey: 'yanlis_sifre_anahtari',
+  );
+} on EncryptionError {
+  print('Veritabanı şifresi çözülemedi! Anahtar yanlış.');
+  // Kullanıcıdan parolayı tekrar isteyin veya kurtarma adımlarını gerçekleştirin.
+}
+```
+
+## Şifrelenmiş Bir Veritabanını Silmek
+
+Bazen bir kullanıcı parolasını unutabilir veya veritabanı bozulabilir. Veritabanını tamamen temizleyip sıfırdan başlamak istediğinizde ancak kayıp bir şifreleme anahtarı yüzünden veritabanını açamadığınızda, statik `Isar.deleteDatabase` metodunu kullanabilirsiniz.
+
+Bu sayede, veritabanını önce açmanıza gerek kalmadan diskten güvenli bir şekilde silebilirsiniz.
+
+```dart
+Isar.deleteDatabase(
+  name: Isar.defaultName,
+  directory: dir.path,
+  engine: IsarEngine.sqlite,
+);
+```
+
+## En İyi Pratikler (Best Practices)
+
+- **Şifreleme anahtarınızı kaynak kodunuza (hardcode) asla doğrudan yazmayın.**
+- Uygulama ilk başlatıldığında güçlü, rastgele 256-bit bir anahtar oluşturmak ve saklamak için işletim sisteminin sunduğu **güvenli depolama birimlerini** (`flutter_secure_storage` paketi gibi) kullanın.
+- Veritabanı başlatılırken anahtar kaybolur veya bozulursa uygulamanın çökmesini önlemek için her zaman **`EncryptionError` durumunu yakalayın (handle edin).**

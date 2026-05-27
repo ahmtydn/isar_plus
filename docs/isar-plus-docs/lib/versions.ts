@@ -1,4 +1,4 @@
-import { getPubVersion } from '@/lib/pub-dev';
+import { getPubVersions } from '@/lib/pub-dev';
 
 // Cache versions at build time
 let versionsCache: Record<string, string> | null = null;
@@ -14,14 +14,17 @@ export async function getVersions() {
     ];
 
     const results = await Promise.all(
-        packages.map(async (pkg) => ({
-            pkg,
-            version: await getPubVersion(pkg),
-        })),
+        packages.map(async (pkg) => {
+            const { stable, dev } = await getPubVersions(pkg);
+            return [
+                { pkg, version: `^${stable}` },
+                { pkg: `${pkg}_dev`, version: dev },
+            ];
+        }),
     );
 
-    versionsCache = results.reduce<Record<string, string>>((acc, { pkg, version }) => {
-        acc[pkg] = `^${version}`;
+    versionsCache = results.flat().reduce<Record<string, string>>((acc, { pkg, version }) => {
+        acc[pkg] = version;
         return acc;
     }, {});
 

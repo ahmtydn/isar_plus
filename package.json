@@ -3,7 +3,7 @@
   "version": "0.0.0-placeholder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ahmtydn/isar_plus"
+    "url": "git+https://github.com/ahmtydn/isar_plus.git"
   },
   "files": [
     "isar.wasm",

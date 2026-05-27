@@ -46,6 +46,10 @@ Isar Plus works across mobile, desktop, and web platforms. Each platform has dif
       </Card>
     </Cards>
     
+    <Callout type="info">
+      **Note on OPFS:** OPFS provides the highest performance but requires the database to run in a Web Worker environment. Because Isar Plus Web support currently runs on the main thread, it temporarily falls back to **IndexedDB** under the hood in most environments. Full OPFS Web Worker support is planned for a future update!
+    </Callout>
+    
     ### Limitations
     
     ```dart

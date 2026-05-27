@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
     export NDK_HOST_TAG="darwin-x86_64"

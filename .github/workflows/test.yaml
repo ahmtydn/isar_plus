@@ -12,6 +12,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   format:
     name: Check formatting
@@ -59,6 +62,8 @@ jobs:
         with:
           flutter-version: ${{ secrets.FLUTTER_VERSION }}
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - run: dart pub get
         working-directory: packages/isar_plus
       - run: flutter pub get
@@ -99,6 +104,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -118,6 +125,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -146,6 +155,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -226,6 +237,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Run Generator Unit tests
         run: |
           dart pub get
@@ -241,6 +254,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -276,6 +291,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -313,6 +330,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -320,16 +339,6 @@ jobs:
           key: ${{ runner.os }}-npm-serve
           restore-keys: |
             ${{ runner.os }}-npm-
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages/isar_plus_test/macos/Pods
-            ~/Library/Caches/CocoaPods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -364,6 +373,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -407,35 +418,43 @@ jobs:
   integration_test_macos:
     name: Integration Test macOS
     runs-on: macos-latest
+    needs: build_darwin
     # if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           cache: true
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages/isar_plus_test/macos/Pods
-            ~/Library/Caches/CocoaPods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-      - name: Build Isar Core
-        run: |
-          bash tool/build_macos.sh
-          install_name_tool -id @rpath/libisar.dylib libisar_macos.dylib
-          mv libisar_macos.dylib packages/isar_plus_flutter_libs/macos/libisar.dylib
+      - name: Download XCFramework
+        uses: actions/download-artifact@v4
+        with:
+          name: IsarPlusCore.xcframework.zip
+          path: .
+      - name: Extract XCFramework
+        run: unzip -o IsarPlusCore.xcframework.zip -d packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Core/
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
       - name: Run Flutter Driver tests
         run: |
-          flutter config --enable-macos-desktop 
-          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true
+          flutter config --enable-macos-desktop
+          flutter config --enable-swift-package-manager
+          sed -i '' 's/url: ".*"/path: "Core\/IsarPlusCore.xcframework"/' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
+          sed -i '' '/checksum: .*/d' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
+
+          flutter test -d macos integration_test/isar_test.dart --dart-define STRESS=true 2>&1 | tee /tmp/flutter_test_output.txt
+
+          if grep -q "tests failed" /tmp/flutter_test_output.txt; then
+            echo "Some tests failed."
+            exit 1
+          elif grep -q "tests passed" /tmp/flutter_test_output.txt; then
+            echo "All tests passed."
+            exit 0
+          else
+            echo "No test result summary found — unexpected output."
+            exit 1
+          fi
         working-directory: packages/isar_plus_test
 
   integration_test_linux:
@@ -447,6 +466,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Install Linux requirements
@@ -479,6 +500,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
       - name: Build Isar Core
@@ -493,128 +516,26 @@ jobs:
           flutter test -d windows integration_test/isar_test.dart --dart-define STRESS=true
         working-directory: packages/isar_plus_test
 
-  build_ios_targets:
-    name: Build iOS Target (${{ matrix.target.name }})
+  build_darwin:
+    name: Build Darwin XCFramework
     runs-on: macos-latest
-    strategy:
-      matrix:
-        target:
-          - arch: aarch64-apple-ios
-            name: device
-            path: release
-          - arch: aarch64-apple-ios-sim
-            name: simulator-arm
-            path: release
-          - arch: x86_64-apple-ios
-            name: simulator-x86
-            path: release
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          cache: true
-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
-
-      - name: Add iOS target
-        run: rustup target add ${{ matrix.target.arch }}
-
-      - name: Build for ${{ matrix.target.arch }}
-        run: |
-          set -e
-          export IPHONEOS_DEPLOYMENT_TARGET=11.0
-          echo "Building for ${{ matrix.target.arch }}..."
-          cargo build --target ${{ matrix.target.arch }} --features sqlcipher --release
-
-      - name: Verify binary exists
-        run: |
-          if [[ ! -f "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a" ]]; then
-            echo "Error: Binary not found at target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
-            exit 1
-          fi
-          ls -lh "target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: isar-ios-${{ matrix.target.name }}
-          path: target/${{ matrix.target.arch }}/${{ matrix.target.path }}/libisar.a
-          retention-days: 1
-
-  assemble_ios_xcframework:
-    name: Assemble iOS XCFramework
-    runs-on: macos-latest
-    needs: build_ios_targets
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download device binary
-        uses: actions/download-artifact@v4
-        with:
-          name: isar-ios-device
-          path: build/device
-
-      - name: Download simulator ARM binary
-        uses: actions/download-artifact@v4
-        with:
-          name: isar-ios-simulator-arm
-          path: build/simulator-arm
-
-      - name: Download simulator x86 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: isar-ios-simulator-x86
-          path: build/simulator-x86
-
-      - name: Verify downloaded artifacts
-        run: |
-          echo "Checking downloaded artifacts..."
-          ls -lh build/device/libisar.a
-          ls -lh build/simulator-arm/libisar.a
-          ls -lh build/simulator-x86/libisar.a
-
-      - name: Create universal simulator binary
-        run: |
-          echo "Creating universal simulator binary..."
-          mkdir -p build/simulator
-          lipo "build/simulator-arm/libisar.a" \
-               "build/simulator-x86/libisar.a" \
-               -output "build/simulator/libisar.a" \
-               -create
-          echo "Universal binary created:"
-          lipo -info build/simulator/libisar.a
-
-      - name: Create XCFramework
-        run: |
-          echo "Creating XCFramework..."
-          xcodebuild \
-            -create-xcframework \
-            -library build/device/libisar.a \
-            -library build/simulator/libisar.a \
-            -output isar.xcframework
-          echo "XCFramework created successfully"
-          ls -lh isar.xcframework
-
-      - name: Create archive
-        run: |
-          echo "Creating archive..."
-          zip -r isar_ios.xcframework.zip isar.xcframework
-          ls -lh isar_ios.xcframework.zip
-
+      - name: Build Darwin XCFramework
+        run: bash tool/build_darwin.sh
       - name: Upload XCFramework
         uses: actions/upload-artifact@v4
         with:
-          name: isar-ios-xcframework
-          path: isar_ios.xcframework.zip
+          name: IsarPlusCore.xcframework.zip
+          path: IsarPlusCore.xcframework.zip
           retention-days: 1
 
   integration_test_ios:
     name: Integration Test iOS
     runs-on: macos-latest
-    needs: assemble_ios_xcframework
+    needs: build_darwin
     steps:
       - uses: actions/checkout@v4
 
@@ -628,42 +549,46 @@ jobs:
         with:
           cache: true
 
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages/isar_plus_test/ios/Pods
-            ~/Library/Caches/CocoaPods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
       - name: Prepare Build
         uses: ./.github/actions/prepare-build
 
       - name: Download XCFramework
         uses: actions/download-artifact@v4
         with:
-          name: isar-ios-xcframework
+          name: IsarPlusCore.xcframework.zip
           path: .
 
       - name: Extract XCFramework
         run: |
           echo "Extracting XCFramework..."
-          unzip -o isar_ios.xcframework.zip -d packages/isar_plus_flutter_libs/ios
-          ls -lh packages/isar_plus_flutter_libs/ios/
+          unzip -o IsarPlusCore.xcframework.zip -d packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Core/
+          ls -lh packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Core/
 
       - name: Prepare Tests
         run: sh tool/prepare_tests.sh
 
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          df -h
+
       - name: Run Flutter Integration tests
         run: |
-          # List available devices for debugging
-          flutter devices
+          # Enable SPM
+          flutter config --enable-swift-package-manager
+          # Patch Package.swift to use local path for testing
+          sed -i '' 's/url: ".*"/path: "Core\/IsarPlusCore.xcframework"/' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
+          sed -i '' '/checksum: .*/d' ../isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
+          
           # Get the specific device ID from the simulator action
           DEVICE_ID="${{ steps.simulator.outputs.udid }}"
           echo "Using device ID: $DEVICE_ID"
-          # Run tests on the specific iOS simulator using device ID
-          flutter test -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true
+          
+          # Wait for simulator to be fully ready
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          
+          # Run tests with verbose logging
+          flutter test --verbose -d "$DEVICE_ID" integration_test/isar_test.dart --dart-define STRESS=true --timeout 300s
         working-directory: packages/isar_plus_test
