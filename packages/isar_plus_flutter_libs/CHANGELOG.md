@@ -1,3 +1,7 @@
+## 1.2.7
+
+* ios/macos: switch from CocoaPods to Swift Package Manager (SPM); SPM is now stable
+
 ## v1.2.6-dev.2
 
 <!-- Release notes generated using configuration in .github/release.yml at v1.2.6-dev.2 -->
