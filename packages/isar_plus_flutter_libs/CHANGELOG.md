@@ -1,3 +1,7 @@
+## 1.3.8
+
+* fix(sqlite): bundle SQLite with `SQLITE_ENABLE_DBSTAT_VTAB` enabled so `IsarCollection.getSize()` reports real page usage instead of always returning 0.
+
 ## 1.3.7
 
 * refactor(web): wrap the generated web FFI bindings in the `IsarBindingsX` extension on `JSIsar` and update imports to use the local `ffi.dart` and `interop.dart`.
