@@ -123,7 +123,7 @@ jobs:
         run: flutter config --enable-swift-package-manager
       - uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "lts/*"
           registry-url: 'https://registry.npmjs.org'
       - name: Set Isar Version
         run: echo "ISAR_VERSION=${{ needs.release_context.outputs.tag }}" >> $GITHUB_ENV
