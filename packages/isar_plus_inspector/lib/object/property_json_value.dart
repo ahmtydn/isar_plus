@@ -59,10 +59,9 @@ class _NullJsonValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap:
-          onUpdate == null
-              ? null
-              : () => _showJsonEditor(context, null, onUpdate!),
+      onTap: onUpdate == null
+          ? null
+          : () => _showJsonEditor(context, null, onUpdate!),
       child: Text(
         'null',
         style: GoogleFonts.jetBrainsMono(
@@ -87,10 +86,9 @@ class _StringJsonValue extends StatefulWidget {
 
 class _StringJsonValueState extends State<_StringJsonValue> {
   late final controller = TextEditingController(
-    text:
-        widget.value.length > 50
-            ? '"${widget.value.substring(0, 47)}..."'
-            : '"${widget.value}"',
+    text: widget.value.length > 50
+        ? '"${widget.value.substring(0, 47)}..."'
+        : '"${widget.value}"',
   );
 
   @override
@@ -102,10 +100,9 @@ class _StringJsonValueState extends State<_StringJsonValue> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap:
-          widget.onUpdate == null
-              ? null
-              : () => _showJsonEditor(context, widget.value, widget.onUpdate!),
+      onTap: widget.onUpdate == null
+          ? null
+          : () => _showJsonEditor(context, widget.value, widget.onUpdate!),
       child: Tooltip(
         message: widget.value.length > 50 ? widget.value : '',
         child: Text(
@@ -249,26 +246,25 @@ class _BoolJsonValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown:
-          onUpdate == null
-              ? null
-              : (details) async {
-                final newValue = await showMenu(
-                  context: context,
-                  position: RelativeRect.fromLTRB(
-                    details.globalPosition.dx,
-                    details.globalPosition.dy,
-                    100000,
-                    0,
-                  ),
-                  items: const [
-                    PopupMenuItem<bool?>(value: true, child: Text('true')),
-                    PopupMenuItem<bool?>(value: false, child: Text('false')),
-                    PopupMenuItem<bool?>(child: Text('null')),
-                  ],
-                );
-                onUpdate?.call(newValue);
-              },
+      onTapDown: onUpdate == null
+          ? null
+          : (details) async {
+              final newValue = await showMenu(
+                context: context,
+                position: RelativeRect.fromLTRB(
+                  details.globalPosition.dx,
+                  details.globalPosition.dy,
+                  100000,
+                  0,
+                ),
+                items: const [
+                  PopupMenuItem<bool?>(value: true, child: Text('true')),
+                  PopupMenuItem<bool?>(value: false, child: Text('false')),
+                  PopupMenuItem<bool?>(child: Text('null')),
+                ],
+              );
+              onUpdate?.call(newValue);
+            },
       child: Text(
         value.toString(),
         style: GoogleFonts.jetBrainsMono(
@@ -325,12 +321,8 @@ class _MapJsonValueState extends State<_MapJsonValue> {
             if (widget.onUpdate != null) ...[
               const SizedBox(width: 8),
               InkWell(
-                onTap:
-                    () => _showAddMapEntry(
-                      context,
-                      widget.value,
-                      widget.onUpdate!,
-                    ),
+                onTap: () =>
+                    _showAddMapEntry(context, widget.value, widget.onUpdate!),
                 child: Icon(
                   Icons.add_circle_outline,
                   size: 16,
@@ -399,12 +391,11 @@ class _MapJsonValueState extends State<_MapJsonValue> {
                   const Spacer(),
                   if (widget.onUpdate != null) ...[
                     InkWell(
-                      onTap:
-                          () => _showAddMapEntry(
-                            context,
-                            widget.value,
-                            widget.onUpdate!,
-                          ),
+                      onTap: () => _showAddMapEntry(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(4),
                         child: Icon(
@@ -416,12 +407,11 @@ class _MapJsonValueState extends State<_MapJsonValue> {
                     ),
                     const SizedBox(width: 4),
                     InkWell(
-                      onTap:
-                          () => _showJsonEditor(
-                            context,
-                            widget.value,
-                            widget.onUpdate!,
-                          ),
+                      onTap: () => _showJsonEditor(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(4),
                         child: Icon(
@@ -474,20 +464,19 @@ class _MapJsonValueState extends State<_MapJsonValue> {
                   child: PropertyJsonValue(
                     value: entry.value,
                     depth: widget.depth + 1,
-                    onUpdate:
-                        widget.onUpdate == null
-                            ? null
-                            : (newValue) {
-                              final updatedMap = Map<String, dynamic>.from(
-                                widget.value,
-                              );
-                              if (newValue == null) {
-                                updatedMap.remove(entry.key);
-                              } else {
-                                updatedMap[entry.key] = newValue;
-                              }
-                              widget.onUpdate?.call(updatedMap);
-                            },
+                    onUpdate: widget.onUpdate == null
+                        ? null
+                        : (newValue) {
+                            final updatedMap = Map<String, dynamic>.from(
+                              widget.value,
+                            );
+                            if (newValue == null) {
+                              updatedMap.remove(entry.key);
+                            } else {
+                              updatedMap[entry.key] = newValue;
+                            }
+                            widget.onUpdate?.call(updatedMap);
+                          },
                   ),
                 ),
               ],
@@ -495,18 +484,15 @@ class _MapJsonValueState extends State<_MapJsonValue> {
           ),
           if (widget.onUpdate != null)
             InkWell(
-              onTap:
-                  () => _confirmDelete(
-                    context,
-                    'Delete property "${entry.key}"?',
-                    () {
-                      final updatedMap = Map<String, dynamic>.from(
-                        widget.value,
-                      );
-                      updatedMap.remove(entry.key);
-                      widget.onUpdate?.call(updatedMap);
-                    },
-                  ),
+              onTap: () => _confirmDelete(
+                context,
+                'Delete property "${entry.key}"?',
+                () {
+                  final updatedMap = Map<String, dynamic>.from(widget.value);
+                  updatedMap.remove(entry.key);
+                  widget.onUpdate?.call(updatedMap);
+                },
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(Icons.close, size: 14, color: Colors.red[300]),
@@ -563,12 +549,8 @@ class _ListJsonValueState extends State<_ListJsonValue> {
             if (widget.onUpdate != null) ...[
               const SizedBox(width: 8),
               InkWell(
-                onTap:
-                    () => _showAddListItem(
-                      context,
-                      widget.value,
-                      widget.onUpdate!,
-                    ),
+                onTap: () =>
+                    _showAddListItem(context, widget.value, widget.onUpdate!),
                 child: Icon(
                   Icons.add_circle_outline,
                   size: 16,
@@ -637,12 +619,11 @@ class _ListJsonValueState extends State<_ListJsonValue> {
                   const Spacer(),
                   if (widget.onUpdate != null) ...[
                     InkWell(
-                      onTap:
-                          () => _showAddListItem(
-                            context,
-                            widget.value,
-                            widget.onUpdate!,
-                          ),
+                      onTap: () => _showAddListItem(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(4),
                         child: Icon(
@@ -654,12 +635,11 @@ class _ListJsonValueState extends State<_ListJsonValue> {
                     ),
                     const SizedBox(width: 4),
                     InkWell(
-                      onTap:
-                          () => _showJsonEditor(
-                            context,
-                            widget.value,
-                            widget.onUpdate!,
-                          ),
+                      onTap: () => _showJsonEditor(
+                        context,
+                        widget.value,
+                        widget.onUpdate!,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(4),
                         child: Icon(
@@ -717,32 +697,27 @@ class _ListJsonValueState extends State<_ListJsonValue> {
             child: PropertyJsonValue(
               value: widget.value[index],
               depth: widget.depth + 1,
-              onUpdate:
-                  widget.onUpdate == null
-                      ? null
-                      : (newValue) {
-                        final updatedList = List<dynamic>.from(widget.value);
-                        if (newValue == null) {
-                          updatedList.removeAt(index);
-                        } else {
-                          updatedList[index] = newValue;
-                        }
-                        widget.onUpdate?.call(updatedList);
-                      },
+              onUpdate: widget.onUpdate == null
+                  ? null
+                  : (newValue) {
+                      final updatedList = List<dynamic>.from(widget.value);
+                      if (newValue == null) {
+                        updatedList.removeAt(index);
+                      } else {
+                        updatedList[index] = newValue;
+                      }
+                      widget.onUpdate?.call(updatedList);
+                    },
             ),
           ),
           if (widget.onUpdate != null)
             InkWell(
-              onTap:
-                  () => _confirmDelete(
-                    context,
-                    'Delete item at index $index?',
-                    () {
-                      final updatedList = List<dynamic>.from(widget.value);
-                      updatedList.removeAt(index);
-                      widget.onUpdate?.call(updatedList);
-                    },
-                  ),
+              onTap: () =>
+                  _confirmDelete(context, 'Delete item at index $index?', () {
+                    final updatedList = List<dynamic>.from(widget.value);
+                    updatedList.removeAt(index);
+                    widget.onUpdate?.call(updatedList);
+                  }),
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(Icons.close, size: 14, color: Colors.red[300]),
@@ -763,104 +738,99 @@ void _showJsonEditor(
   final isDark = theme.brightness == Brightness.dark;
 
   final controller = TextEditingController(
-    text:
-        currentValue == null
-            ? ''
-            : const JsonEncoder.withIndent('  ').convert(currentValue),
+    text: currentValue == null
+        ? ''
+        : const JsonEncoder.withIndent('  ').convert(currentValue),
   );
 
   unawaited(
     showDialog<void>(
       context: context,
-      builder:
-          (context) => Theme(
-            data: theme.copyWith(
-              dialogTheme: DialogThemeData(
-                backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      builder: (context) => Theme(
+        data: theme.copyWith(
+          dialogTheme: DialogThemeData(
+            backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+          ),
+        ),
+        child: AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.code, color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
+              const Text('Edit JSON Value'),
+            ],
+          ),
+          content: SizedBox(
+            width: 700,
+            height: 500,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                ),
               ),
-            ),
-            child: AlertDialog(
-              title: Row(
-                children: [
-                  Icon(Icons.code, color: theme.colorScheme.primary, size: 20),
-                  const SizedBox(width: 8),
-                  const Text('Edit JSON Value'),
-                ],
-              ),
-              content: SizedBox(
-                width: 700,
-                height: 500,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[850] : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-                    ),
+              child: TextField(
+                controller: controller,
+                maxLines: null,
+                expands: true,
+                decoration: InputDecoration(
+                  hintText: '{\n  "key": "value"\n}',
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    fontSize: 13,
                   ),
-                  child: TextField(
-                    controller: controller,
-                    maxLines: null,
-                    expands: true,
-                    decoration: InputDecoration(
-                      hintText: '{\n  "key": "value"\n}',
-                      hintStyle: GoogleFonts.jetBrainsMono(
-                        color: isDark ? Colors.grey[600] : Colors.grey[400],
-                        fontSize: 13,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: 13,
-                      color: isDark ? Colors.green[300] : Colors.green[800],
-                      height: 1.5,
-                    ),
-                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: isDark ? Colors.green[300] : Colors.green[800],
+                  height: 1.5,
                 ),
               ),
-              actions: [
-                TextButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Cancel'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    try {
-                      final text = controller.text.trim();
-                      if (text.isEmpty) {
-                        onUpdate(null);
-                      } else {
-                        final parsed = jsonDecode(text);
-                        onUpdate(parsed);
-                      }
-                      Navigator.of(context).pop();
-                    } on Exception catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text('Invalid JSON: $e')),
-                            ],
-                          ),
-                          backgroundColor: Colors.red[700],
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.save, size: 18),
-                  label: const Text('Save'),
-                ),
-              ],
             ),
           ),
+          actions: [
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.close, size: 18),
+              label: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                try {
+                  final text = controller.text.trim();
+                  if (text.isEmpty) {
+                    onUpdate(null);
+                  } else {
+                    final parsed = jsonDecode(text);
+                    onUpdate(parsed);
+                  }
+                  Navigator.of(context).pop();
+                } on Exception catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text('Invalid JSON: $e')),
+                        ],
+                      ),
+                      backgroundColor: Colors.red[700],
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.save, size: 18),
+              label: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
     ).then((_) {
       controller.dispose();
     }),
@@ -890,102 +860,95 @@ void _showAddListItem(
   unawaited(
     showDialog<void>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(
-                  Icons.add_circle_outline,
-                  color: theme.colorScheme.primary,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text('Add Array Item'),
+          ],
+        ),
+        content: SizedBox(
+          width: 450,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Enter a JSON value:',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[700],
                 ),
-                const SizedBox(width: 8),
-                const Text('Add Array Item'),
-              ],
-            ),
-            content: SizedBox(
-              width: 450,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Enter a JSON value:',
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[850] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: TextField(
-                      controller: controller,
-                      maxLines: 5,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                        hintText: '"text" or 123 or true or {"key": "value"}',
-                        hintStyle: GoogleFonts.jetBrainsMono(
-                          color: isDark ? Colors.grey[600] : Colors.grey[400],
-                          fontSize: 12,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 13,
-                        color: isDark ? Colors.green[300] : Colors.green[800],
-                      ),
-                    ),
-                  ),
-                ],
               ),
-            ),
-            actions: [
-              TextButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close, size: 18),
-                label: const Text('Cancel'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  try {
-                    final text = controller.text.trim();
-                    if (text.isEmpty) {
-                      throw const FormatException('Value cannot be empty');
-                    }
-                    final parsed = jsonDecode(text);
-                    final updatedList = List<dynamic>.from(currentList)
-                      ..add(parsed);
-                    onUpdate(updatedList);
-                    Navigator.of(context).pop();
-                  } on Exception catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text('Invalid JSON: $e')),
-                          ],
-                        ),
-                        backgroundColor: Colors.red[700],
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add'),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[850] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                  ),
+                ),
+                child: TextField(
+                  controller: controller,
+                  maxLines: 5,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: '"text" or 123 or true or {"key": "value"}',
+                    hintStyle: GoogleFonts.jetBrainsMono(
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      fontSize: 12,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 13,
+                    color: isDark ? Colors.green[300] : Colors.green[800],
+                  ),
+                ),
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, size: 18),
+            label: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              try {
+                final text = controller.text.trim();
+                if (text.isEmpty) {
+                  throw const FormatException('Value cannot be empty');
+                }
+                final parsed = jsonDecode(text);
+                final updatedList = List<dynamic>.from(currentList)
+                  ..add(parsed);
+                onUpdate(updatedList);
+                Navigator.of(context).pop();
+              } on Exception catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Invalid JSON: $e')),
+                      ],
+                    ),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add'),
+          ),
+        ],
+      ),
     ).then((_) {
       // Dispose controller after dialog is closed
       controller.dispose();
@@ -1006,134 +969,126 @@ void _showAddMapEntry(
   unawaited(
     showDialog<void>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(
-                  Icons.add_circle_outline,
-                  color: theme.colorScheme.primary,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text('Add Property'),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[850] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                  ),
                 ),
-                const SizedBox(width: 8),
-                const Text('Add Property'),
-              ],
-            ),
-            content: SizedBox(
-              width: 500,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[850] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-                      ),
+                child: TextField(
+                  controller: keyController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: 'Property Name',
+                    hintText: 'e.g., userName, age, isActive',
+                    hintStyle: GoogleFonts.jetBrainsMono(
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      fontSize: 12,
                     ),
-                    child: TextField(
-                      controller: keyController,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                        labelText: 'Property Name',
-                        hintText: 'e.g., userName, age, isActive',
-                        hintStyle: GoogleFonts.jetBrainsMono(
-                          color: isDark ? Colors.grey[600] : Colors.grey[400],
-                          fontSize: 12,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 13,
-                        color:
-                            isDark ? Colors.lightBlue[300] : Colors.blue[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(12),
                   ),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[850] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: TextField(
-                      controller: valueController,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        labelText: 'Value (JSON)',
-                        hintText: '"text" or 123 or true or {"key": "value"}',
-                        hintStyle: GoogleFonts.jetBrainsMono(
-                          color: isDark ? Colors.grey[600] : Colors.grey[400],
-                          fontSize: 12,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 13,
-                        color: isDark ? Colors.green[300] : Colors.green[800],
-                      ),
-                    ),
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 13,
+                    color: isDark ? Colors.lightBlue[300] : Colors.blue[700],
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close, size: 18),
-                label: const Text('Cancel'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  try {
-                    final key = keyController.text.trim();
-                    final valueText = valueController.text.trim();
-
-                    if (key.isEmpty) {
-                      throw const FormatException('Key cannot be empty');
-                    }
-                    if (valueText.isEmpty) {
-                      throw const FormatException('Value cannot be empty');
-                    }
-
-                    final parsedValue = jsonDecode(valueText);
-                    final updatedMap = Map<String, dynamic>.from(currentMap);
-                    updatedMap[key] = parsedValue;
-                    onUpdate(updatedMap);
-                    Navigator.of(context).pop();
-                  } on Exception catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text('Invalid JSON: $e')),
-                          ],
-                        ),
-                        backgroundColor: Colors.red[700],
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.check, size: 18),
-                label: const Text('Add'),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[850] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                  ),
+                ),
+                child: TextField(
+                  controller: valueController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    labelText: 'Value (JSON)',
+                    hintText: '"text" or 123 or true or {"key": "value"}',
+                    hintStyle: GoogleFonts.jetBrainsMono(
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      fontSize: 12,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 13,
+                    color: isDark ? Colors.green[300] : Colors.green[800],
+                  ),
+                ),
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, size: 18),
+            label: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              try {
+                final key = keyController.text.trim();
+                final valueText = valueController.text.trim();
+
+                if (key.isEmpty) {
+                  throw const FormatException('Key cannot be empty');
+                }
+                if (valueText.isEmpty) {
+                  throw const FormatException('Value cannot be empty');
+                }
+
+                final parsedValue = jsonDecode(valueText);
+                final updatedMap = Map<String, dynamic>.from(currentMap);
+                updatedMap[key] = parsedValue;
+                onUpdate(updatedMap);
+                Navigator.of(context).pop();
+              } on Exception catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Invalid JSON: $e')),
+                      ],
+                    ),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.check, size: 18),
+            label: const Text('Add'),
+          ),
+        ],
+      ),
     ).then((_) {
       // Dispose controllers after dialog is closed
       keyController.dispose();

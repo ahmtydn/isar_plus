@@ -33,17 +33,16 @@ class PropertyView extends StatelessWidget {
       bold: isId,
       underline: isIndexed,
       type: '${property.type.typeName} $valueLength',
-      value:
-          value is List
-              ? null
-              : property.type.isList
-              ? const NullValue()
-              : PropertyValue(
-                value,
-                type: property.type,
-                enumMap: property.enumMap,
-                onUpdate: isId ? null : onUpdate,
-              ),
+      value: value is List
+          ? null
+          : property.type.isList
+          ? const NullValue()
+          : PropertyValue(
+              value,
+              type: property.type,
+              enumMap: property.enumMap,
+              onUpdate: isId ? null : onUpdate,
+            ),
       children: [
         if (value is List)
           for (var i = 0; i < value.length; i++) _buildListItem(i, value[i]),

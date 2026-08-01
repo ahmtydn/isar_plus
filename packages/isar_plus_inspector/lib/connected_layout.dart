@@ -66,8 +66,10 @@ class _ConnectedLayoutState extends State<ConnectedLayout> {
           if (mounted && selectedInstance == instance) {
             setState(() {
               schemas.addAll(newSchemas);
-              selectedCollection =
-                  schemas.where((e) => !e.embedded).firstOrNull?.name;
+              selectedCollection = schemas
+                  .where((e) => !e.embedded)
+                  .firstOrNull
+                  ?.name;
             });
           }
         }),

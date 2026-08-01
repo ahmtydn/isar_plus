@@ -390,15 +390,14 @@ class ChangeDetail<T extends DocumentSerializable> {
   /// Provides detailed string representation for debugging and logging.
   @override
   String toString() {
-    final buffer =
-        StringBuffer()
-          ..write('ChangeDetail<$T>(')
-          ..write('collection: $collectionName, ')
-          ..write('id: $objectId, ')
-          ..write('type: $changeType, ')
-          ..write('timestamp: ${timestamp?.toIso8601String()}, ')
-          ..write('fieldChanges: ${fieldChanges.length}')
-          ..write(')');
+    final buffer = StringBuffer()
+      ..write('ChangeDetail<$T>(')
+      ..write('collection: $collectionName, ')
+      ..write('id: $objectId, ')
+      ..write('type: $changeType, ')
+      ..write('timestamp: ${timestamp?.toIso8601String()}, ')
+      ..write('fieldChanges: ${fieldChanges.length}')
+      ..write(')');
 
     return buffer.toString();
   }

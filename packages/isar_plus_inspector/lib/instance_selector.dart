@@ -82,10 +82,9 @@ class _InstanceSelectorState extends State<InstanceSelector>
               SelectedInstanceButton(
                 instance: widget.selectedInstance!,
                 hasMultiple: widget.instances.length > 1,
-                color:
-                    _animation.status != AnimationStatus.dismissed
-                        ? Colors.blue
-                        : null,
+                color: _animation.status != AnimationStatus.dismissed
+                    ? Colors.blue
+                    : null,
                 onTap: () {
                   if (_controller.status == AnimationStatus.completed) {
                     unawaited(_controller.reverse());
