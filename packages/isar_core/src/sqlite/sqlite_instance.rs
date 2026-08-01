@@ -1,3 +1,4 @@
+use super::sql;
 use super::sqlite3::SQLite3;
 use super::sqlite_collection::SQLiteCollection;
 use super::sqlite_cursor::SQLiteCursor;
@@ -15,6 +16,7 @@ use crate::core::query_builder::IsarQueryBuilder;
 use crate::core::schema::IsarSchema;
 use crate::core::value::IsarValue;
 use crate::core::watcher::{DetailedWatcherCallback, WatchHandle, WatcherCallback};
+use itertools::Itertools;
 use parking_lot::lock_api::RawMutex;
 use std::cell::Cell;
 use std::rc::Rc;
@@ -253,10 +255,29 @@ impl IsarInstance for SQLiteInstance {
     fn get_size(
         &self,
         _txn: &Self::Txn,
-        _collection_index: u16,
-        _include_indexes: bool,
+        collection_index: u16,
+        include_indexes: bool,
     ) -> Result<u64> {
-        Err(IsarError::UnsupportedOperation {})
+        let collection = self.get_collection(collection_index)?;
+
+        let mut names = vec![collection.name.clone()];
+        if include_indexes {
+            names.extend(
+                collection
+                    .indexes
+                    .iter()
+                    .map(|index| sql::index_name(&collection.name, &index.name)),
+            );
+        }
+
+        let placeholders = names.iter().map(|_| "?").join(", ");
+        let sql = format!("SELECT IFNULL(SUM(pgsize), 0) FROM dbstat WHERE name IN ({placeholders})");
+        let mut stmt = self.sqlite.prepare(&sql)?;
+        for (i, name) in names.iter().enumerate() {
+            stmt.bind_text(i as u32, name)?;
+        }
+        stmt.step()?;
+        Ok(stmt.get_long(0).max(0) as u64)
     }
 
     fn query(&self, collection_index: u16) -> Result<Self::QueryBuilder<'_>> {
@@ -372,5 +393,57 @@ impl IsarInstance for SQLiteInstance {
 
     fn close(instance: Self::Instance, delete: bool) -> bool {
         close_instance(instance.info, instance.sqlite, delete)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::data_type::DataType;
+    use crate::core::schema::{IndexSchema, PropertySchema};
+    use crate::SQLITE_MEMORY_DIR;
+
+    fn open(name: &str) -> SQLiteInstance {
+        let schema = IsarSchema::new(
+            "TestCol",
+            None,
+            vec![PropertySchema::new("value", DataType::String, None)],
+            vec![IndexSchema::new("value", vec!["value"], false, false)],
+            false,
+        );
+        SQLiteInstance::open_instance(1, name, SQLITE_MEMORY_DIR, vec![schema], 0, None, None)
+            .unwrap()
+    }
+
+    #[test]
+    fn get_size_reports_real_dbstat_usage() {
+        let instance = open("get_size_reports_real_dbstat_usage");
+        let txn = SQLiteTxn::new(instance.sqlite.clone(), false).unwrap();
+
+        let empty_size = instance.get_size(&txn, 0, true).unwrap();
+
+        let row_count = 500;
+        let payload = "x".repeat(2000);
+        for _ in 0..row_count {
+            instance
+                .sqlite
+                .prepare(&format!(
+                    "INSERT INTO TestCol (value) VALUES ('{payload}')"
+                ))
+                .unwrap()
+                .step()
+                .unwrap();
+        }
+
+        let size_without_indexes = instance.get_size(&txn, 0, false).unwrap();
+        let size_with_indexes = instance.get_size(&txn, 0, true).unwrap();
+        txn.abort();
+
+        // A `dbstat`-backed size must actually grow with the data (unlike the
+        // old `unwrap_or(0)` stub, which always returned 0), and including
+        // the index should report more bytes than the table alone.
+        assert!(size_without_indexes > empty_size);
+        assert!((size_without_indexes as usize) >= row_count * payload.len());
+        assert!(size_with_indexes > size_without_indexes);
     }
 }

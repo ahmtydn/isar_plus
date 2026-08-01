@@ -22,7 +22,7 @@ arc-swap = "1.6.0"
 mdbx-sys = { package = "mdbx-sys", path = "../mdbx_sys", optional = true  }
 
 [target.'cfg(not(all(target_arch = "wasm32", target_os = "unknown")))'.dependencies]
-libsqlite3-sys = { git = "https://github.com/isar/rusqlite.git", branch = "wasm", features=["bundled"] }
+libsqlite3-sys = { git = "https://github.com/ahmtydn/rusqlite.git", branch = "wasm", features=["bundled"] }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 sqlite-wasm-rs = { path = "../sqlite-wasm-rs", default-features = false, features = ["precompiled", "relaxed-idb"] }

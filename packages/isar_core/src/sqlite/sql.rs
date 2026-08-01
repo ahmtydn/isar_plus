@@ -47,19 +47,22 @@ pub(crate) fn drop_column_sql(collection: &IsarSchema, property_name: &str) -> S
     )
 }
 
+pub(crate) fn index_name(table_name: &str, index_name: &str) -> String {
+    format!("{table_name}_{index_name}")
+}
+
 pub(crate) fn create_index_sql(table_name: &str, index: &IndexSchema) -> String {
     format!(
-        "CREATE {} INDEX {}_{} ON {} ({})",
+        "CREATE {} INDEX {} ON {} ({})",
         if index.unique { "UNIQUE" } else { "" },
-        table_name,
-        index.name,
+        index_name(table_name, &index.name),
         table_name,
         index.properties.join(", ")
     )
 }
 
-pub(crate) fn drop_index_sql(table_name: &str, index_name: &str) -> String {
-    format!("DROP INDEX {}_{}", table_name, index_name)
+pub(crate) fn drop_index_sql(table_name: &str, idx_name: &str) -> String {
+    format!("DROP INDEX {}", index_name(table_name, idx_name))
 }
 
 pub(crate) fn select_properties_sql(collection: &SQLiteCollection) -> String {
