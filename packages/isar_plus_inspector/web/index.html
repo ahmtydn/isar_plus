@@ -51,6 +51,7 @@
 
       #loader.hide {
         animation: fade 0.5s;
+        animation-fill-mode: forwards;
       }
 
       @keyframes spin {
@@ -79,31 +80,25 @@
   <body>
     <section id="loader">
       <img src="assets/assets/logo.png" alt="Isar Logo" />
-      <span id="loader-info-text"></span>
+      <span id="loader-info-text">Loading...</span>
     </section>
-    
+
     <script src="flutter_bootstrap.js" async></script>
-    
+
     <script>
-      window.addEventListener("load", () => {
+      function hideLoader() {
         const loadingContainer = document.querySelector("#loader");
-        const loading = document.querySelector("#loader-info-text");
-        loading.textContent = "Loading entrypoint...";
-      
-        _flutter.loader.load({
-          onEntrypointLoaded: async (engineInitializer) => {
-            loading.textContent = "Initializing engine...";
-            const appRunner = await engineInitializer.initializeEngine();
+        if (!loadingContainer) {
+          return;
+        }
+        loadingContainer.classList.add("hide");
+        window.setTimeout(() => {
+          loadingContainer.remove();
+        }, 500);
+      }
 
-            loading.textContent = "Running app...";
-            appRunner.runApp();
-
-            loadingContainer.classList.add("hide");
-            window.setTimeout(() => {
-              loadingContainer.remove();
-            }, 500);
-          }
-        });
+      window.addEventListener("flutter-first-frame", hideLoader, {
+        once: true,
       });
     </script>
   </body>
