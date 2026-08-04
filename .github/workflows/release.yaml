@@ -189,9 +189,6 @@ jobs:
             -e "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" \
             packages/isar_plus_flutter_libs/darwin/isar_plus_flutter_libs/Package.swift
 
-      - name: Generate Darwin force-link symbols
-        run: bash tool/generate_force_link_symbols.sh
-
       - name: Update npm
         run: npm install -g npm@latest
 

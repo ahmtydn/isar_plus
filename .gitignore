@@ -74,8 +74,6 @@ local.properties
 # SPM build artifacts
 **/.build/
 
-force_link_symbols.c
-binding.h
 
 # Coverage
 *.info
