@@ -1,3 +1,9 @@
+## 1.3.9
+
+* fix(darwin): ship Isar Core as the dynamic `IsarPlusCore.framework` instead of a
+  static library, and load it with `DynamicLibrary.open()` rather than
+  `DynamicLibrary.process()`. 
+  
 ## 1.3.8
 
 * fix(sqlite): bundle SQLite with `SQLITE_ENABLE_DBSTAT_VTAB` enabled so `IsarCollection.getSize()` reports real page usage instead of always returning 0.

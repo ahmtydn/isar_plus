@@ -16,23 +16,7 @@ export 'ffi.dart';
 FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   late IsarCoreBindings bindings;
   try {
-    library ??= Platform.isIOS ? null : library ?? Abi.current().localName;
-
-    DynamicLibrary dylib;
-    if (Platform.isIOS) {
-      dylib = DynamicLibrary.process();
-    } else {
-      try {
-        dylib = DynamicLibrary.open(library!);
-      } catch (e) {
-        if (Platform.isMacOS) {
-          dylib = DynamicLibrary.process();
-        } else {
-          rethrow;
-        }
-      }
-    }
-    bindings = IsarCoreBindings(dylib);
+    bindings = IsarCoreBindings(_openIsarCore(library));
   } catch (e) {
     throw IsarNotReadyError(
       'Could not initialize IsarCore library for processor architecture '
@@ -56,6 +40,51 @@ FutureOr<IsarCoreBindings> initializePlatformBindings([String? library]) {
   bindings.isar_plus_connect_dart_api(NativeApi.initializeApiDLData);
 
   return bindings;
+}
+
+const _appleFramework = 'IsarPlusCore';
+
+DynamicLibrary _openIsarCore(String? library) {
+  if (library != null) {
+    return DynamicLibrary.open(library);
+  }
+
+  if (!Platform.isIOS && !Platform.isMacOS) {
+    return DynamicLibrary.open(Abi.current().localName);
+  }
+
+  final attempts = <String>[];
+  for (final candidate in _appleLibraryCandidates()) {
+    try {
+      return DynamicLibrary.open(candidate);
+    } on Object catch (e) {
+      attempts.add('  $candidate -> $e');
+    }
+  }
+  throw ArgumentError(
+    'Could not load $_appleFramework.framework. Make sure '
+    'isar_plus_flutter_libs is a dependency of your app so the framework is '
+    'embedded. Tried:\n${attempts.join('\n')}',
+  );
+}
+
+Iterable<String> _appleLibraryCandidates() sync* {
+  const bundled = '$_appleFramework.framework/$_appleFramework';
+  final executableDir = File(Platform.resolvedExecutable).parent;
+
+  if (Platform.isIOS) {
+    // Runner.app/Runner -> Runner.app/Frameworks/IsarPlusCore.framework/...
+    yield '${executableDir.path}/Frameworks/$bundled';
+  } else {
+    // Runner.app/Contents/MacOS/Runner
+    //   -> Runner.app/Contents/Frameworks/IsarPlusCore.framework/...
+    yield '${executableDir.parent.path}/Frameworks/$bundled';
+  }
+  yield bundled;
+
+  if (Platform.isMacOS) {
+    yield Abi.current().localName;
+  }
 }
 
 /// @nodoc

@@ -56,9 +56,6 @@ melos:
     gen:bindings:
       run: bash tool/generate_bindings.sh
       description: "Regenerate Rust→C bindings (cbindgen) and Dart FFI bindings (ffigen)"
-    gen:force-link-symbols:
-      run: bash tool/generate_force_link_symbols.sh
-      description: "Regenerate Darwin force-link symbol anchor and header from Dart FFI bindings"
     gen:dart:
       run: flutter pub run build_runner build --delete-conflicting-outputs
       exec:
