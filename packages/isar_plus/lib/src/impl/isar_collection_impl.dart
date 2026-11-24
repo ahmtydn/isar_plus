@@ -365,7 +365,7 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
           .checkNoError();
       builderPtr = builderPtrPtr.ptrValue;
     } finally {
-      malloc.free(builderPtrPtr);
+      free(builderPtrPtr);
     }
     if (filter != null) {
       final pointers = <Pointer<Never>>[];
