@@ -358,11 +358,15 @@ class _IsarCollectionImpl<ID, OBJ> extends IsarCollection<ID, OBJ> {
     }
 
     final builderPtrPtr = malloc<Pointer<CIsarQueryBuilder>>();
-    IsarCore.b
-        .isar_plus_query_new(isar.getPtr(), collectionIndex, builderPtrPtr)
-        .checkNoError();
-
-    final builderPtr = builderPtrPtr.ptrValue;
+    late final Pointer<CIsarQueryBuilder> builderPtr;
+    try {
+      IsarCore.b
+          .isar_plus_query_new(isar.getPtr(), collectionIndex, builderPtrPtr)
+          .checkNoError();
+      builderPtr = builderPtrPtr.ptrValue;
+    } finally {
+      malloc.free(builderPtrPtr);
+    }
     if (filter != null) {
       final pointers = <Pointer<Never>>[];
       try {
